@@ -1,166 +1,90 @@
 [
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_bg_button_primary.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\bg_button_primary.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/drawable/ic_launcher_foreground.xml"
     },
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\layout_activity_perfil.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\layout\\activity_perfil.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/layout_activity_lista_eventos.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/layout/activity_lista_eventos.xml"
     },
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_ic_share.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\ic_share.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/layout_bottom_navigation.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/layout/bottom_navigation.xml"
     },
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\layout_activity_main.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\layout\\activity_main.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/layout_activity_splash.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/layout/activity_splash.xml"
     },
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_ic_list.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\ic_list.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/drawable_ic_list.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/drawable/ic_list.xml"
     },
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_ic_launcher.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\ic_launcher.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/drawable_bg_circle.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/drawable/bg_circle.xml"
     },
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_ic_time.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\ic_time.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/layout_activity_registrar_evento.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/layout/activity_registrar_evento.xml"
     },
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\layout_activity_login.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\layout\\activity_login.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/drawable_ic_person.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/drawable/ic_person.xml"
     },
     {
-        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-57:/layout_item_evento.xml.flat",
-        "source": "com.tesistitulacion.noticiaslocales.app-main-59:/layout/item_evento.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/drawable_ic_add.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/drawable/ic_add.xml"
     },
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\layout_activity_registro.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\layout\\activity_registro.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/drawable_ic_location.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/drawable/ic_location.xml"
     },
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\layout_item_noticia.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\layout\\item_noticia.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/layout_activity_registro.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/layout/activity_registro.xml"
     },
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_ic_map.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\ic_map.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/layout_activity_lista_noticias.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/layout/activity_lista_noticias.xml"
     },
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\color_bottom_nav_color.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\color\\bottom_nav_color.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/mipmap-anydpi-v26/ic_launcher_round.xml"
     },
     {
-        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-57:/layout_activity_registrar_evento.xml.flat",
-        "source": "com.tesistitulacion.noticiaslocales.app-main-59:/layout/activity_registrar_evento.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/xml_backup_rules.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/xml/backup_rules.xml"
     },
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_ic_person.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\ic_person.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/layout_item_evento.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/layout/item_evento.xml"
     },
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_ic_launcher_foreground.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\ic_launcher_foreground.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/mipmap-anydpi-v26/ic_launcher.xml"
     },
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_edittext_background.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\edittext_background.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/layout_activity_login.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/layout/activity_login.xml"
     },
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\xml_backup_rules.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\xml\\backup_rules.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/xml_data_extraction_rules.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/xml/data_extraction_rules.xml"
     },
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_ic_noticia.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\ic_noticia.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/drawable_ic_time.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/drawable/ic_time.xml"
     },
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_ic_lock.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\ic_lock.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/layout_item_noticia.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/layout/item_noticia.xml"
     },
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_bg_card.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\bg_card.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/layout_activity_perfil.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/layout/activity_perfil.xml"
     },
     {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_ic_launcher_background.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\ic_launcher_background.xml"
-    },
-    {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\menu_bottom_nav_menu.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\menu\\bottom_nav_menu.xml"
-    },
-    {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\layout_activity_detalle_noticia.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\layout\\activity_detalle_noticia.xml"
-    },
-    {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_ic_eye.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\ic_eye.xml"
-    },
-    {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_ic_favorite.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\ic_favorite.xml"
-    },
-    {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\layout_activity_splash.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\layout\\activity_splash.xml"
-    },
-    {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_gradient_background.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\gradient_background.xml"
-    },
-    {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_ic_add.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\ic_add.xml"
-    },
-    {
-        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-57:/layout_activity_lista_eventos.xml.flat",
-        "source": "com.tesistitulacion.noticiaslocales.app-main-59:/layout/activity_lista_eventos.xml"
-    },
-    {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_bg_categoria.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\bg_categoria.xml"
-    },
-    {
-        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-57:/layout_activity_lista_noticias.xml.flat",
-        "source": "com.tesistitulacion.noticiaslocales.app-main-59:/layout/activity_lista_noticias.xml"
-    },
-    {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\layout_activity_publicar_noticia.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\layout\\activity_publicar_noticia.xml"
-    },
-    {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_ic_home.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\ic_home.xml"
-    },
-    {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_bg_button_secondary.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\bg_button_secondary.xml"
-    },
-    {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\xml_data_extraction_rules.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\xml\\data_extraction_rules.xml"
-    },
-    {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_ic_search.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\ic_search.xml"
-    },
-    {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_bg_input_text.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\bg_input_text.xml"
-    },
-    {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_ic_location.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\ic_location.xml"
-    },
-    {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\layout_activity_lista_noticias.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\layout\\activity_lista_noticias.xml"
-    },
-    {
-        "merged": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-merged_res-57:\\drawable_ic_email.xml.flat",
-        "source": "C:\\Users\\user\\.gradle\\daemon\\8.13\\com.tesistitulacion.noticiaslocales.app-main-59:\\drawable\\ic_email.xml"
+        "merged": "com.tesistitulacion.noticiaslocales.app-merged_res-36:/layout_activity_mapa.xml.flat",
+        "source": "com.tesistitulacion.noticiaslocales.app-main-38:/layout/activity_mapa.xml"
     }
 ]

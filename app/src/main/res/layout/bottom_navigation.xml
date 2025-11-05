@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Barra de navegación inferior reutilizable para todas las pantallas -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_navegacion_bottom"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:orientation="horizontal"
+    android:background="?android:attr/colorBackground"
+    android:elevation="8dp">
+
+    <!-- NOTICIAS -->
+    <LinearLayout
+        android:id="@+id/ll_nav_noticias"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:id="@+id/iv_nav_noticias"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_list"
+            android:tint="?android:attr/textColorSecondary"
+            android:contentDescription="Noticias"/>
+
+        <TextView
+            android:id="@+id/tv_nav_noticias"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Noticias"
+            android:textSize="12sp"
+            android:textColor="?android:attr/textColorSecondary"/>
+    </LinearLayout>
+
+    <!-- EVENTOS -->
+    <LinearLayout
+        android:id="@+id/ll_nav_eventos"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:id="@+id/iv_nav_eventos"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_time"
+            android:tint="?android:attr/textColorSecondary"
+            android:contentDescription="Eventos"/>
+
+        <TextView
+            android:id="@+id/tv_nav_eventos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Eventos"
+            android:textSize="12sp"
+            android:textColor="?android:attr/textColorSecondary"/>
+    </LinearLayout>
+
+    <!-- MAPA -->
+    <LinearLayout
+        android:id="@+id/ll_nav_mapa"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:id="@+id/iv_nav_mapa"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_location"
+            android:tint="?android:attr/textColorSecondary"
+            android:contentDescription="Mapa"/>
+
+        <TextView
+            android:id="@+id/tv_nav_mapa"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mapa"
+            android:textSize="12sp"
+            android:textColor="?android:attr/textColorSecondary"/>
+    </LinearLayout>
+
+    <!-- PERFIL -->
+    <LinearLayout
+        android:id="@+id/ll_nav_perfil"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:id="@+id/iv_nav_perfil"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_person"
+            android:tint="?android:attr/textColorSecondary"
+            android:contentDescription="Perfil"/>
+
+        <TextView
+            android:id="@+id/tv_nav_perfil"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Perfil"
+            android:textSize="12sp"
+            android:textColor="?android:attr/textColorSecondary"/>
+    </LinearLayout>
+
+</LinearLayout>

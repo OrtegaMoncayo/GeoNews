@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.tesistitulacion.noticiaslocales.app-mergeDebugResources-55:/values-h720dp-v13/values-h720dp-v13.xml",
+            "outputFile": "com.tesistitulacion.noticiaslocales.app-mergeDebugResources-34:/values-h720dp-v13/values-h720dp-v13.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\user\\.gradle\\caches\\8.13\\transforms\\ceae5c62925394b6797416cfadb55060\\transformed\\appcompat-1.6.1\\res\\values-h720dp-v13\\values-h720dp-v13.xml",
+                    "source": "C:\\Users\\user\\.gradle\\caches\\transforms-3\\68b2f9db80fd5fbadc0f11fe19280caa\\transformed\\appcompat-1.6.1\\res\\values-h720dp-v13\\values-h720dp-v13.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

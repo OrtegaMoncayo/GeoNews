@@ -1,1 +1,80 @@
-/buildnul
+# Built application files
+*.apk
+*.ap_
+*.aab
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+out/
+release/
+
+# Gradle files
+.gradle/
+build/
+*/build/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Android Studio
+*.iml
+.idea/
+.DS_Store
+.navigation/
+captures/
+.externalNativeBuild
+.cxx
+
+# NDK
+obj/
+
+# Keystore files
+*.jks
+*.keystore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+
+# Backend
+backend_flask/.env
+backend_flask/venv/
+backend_flask/token.pickle
+backend_flask/credentials.json
+
+# Logs
+*.log
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+nul
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Documentation folder (keep in repo but ignore temp files)
+documentacion/*.tmp

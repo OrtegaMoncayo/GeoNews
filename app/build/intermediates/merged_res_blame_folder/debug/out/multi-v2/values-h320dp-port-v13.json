@@ -1,16 +1,16 @@
 {
     "logs": [
         {
-            "outputFile": "com.tesistitulacion.noticiaslocales.app-mergeDebugResources-55:/values-h320dp-port-v13/values-h320dp-port-v13.xml",
+            "outputFile": "com.tesistitulacion.noticiaslocales.app-mergeDebugResources-34:/values-h320dp-port-v13/values-h320dp-port-v13.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\user\\.gradle\\caches\\8.13\\transforms\\c55db8c5fbfc2ff6fbf2094a1a1a98d4\\transformed\\material-1.9.0\\res\\values-h320dp-port-v13\\values-h320dp-port-v13.xml",
+                    "source": "C:\\Users\\user\\.gradle\\caches\\transforms-3\\6fe221ef3627acc9045c8968b4817037\\transformed\\material-1.11.0\\res\\values-h320dp-port-v13\\values-h320dp-port-v13.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
                         "startOffsets": "55",
-                        "endColumns": "75",
-                        "endOffsets": "126"
+                        "endColumns": "63",
+                        "endOffsets": "114"
                     }
                 }
             ]

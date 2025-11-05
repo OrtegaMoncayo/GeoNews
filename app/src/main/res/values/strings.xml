@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Noticias Locales Ibarra</string>
+
+    <!-- Login y Registro -->
+    <string name="email">Email</string>
+    <string name="password">Contraseña</string>
+    <string name="login">Iniciar Sesión</string>
+    <string name="register">Registrarse</string>
+    <string name="no_account">¿No tienes cuenta?</string>
+    <string name="have_account">¿Ya tienes cuenta?</string>
+
+    <!-- Navegación -->
+    <string name="nav_noticias">Noticias</string>
+    <string name="nav_eventos">Eventos</string>
+    <string name="nav_mapa">Mapa</string>
+    <string name="nav_perfil">Perfil</string>
+
+    <!-- Títulos -->
+    <string name="title_noticias">Noticias Locales</string>
+    <string name="title_eventos">Eventos Comunitarios</string>
+    <string name="title_mapa">Mapa de Noticias</string>
+    <string name="title_perfil">Mi Perfil</string>
+
+    <!-- Acciones -->
+    <string name="action_search">Buscar</string>
+    <string name="action_filter">Filtrar</string>
+    <string name="action_settings">Configuración</string>
+    <string name="action_logout">Cerrar Sesión</string>
+    <string name="action_create">Crear</string>
+
+    <!-- Mensajes -->
+    <string name="loading">Cargando…</string>
+    <string name="error">Error</string>
+    <string name="success">Éxito</string>
+    <string name="no_data">Sin datos</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_avatar">Foto de perfil</string>
+    <string name="cd_map">Mapa</string>
+    <string name="cd_location">Ubicación</string>
+</resources>

@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.tesistitulacion.noticiaslocales.app-mergeDebugResources-55:/values-v24/values-v24.xml",
+            "outputFile": "com.tesistitulacion.noticiaslocales.app-mergeDebugResources-34:/values-v24/values-v24.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\user\\.gradle\\caches\\8.13\\transforms\\c55db8c5fbfc2ff6fbf2094a1a1a98d4\\transformed\\material-1.9.0\\res\\values-v24\\values-v24.xml",
+                    "source": "C:\\Users\\user\\.gradle\\caches\\transforms-3\\6fe221ef3627acc9045c8968b4817037\\transformed\\material-1.11.0\\res\\values-v24\\values-v24.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,9,12,15",
                         "startColumns": "4,4,4,4,4,4,4,4",
@@ -23,7 +23,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\user\\.gradle\\caches\\8.13\\transforms\\ceae5c62925394b6797416cfadb55060\\transformed\\appcompat-1.6.1\\res\\values-v24\\values-v24.xml",
+                    "source": "C:\\Users\\user\\.gradle\\caches\\transforms-3\\68b2f9db80fd5fbadc0f11fe19280caa\\transformed\\appcompat-1.6.1\\res\\values-v24\\values-v24.xml",
                     "from": {
                         "startLines": "2,3",
                         "startColumns": "4,4",
