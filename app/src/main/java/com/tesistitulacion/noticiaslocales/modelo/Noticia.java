@@ -6,6 +6,7 @@ package com.tesistitulacion.noticiaslocales.modelo;
  */
 public class Noticia {
     private Integer id;
+    private String firestoreId; // ID del documento en Firestore
     private String titulo;
     private String descripcion;
     private String contenido;
@@ -198,6 +199,14 @@ public class Noticia {
 
     public void setDistancia(Double distancia) {
         this.distancia = distancia;
+    }
+
+    public String getFirestoreId() {
+        return firestoreId;
+    }
+
+    public void setFirestoreId(String firestoreId) {
+        this.firestoreId = firestoreId;
     }
 
     /**

@@ -78,3 +78,14 @@ Thumbs.db
 
 # Documentation folder (keep in repo but ignore temp files)
 documentacion/*.tmp
+
+# Firebase credentials
+firebase-service-account.json
+*-firebase-adminsdk-*.json
+serviceAccountKey.json
+backend_fastapi/serviceAccountKey.json
+
+# Firebase local config
+.firebaserc
+firebase-debug.log
+firestore-debug.log

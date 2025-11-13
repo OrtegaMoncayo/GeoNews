@@ -13,6 +13,7 @@ import java.util.Locale;
  */
 public class Evento {
     private Integer id;
+    private String firestoreId; // ID del documento en Firestore
     private String descripcion;
     private Long fecha; // Timestamp en milisegundos o String ISO
     private String ubicacion;
@@ -208,6 +209,14 @@ public class Evento {
 
     public void setDistancia(Double distancia) {
         this.distancia = distancia;
+    }
+
+    public String getFirestoreId() {
+        return firestoreId;
+    }
+
+    public void setFirestoreId(String firestoreId) {
+        this.firestoreId = firestoreId;
     }
 
     // Métodos auxiliares

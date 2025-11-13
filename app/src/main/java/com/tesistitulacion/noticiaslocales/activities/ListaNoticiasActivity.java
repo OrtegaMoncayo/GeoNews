@@ -1,5 +1,6 @@
 package com.tesistitulacion.noticiaslocales.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -7,7 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.tesistitulacion.noticiaslocales.R;
 import com.tesistitulacion.noticiaslocales.adapters.NoticiaAdapter;
-import com.tesistitulacion.noticiaslocales.db.NoticiaServiceHTTP;
+import com.tesistitulacion.noticiaslocales.firebase.FirebaseManager;
 import com.tesistitulacion.noticiaslocales.modelo.Noticia;
 
 import java.util.ArrayList;
@@ -54,14 +55,15 @@ public class ListaNoticiasActivity extends BaseActivity {
 
         adapter = new NoticiaAdapter((noticia, position) -> {
             // Click en noticia → abrir detalle
-            Toast.makeText(this,
-                    "Abrir detalle: " + noticia.getTitulo(),
-                    Toast.LENGTH_SHORT).show();
-
-            // TODO: Implementar DetalleNoticiaActivity
-            // Intent intent = new Intent(this, DetalleNoticiaActivity.class);
-            // intent.putExtra("noticia_id", noticia.getId());
-            // startActivity(intent);
+            if (noticia.getFirestoreId() != null) {
+                Intent intent = new Intent(this, DetalleNoticiaActivity.class);
+                intent.putExtra(DetalleNoticiaActivity.EXTRA_NOTICIA_ID, noticia.getFirestoreId());
+                startActivity(intent);
+            } else {
+                Toast.makeText(this,
+                        "Error: ID de noticia no disponible",
+                        Toast.LENGTH_SHORT).show();
+            }
         });
 
         rvNoticias.setAdapter(adapter);
@@ -73,45 +75,41 @@ public class ListaNoticiasActivity extends BaseActivity {
             return;
         }
 
-        Log.d(TAG, "Cargando noticias...");
+        Log.d(TAG, "Cargando noticias desde Firebase...");
         cargando = true;
         Toast.makeText(this, "Cargando noticias...", Toast.LENGTH_SHORT).show();
 
-        // Cargar en segundo plano
-        new Thread(() -> {
-            try {
-                List<Noticia> noticiasObtenidas = NoticiaServiceHTTP.obtenerTodas();
-                Log.d(TAG, "Noticias obtenidas: " +
-                        (noticiasObtenidas != null ? noticiasObtenidas.size() : "null"));
+        // Cargar desde Firebase Firestore
+        FirebaseManager.getInstance().getAllNoticias(new FirebaseManager.FirestoreCallback<List<Noticia>>() {
+            @Override
+            public void onSuccess(List<Noticia> noticiasObtenidas) {
+                cargando = false;
+                Log.d(TAG, "Noticias obtenidas de Firebase: " + noticiasObtenidas.size());
 
-                runOnUiThread(() -> {
-                    cargando = false;
+                if (!noticiasObtenidas.isEmpty()) {
+                    adapter.actualizarLista(noticiasObtenidas);
 
-                    if (noticiasObtenidas != null && !noticiasObtenidas.isEmpty()) {
-                        adapter.actualizarLista(noticiasObtenidas);
-
-                        Log.i(TAG, "Noticias cargadas: " + noticiasObtenidas.size());
-                        Toast.makeText(this,
-                                "✅ " + noticiasObtenidas.size() + " noticias cargadas",
-                                Toast.LENGTH_SHORT).show();
-                    } else {
-                        Log.w(TAG, "No se encontraron noticias");
-                        Toast.makeText(this,
-                                "No hay noticias disponibles",
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-            } catch (Exception e) {
-                Log.e(TAG, "Error al cargar noticias: " + e.getMessage(), e);
-                runOnUiThread(() -> {
-                    cargando = false;
-                    Toast.makeText(this,
-                            "Error al cargar noticias: " + e.getMessage(),
-                            Toast.LENGTH_LONG).show();
-                });
+                    Log.i(TAG, "Noticias cargadas: " + noticiasObtenidas.size());
+                    Toast.makeText(ListaNoticiasActivity.this,
+                            "✅ " + noticiasObtenidas.size() + " noticias cargadas",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.w(TAG, "No se encontraron noticias");
+                    Toast.makeText(ListaNoticiasActivity.this,
+                            "No hay noticias disponibles",
+                            Toast.LENGTH_SHORT).show();
+                }
             }
-        }).start();
+
+            @Override
+            public void onError(Exception e) {
+                cargando = false;
+                Log.e(TAG, "Error al cargar noticias desde Firebase: " + e.getMessage(), e);
+                Toast.makeText(ListaNoticiasActivity.this,
+                        "Error al cargar noticias: " + e.getMessage(),
+                        Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override

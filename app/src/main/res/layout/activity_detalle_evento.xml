@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/toolbar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:fitsSystemWindows="true"
+            app:contentScrim="?attr/colorPrimary"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:toolbarId="@+id/toolbar">
+
+            <!-- Imagen de portada del evento -->
+            <ImageView
+                android:id="@+id/iv_portada"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:background="?attr/colorPrimary"
+                android:contentDescription="Imagen del evento"
+                app:layout_collapseMode="parallax" />
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:layout_collapseMode="pin"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Categoría del evento -->
+            <TextView
+                android:id="@+id/tv_categoria"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CULTURAL"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorPrimary"
+                android:textAllCaps="true"
+                android:layout_marginBottom="8dp"/>
+
+            <!-- Descripción/Título -->
+            <TextView
+                android:id="@+id/tv_descripcion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Descripción del evento"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="?android:attr/textColorPrimary"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Metadatos: Fecha y Hora -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
+
+                <!-- Fecha -->
+                <TextView
+                    android:id="@+id/tv_fecha"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="15 Nov 2025, 18:00"
+                    android:textSize="14sp"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:drawableStart="@drawable/ic_time"
+                    android:drawablePadding="6dp"
+                    android:drawableTint="?android:attr/textColorSecondary"
+                    android:gravity="center_vertical"/>
+
+                <!-- Estado -->
+                <TextView
+                    android:id="@+id/tv_estado"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="PROGRAMADO"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#4CAF50"
+                    android:background="@android:color/transparent"
+                    android:padding="4dp"/>
+
+            </LinearLayout>
+
+            <!-- Ubicación -->
+            <TextView
+                android:id="@+id/tv_ubicacion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Parque Pedro Moncayo"
+                android:textSize="14sp"
+                android:textColor="?android:attr/textColorSecondary"
+                android:drawableStart="@drawable/ic_location"
+                android:drawablePadding="6dp"
+                android:drawableTint="?android:attr/textColorSecondary"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Separador -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?android:attr/listDivider"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Información de Cupos -->
+            <LinearLayout
+                android:id="@+id/layout_cupos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:background="?attr/selectableItemBackground"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tv_cupo_disponible"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="45"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorPrimary"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Disponibles"
+                        android:textSize="12sp"
+                        android:textColor="?android:attr/textColorSecondary"/>
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/listDivider"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tv_cupo_maximo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="50"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:textColor="?android:attr/textColorPrimary"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Cupo total"
+                        android:textSize="12sp"
+                        android:textColor="?android:attr/textColorSecondary"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Costo -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="12dp"
+                android:background="?attr/selectableItemBackground"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="💵 Costo:"
+                    android:textSize="16sp"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:layout_marginEnd="8dp"/>
+
+                <TextView
+                    android:id="@+id/tv_costo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="GRATIS"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#4CAF50"/>
+
+            </LinearLayout>
+
+            <!-- Información de contacto -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Información de contacto"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="?android:attr/textColorPrimary"
+                android:layout_marginBottom="8dp"/>
+
+            <!-- Teléfono -->
+            <TextView
+                android:id="@+id/tv_telefono"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="📱 0999-999-999"
+                android:textSize="14sp"
+                android:textColor="?android:attr/textColorSecondary"
+                android:autoLink="phone"
+                android:layout_marginBottom="4dp"/>
+
+            <!-- Email -->
+            <TextView
+                android:id="@+id/tv_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="✉️ contacto@evento.com"
+                android:textSize="14sp"
+                android:textColor="?android:attr/textColorSecondary"
+                android:autoLink="email"
+                android:layout_marginBottom="24dp"/>
+
+            <!-- Botón Ver en Mapa -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_ver_mapa"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ver ubicación en mapa"
+                android:textAllCaps="false"
+                app:icon="@drawable/ic_location"
+                app:iconGravity="textStart"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_marginBottom="8dp"/>
+
+            <!-- Botón Registrarse/Inscribirse -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_inscribirse"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Inscribirse al evento"
+                android:textAllCaps="false"
+                app:icon="@drawable/ic_person"
+                app:iconGravity="textStart"/>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- FAB para compartir -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_compartir"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:src="@android:drawable/ic_menu_share"
+        app:layout_anchor="@id/app_bar"
+        app:layout_anchorGravity="bottom|end"
+        android:contentDescription="Compartir evento"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

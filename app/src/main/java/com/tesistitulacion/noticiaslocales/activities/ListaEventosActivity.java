@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.tesistitulacion.noticiaslocales.R;
 import com.tesistitulacion.noticiaslocales.adapters.EventoAdapter;
-import com.tesistitulacion.noticiaslocales.db.EventoServiceHTTP;
+import com.tesistitulacion.noticiaslocales.firebase.FirebaseManager;
 import com.tesistitulacion.noticiaslocales.modelo.Evento;
 
 import java.util.ArrayList;
@@ -58,15 +58,16 @@ public class ListaEventosActivity extends BaseActivity {
         rvEventos.setLayoutManager(new LinearLayoutManager(this));
 
         adapter = new EventoAdapter((evento, position) -> {
-            // Click en evento → mostrar detalles
-            Toast.makeText(this,
-                    "Evento: " + evento.getDescripcion(),
-                    Toast.LENGTH_SHORT).show();
-
-            // TODO: Implementar DetalleEventoActivity
-            // Intent intent = new Intent(this, DetalleEventoActivity.class);
-            // intent.putExtra("evento_id", evento.getId());
-            // startActivity(intent);
+            // Click en evento → abrir detalle
+            if (evento.getFirestoreId() != null) {
+                Intent intent = new Intent(this, DetalleEventoActivity.class);
+                intent.putExtra(DetalleEventoActivity.EXTRA_EVENTO_ID, evento.getFirestoreId());
+                startActivity(intent);
+            } else {
+                Toast.makeText(this,
+                        "Error: ID de evento no disponible",
+                        Toast.LENGTH_SHORT).show();
+            }
         });
 
         rvEventos.setAdapter(adapter);
@@ -86,45 +87,41 @@ public class ListaEventosActivity extends BaseActivity {
             return;
         }
 
-        Log.d(TAG, "Cargando eventos...");
+        Log.d(TAG, "Cargando eventos desde Firebase...");
         cargando = true;
         Toast.makeText(this, "Cargando eventos...", Toast.LENGTH_SHORT).show();
 
-        // Cargar en segundo plano
-        new Thread(() -> {
-            try {
-                List<Evento> eventosObtenidos = EventoServiceHTTP.obtenerTodos();
-                Log.d(TAG, "Eventos obtenidos: " +
-                        (eventosObtenidos != null ? eventosObtenidos.size() : "null"));
+        // Cargar desde Firebase Firestore
+        FirebaseManager.getInstance().getEventosFuturos(new FirebaseManager.FirestoreCallback<List<Evento>>() {
+            @Override
+            public void onSuccess(List<Evento> eventosObtenidos) {
+                cargando = false;
+                Log.d(TAG, "Eventos obtenidos de Firebase: " + eventosObtenidos.size());
 
-                runOnUiThread(() -> {
-                    cargando = false;
+                if (!eventosObtenidos.isEmpty()) {
+                    adapter.actualizarLista(eventosObtenidos);
 
-                    if (eventosObtenidos != null && !eventosObtenidos.isEmpty()) {
-                        adapter.actualizarLista(eventosObtenidos);
-
-                        Log.i(TAG, "Eventos cargados: " + eventosObtenidos.size());
-                        Toast.makeText(this,
-                                "✅ " + eventosObtenidos.size() + " eventos cargados",
-                                Toast.LENGTH_SHORT).show();
-                    } else {
-                        Log.w(TAG, "No se encontraron eventos");
-                        Toast.makeText(this,
-                                "No hay eventos registrados aún",
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-            } catch (Exception e) {
-                Log.e(TAG, "Error al cargar eventos: " + e.getMessage(), e);
-                runOnUiThread(() -> {
-                    cargando = false;
-                    Toast.makeText(this,
-                            "Error al cargar eventos: " + e.getMessage(),
-                            Toast.LENGTH_LONG).show();
-                });
+                    Log.i(TAG, "Eventos cargados: " + eventosObtenidos.size());
+                    Toast.makeText(ListaEventosActivity.this,
+                            "✅ " + eventosObtenidos.size() + " eventos cargados",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.w(TAG, "No se encontraron eventos");
+                    Toast.makeText(ListaEventosActivity.this,
+                            "No hay eventos registrados aún",
+                            Toast.LENGTH_SHORT).show();
+                }
             }
-        }).start();
+
+            @Override
+            public void onError(Exception e) {
+                cargando = false;
+                Log.e(TAG, "Error al cargar eventos desde Firebase: " + e.getMessage(), e);
+                Toast.makeText(ListaEventosActivity.this,
+                        "Error al cargar eventos: " + e.getMessage(),
+                        Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override

@@ -4,9 +4,12 @@ Aplicación móvil Android para noticias y eventos locales de Ibarra, Ecuador, c
 
 ![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
 ![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=java&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+![Cloud Run](https://img.shields.io/badge/Cloud_Run-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)
+
+**Estado:** 🟢 85% Completado | **Versión:** 0.1.0 | **Última actualización:** 11 de Noviembre de 2025
 
 ## 📋 Descripción
 
@@ -18,6 +21,15 @@ Aplicación móvil Android para noticias y eventos locales de Ibarra, Ecuador, c
 - 🗺️ Explorar noticias y eventos en mapa interactivo
 - 🔔 Recibir notificaciones de nuevos eventos
 - 🏘️ Filtrar contenido por parroquias (5 urbanas, 7 rurales)
+
+### 📚 Documentación del Proyecto
+
+- 📋 **[KANBAN_PLAN.md](./KANBAN_PLAN.md)** - Planificación Kanban completa con 23 User Stories
+- 🏗️ **[ARQUITECTURA.md](./ARQUITECTURA.md)** - Arquitectura del sistema detallada
+- 📊 **[ESTADO_PROYECTO.md](./ESTADO_PROYECTO.md)** - Estado actual del proyecto (85% completado)
+- 🔥 **[FIREBASE_SETUP.md](./FIREBASE_SETUP.md)** - Guía de configuración de Firebase
+- 📐 **[firebase_schema.md](./firebase_schema.md)** - Estructura de Firestore
+- 🐛 **[DIAGNOSTICO_FIREBASE.md](./DIAGNOSTICO_FIREBASE.md)** - Troubleshooting
 
 ---
 
@@ -33,20 +45,26 @@ Aplicación móvil Android para noticias y eventos locales de Ibarra, Ecuador, c
 - ✅ Navegación fluida con DrawerLayout
 - ✅ Validación de formularios
 
-### **Backend FastAPI**
+### **Backend FastAPI + Firebase**
 - ✅ API REST asíncrona con FastAPI
-- ✅ 10 endpoints completamente funcionales
+- ✅ Desplegado en Google Cloud Run
+- ✅ 11 endpoints completamente funcionales
+- ✅ Firebase Firestore como base de datos
 - ✅ Validación automática con Pydantic
-- ✅ Pool de conexiones MySQL
-- ✅ Búsqueda geográfica optimizada
+- ✅ Búsqueda geográfica optimizada (Haversine)
 - ✅ CORS configurado para Android
-- ✅ Documentación Swagger automática
+- ✅ Documentación Swagger automática en `/docs`
+- ✅ URL: https://noticiasibarra-api-166115544761.southamerica-east1.run.app
 
-### **Base de Datos**
-- ✅ MySQL 8.0 con utf8mb4
-- ✅ 5 tablas relacionales
-- ✅ Datos reales de 12 parroquias de Ibarra
-- ✅ Índices optimizados para búsquedas
+### **Base de Datos Firebase Firestore**
+- ✅ Firestore Database NoSQL
+- ✅ 5 colecciones principales
+- ✅ 7 noticias activas
+- ✅ 9 eventos futuros
+- ✅ 12 parroquias de Ibarra (5 urbanas, 7 rurales)
+- ✅ 10 categorías de contenido
+- ✅ GeoPoint nativo para coordenadas
+- ✅ Migración exitosa desde MySQL
 
 ---
 

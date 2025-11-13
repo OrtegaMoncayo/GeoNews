@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- Características opcionales -->
     <uses-feature
@@ -106,7 +107,7 @@
         <activity
             android:name=".activities.DetalleNoticiaActivity"
             android:exported="false"
-            android:theme="@style/Theme.NoticiasIbarra" />
+            android:theme="@style/Theme.NoticiasIbarra.NoActionBar" />
 
         <!-- Publicar Noticia -->
         <activity
@@ -114,11 +115,26 @@
             android:exported="false"
             android:theme="@style/Theme.NoticiasIbarra" />
 
+        <!-- Detalle de Evento -->
+        <activity
+            android:name=".activities.DetalleEventoActivity"
+            android:exported="false"
+            android:theme="@style/Theme.NoticiasIbarra.NoActionBar" />
+
         <!-- Registrar Evento -->
         <activity
             android:name=".activities.RegistrarEventoActivity"
             android:exported="false"
             android:theme="@style/Theme.NoticiasIbarra" />
+
+        <!-- Firebase Cloud Messaging Service -->
+        <service
+            android:name=".firebase.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
     </application>
 

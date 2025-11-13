@@ -99,8 +99,13 @@ public class NoticiaAdapter extends RecyclerView.Adapter<NoticiaAdapter.NoticiaV
         }
 
         public void bind(Noticia noticia, OnNoticiaClickListener listener) {
+            if (noticia == null) {
+                return; // Protección contra noticias null
+            }
+
             // Título
-            tvTitulo.setText(noticia.getTitulo());
+            String titulo = noticia.getTitulo();
+            tvTitulo.setText(titulo != null ? titulo : "Sin título");
 
             // Descripción
             if (noticia.getDescripcion() != null && !noticia.getDescripcion().isEmpty()) {
@@ -123,7 +128,12 @@ public class NoticiaAdapter extends RecyclerView.Adapter<NoticiaAdapter.NoticiaV
             }
 
             // Fecha
-            tvFecha.setText(formatearFecha(noticia.getFechaPublicacion()));
+            String fechaStr = noticia.getFechaPublicacion();
+            if (fechaStr != null && !fechaStr.isEmpty()) {
+                tvFecha.setText(formatearFecha(fechaStr));
+            } else {
+                tvFecha.setText("Hoy");
+            }
 
             // Ubicación (parroquia)
             if (noticia.getParroquiaNombre() != null && !noticia.getParroquiaNombre().isEmpty()) {
