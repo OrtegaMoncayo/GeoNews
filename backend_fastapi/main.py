@@ -5,18 +5,73 @@ Conecta con Firestore y Firebase Cloud Messaging
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 import firebase_admin
 from firebase_admin import credentials, firestore, messaging
 import os
+from pathlib import Path
 
 # Inicializar FastAPI
 app = FastAPI(
     title="NoticiasIbarra API",
-    description="Backend para gestión de noticias y eventos de Ibarra",
-    version="1.0.0"
+    description="""
+    ## 🏛️ API RESTful para Gestión de Noticias y Eventos de Ibarra
+
+    Esta API permite gestionar noticias, eventos, parroquias y categorías de la ciudad de Ibarra y sus alrededores.
+
+    ### 📱 Características principales:
+    * **Noticias**: Gestión completa de noticias locales
+    * **Eventos**: Administración de eventos comunitarios
+    * **Parroquias**: Información de parroquias urbanas y rurales
+    * **Categorías**: Clasificación de contenido
+    * **Geolocalización**: Coordenadas para ubicación en mapa
+    * **Firebase**: Integración con Firestore y FCM
+
+    ### 🔗 Enlaces útiles:
+    * [Repositorio GitHub](https://github.com/OrtegaMoncayo/NoticiasIbarra)
+    * [Documentación ReDoc](/redoc)
+
+    ### 📞 Contacto:
+    * Email: richard.ortega778@ist17dejulio.edu.ec
+    * Proyecto: Tesis de Grado - Instituto Tecnológico 17 de Julio
+    """,
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_tags=[
+        {
+            "name": "Sistema",
+            "description": "Endpoints de información general y estado del sistema"
+        },
+        {
+            "name": "Noticias",
+            "description": "Operaciones relacionadas con noticias locales"
+        },
+        {
+            "name": "Eventos",
+            "description": "Gestión de eventos comunitarios y actividades"
+        },
+        {
+            "name": "Parroquias",
+            "description": "Información de parroquias urbanas y rurales"
+        },
+        {
+            "name": "Categorías",
+            "description": "Categorización de noticias y eventos"
+        },
+        {
+            "name": "Notificaciones",
+            "description": "Envío de notificaciones push con Firebase Cloud Messaging"
+        },
+        {
+            "name": "Estadísticas",
+            "description": "Métricas y estadísticas del sistema"
+        }
+    ]
 )
 
 # Configurar CORS para permitir requests desde Android
@@ -33,12 +88,24 @@ cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
+# ==================== ARCHIVOS ESTÁTICOS ====================
+# Obtener la ruta absoluta del directorio actual
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "static"
+
+# Montar directorio static para servir la interfaz web del periodista
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
 # ==================== MODELOS PYDANTIC ====================
 
 class Noticia(BaseModel):
     titulo: str
     descripcion: Optional[str] = None
     contenido: Optional[str] = None
+    citaDestacada: Optional[str] = None
+    impactoComunitario: Optional[str] = None
+    hashtags: Optional[str] = None
     imagenUrl: Optional[str] = None
     ubicacionTexto: Optional[str] = None
     latitud: Optional[float] = None
@@ -72,9 +139,19 @@ class NotificacionPush(BaseModel):
 
 # ==================== ENDPOINTS RAÍZ ====================
 
-@app.get("/")
+@app.get("/", tags=["Sistema"])
 async def root():
-    """Endpoint raíz - Health check"""
+    """
+    ## 🏠 Endpoint Principal
+
+    Retorna información básica de la API y su estado.
+
+    ### Respuesta:
+    * `status`: Estado del servicio
+    * `message`: Mensaje de bienvenida
+    * `version`: Versión actual de la API
+    * `firebase`: Estado de conexión con Firebase
+    """
     return {
         "status": "ok",
         "message": "NoticiasIbarra API está funcionando",
@@ -82,9 +159,20 @@ async def root():
         "firebase": "connected"
     }
 
-@app.get("/health")
+@app.get("/health", tags=["Sistema"])
 async def health_check():
-    """Health check para Cloud Run"""
+    """
+    ## 🏥 Health Check
+
+    Verifica el estado de salud del servicio y la conexión con Firestore.
+
+    ### Uso:
+    Este endpoint es utilizado por Cloud Run para monitoreo de disponibilidad.
+
+    ### Respuestas:
+    * **200**: Servicio saludable
+    * **503**: Error de conexión con Firestore
+    """
     try:
         # Verificar conexión a Firestore
         db.collection("noticias").limit(1).get()
@@ -92,15 +180,84 @@ async def health_check():
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Firestore error: {str(e)}")
 
+@app.get("/panel-periodista", response_class=HTMLResponse, tags=["Sistema"])
+async def panel_periodista():
+    """
+    ## 📝 Panel de Periodista
+
+    Interfaz web para que los periodistas publiquen noticias con geolocalización.
+
+    ### Características:
+    * Formulario completo de noticias
+    * Mapa interactivo de Google Maps para seleccionar ubicación
+    * Envío directo a la API de noticias
+    * Validación de campos requeridos
+
+    ### Acceso:
+    Abrir en navegador: `https://[tu-dominio]/panel-periodista`
+    """
+    html_file = STATIC_DIR / "index.html"
+
+    if not html_file.exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"Panel de periodista no encontrado. Ruta esperada: {html_file}"
+        )
+
+    try:
+        with open(html_file, "r", encoding="utf-8") as f:
+            html_content = f.read()
+        return HTMLResponse(content=html_content)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al leer el archivo HTML: {str(e)}"
+        )
+
 # ==================== ENDPOINTS NOTICIAS ====================
 
-@app.get("/noticias")
+@app.get("/noticias", tags=["Noticias"])
 async def obtener_noticias(
-    limit: int = Query(50, ge=1, le=100),
-    activa: bool = True,
-    destacada: Optional[bool] = None
+    limit: int = Query(50, ge=1, le=100, description="Número máximo de noticias a retornar"),
+    activa: bool = Query(True, description="Filtrar por noticias activas"),
+    destacada: Optional[bool] = Query(None, description="Filtrar por noticias destacadas (opcional)")
 ):
-    """Obtiene lista de noticias con filtros opcionales"""
+    """
+    ## 📰 Obtener Lista de Noticias
+
+    Retorna una lista de noticias ordenadas por fecha de publicación (más recientes primero).
+
+    ### Parámetros:
+    * **limit**: Cantidad de noticias a retornar (1-100, default: 50)
+    * **activa**: Filtrar solo noticias activas (default: true)
+    * **destacada**: Filtrar noticias destacadas (opcional)
+
+    ### Respuesta:
+    ```json
+    {
+        "success": true,
+        "count": 7,
+        "noticias": [
+            {
+                "id": "abc123",
+                "titulo": "Título de la noticia",
+                "descripcion": "Resumen breve",
+                "contenido": "Contenido completo...",
+                "imagenUrl": "https://...",
+                "latitud": 0.3476,
+                "longitud": -78.1223,
+                "destacada": true,
+                "activa": true,
+                "visualizaciones": 150
+            }
+        ]
+    }
+    ```
+
+    ### Códigos de respuesta:
+    * **200**: Noticias obtenidas exitosamente
+    * **500**: Error interno del servidor
+    """
     try:
         query = db.collection("noticias")
 
@@ -122,15 +279,33 @@ async def obtener_noticias(
                 continue
 
             # Crear un nuevo dict solo con datos serializables
+            # Manejar categoriaId y parroquiaId (pueden ser string o DocumentReference)
+            categoria_id = noticia_data.get("categoriaId")
+            if categoria_id:
+                if hasattr(categoria_id, 'id'):
+                    categoria_id = categoria_id.id
+                else:
+                    categoria_id = str(categoria_id)
+
+            parroquia_id = noticia_data.get("parroquiaId")
+            if parroquia_id:
+                if hasattr(parroquia_id, 'id'):
+                    parroquia_id = parroquia_id.id
+                else:
+                    parroquia_id = str(parroquia_id)
+
             noticia_limpia = {
                 "id": doc.id,
                 "titulo": noticia_data.get("titulo"),
                 "descripcion": noticia_data.get("descripcion"),
                 "contenido": noticia_data.get("contenido"),
+                "citaDestacada": noticia_data.get("citaDestacada"),
+                "impactoComunitario": noticia_data.get("impactoComunitario"),
+                "hashtags": noticia_data.get("hashtags"),
                 "imagenUrl": noticia_data.get("imagenUrl"),
                 "ubicacionTexto": noticia_data.get("ubicacionTexto"),
-                "categoriaId": str(noticia_data.get("categoriaId").id) if noticia_data.get("categoriaId") else None,
-                "parroquiaId": str(noticia_data.get("parroquiaId").id) if noticia_data.get("parroquiaId") else None,
+                "categoriaId": categoria_id,
+                "parroquiaId": parroquia_id,
                 "destacada": noticia_data.get("destacada", False),
                 "activa": noticia_data.get("activa", True),
                 "visualizaciones": noticia_data.get("visualizaciones", 0),
@@ -158,9 +333,116 @@ async def obtener_noticias(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/noticias/{noticia_id}")
+@app.get("/noticias/cercanas", tags=["Noticias"])
+async def obtener_noticias_cercanas(
+    latitud: float = Query(..., description="Latitud del punto de referencia"),
+    longitud: float = Query(..., description="Longitud del punto de referencia"),
+    radio: float = Query(5, description="Radio de búsqueda en kilómetros")
+):
+    """
+    ## 📍 Obtener Noticias Cercanas
+
+    Retorna noticias dentro de un radio específico desde un punto geográfico.
+    Utiliza el algoritmo de Haversine para calcular distancias.
+
+    ### Parámetros:
+    * **latitud**: Latitud del punto de referencia (-90 a 90)
+    * **longitud**: Longitud del punto de referencia (-180 a 180)
+    * **radio**: Radio de búsqueda en kilómetros (default: 5km)
+
+    ### Respuesta:
+    Lista de noticias ordenadas por distancia (más cercanas primero)
+    """
+    try:
+        import math
+
+        def calcular_distancia(lat1, lon1, lat2, lon2):
+            """Calcula distancia en km usando fórmula de Haversine"""
+            R = 6371  # Radio de la Tierra en km
+
+            lat1_rad = math.radians(lat1)
+            lat2_rad = math.radians(lat2)
+            delta_lat = math.radians(lat2 - lat1)
+            delta_lon = math.radians(lon2 - lon1)
+
+            a = math.sin(delta_lat/2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lon/2)**2
+            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+
+            return R * c
+
+        # Obtener todas las noticias activas
+        query = db.collection("noticias").where("activa", "==", True)
+        docs = query.get()
+
+        noticias_cercanas = []
+        for doc in docs:
+            noticia_data = doc.to_dict()
+
+            # Verificar que tenga coordenadas
+            if "ubicacion" not in noticia_data or not noticia_data["ubicacion"]:
+                continue
+
+            geopoint = noticia_data["ubicacion"]
+
+            # Calcular distancia
+            distancia = calcular_distancia(
+                latitud, longitud,
+                geopoint.latitude, geopoint.longitude
+            )
+
+            # Filtrar por radio
+            if distancia <= radio:
+                noticia_limpia = {
+                    "id": doc.id,
+                    "titulo": noticia_data.get("titulo"),
+                    "descripcion": noticia_data.get("descripcion"),
+                    "imagenUrl": noticia_data.get("imagenUrl"),
+                    "ubicacionTexto": noticia_data.get("ubicacionTexto"),
+                    "latitud": geopoint.latitude,
+                    "longitud": geopoint.longitude,
+                    "distancia": round(distancia, 2),
+                    "destacada": noticia_data.get("destacada", False),
+                    "visualizaciones": noticia_data.get("visualizaciones", 0)
+                }
+
+                # Convertir timestamp
+                if "fechaPublicacion" in noticia_data and noticia_data["fechaPublicacion"]:
+                    noticia_limpia["fechaPublicacion"] = noticia_data["fechaPublicacion"].isoformat()
+
+                noticias_cercanas.append(noticia_limpia)
+
+        # Ordenar por distancia (más cercanas primero)
+        noticias_cercanas.sort(key=lambda x: x["distancia"])
+
+        return {
+            "success": True,
+            "count": len(noticias_cercanas),
+            "radio_km": radio,
+            "centro": {
+                "latitud": latitud,
+                "longitud": longitud
+            },
+            "noticias": noticias_cercanas
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/noticias/{noticia_id}", tags=["Noticias"])
 async def obtener_noticia(noticia_id: str):
-    """Obtiene una noticia por ID"""
+    """
+    ## 📄 Obtener Noticia por ID
+
+    Retorna los detalles completos de una noticia específica.
+
+    ### Parámetros de ruta:
+    * **noticia_id**: ID único de la noticia en Firestore
+
+    ### Códigos de respuesta:
+    * **200**: Noticia encontrada
+    * **404**: Noticia no encontrada
+    * **500**: Error del servidor
+    """
     try:
         doc = db.collection("noticias").document(noticia_id).get()
 
@@ -192,9 +474,29 @@ async def obtener_noticia(noticia_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/noticias")
+@app.post("/noticias", tags=["Noticias"])
 async def crear_noticia(noticia: Noticia):
-    """Crea una nueva noticia"""
+    """
+    ## ✏️ Crear Nueva Noticia
+
+    Crea una nueva noticia en Firestore con geolocalización y metadatos.
+
+    ### Body (JSON):
+    * **titulo**: Título de la noticia (requerido)
+    * **descripcion**: Resumen breve
+    * **contenido**: Texto completo de la noticia
+    * **imagenUrl**: URL de la imagen principal
+    * **latitud/longitud**: Coordenadas geográficas
+    * **categoriaId**: ID de la categoría
+    * **parroquiaId**: ID de la parroquia
+    * **destacada**: Si aparece en portada (default: false)
+    * **tags**: Array de etiquetas
+
+    ### Códigos de respuesta:
+    * **201**: Noticia creada exitosamente
+    * **400**: Datos inválidos
+    * **500**: Error del servidor
+    """
     try:
         noticia_data = noticia.dict()
 
@@ -223,13 +525,33 @@ async def crear_noticia(noticia: Noticia):
 
 # ==================== ENDPOINTS EVENTOS ====================
 
-@app.get("/eventos")
+@app.get("/eventos", tags=["Eventos"])
 async def obtener_eventos(
-    limit: int = Query(50, ge=1, le=100),
-    futuros: bool = True,
-    estado: Optional[str] = None
+    limit: int = Query(50, ge=1, le=100, description="Número máximo de eventos a retornar"),
+    futuros: bool = Query(True, description="Filtrar solo eventos futuros"),
+    estado: Optional[str] = Query(None, description="Filtrar por estado (programado, en_curso, finalizado)")
 ):
-    """Obtiene lista de eventos"""
+    """
+    ## 🎉 Obtener Lista de Eventos
+
+    Retorna eventos comunitarios ordenados por fecha.
+
+    ### Parámetros:
+    * **limit**: Cantidad de eventos (1-100, default: 50)
+    * **futuros**: Solo eventos futuros (default: true)
+    * **estado**: Filtrar por estado específico
+
+    ### Respuesta:
+    Retorna array de eventos con:
+    * Información básica (título, descripción, fecha)
+    * Ubicación y coordenadas
+    * Cupos disponibles
+    * Costo y categoría
+
+    ### Códigos de respuesta:
+    * **200**: Eventos obtenidos exitosamente
+    * **500**: Error del servidor
+    """
     try:
         query = db.collection("eventos")
 
@@ -318,9 +640,19 @@ async def obtener_eventos(
         error_detail = f"{str(e)}\n{traceback.format_exc()}"
         raise HTTPException(status_code=500, detail=error_detail)
 
-@app.get("/eventos/{evento_id}")
+@app.get("/eventos/{evento_id}", tags=["Eventos"])
 async def obtener_evento(evento_id: str):
-    """Obtiene un evento por ID"""
+    """
+    ## 📅 Obtener Evento por ID
+
+    Retorna los detalles completos de un evento específico.
+
+    ### Respuesta incluye:
+    * Información completa del evento
+    * Cupos disponibles y ocupados
+    * Ubicación y coordenadas
+    * Estado actual del evento
+    """
     try:
         doc = db.collection("eventos").document(evento_id).get()
 
@@ -347,9 +679,22 @@ async def obtener_evento(evento_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/eventos")
+@app.post("/eventos", tags=["Eventos"])
 async def crear_evento(evento: Evento):
-    """Crea un nuevo evento"""
+    """
+    ## ✨ Crear Nuevo Evento
+
+    Crea un evento comunitario con gestión de cupos.
+
+    ### Campos requeridos:
+    * titulo, descripcion, fecha, hora
+    * ubicacionTexto, latitud, longitud
+    * cupoMaximo, costo
+
+    ### Códigos de respuesta:
+    * **201**: Evento creado
+    * **500**: Error del servidor
+    """
     try:
         evento_data = evento.dict()
 
@@ -375,9 +720,94 @@ async def crear_evento(evento: Evento):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/eventos/{evento_id}/inscribir")
+@app.put("/noticias/{noticia_id}/coordenadas", tags=["Noticias"])
+async def actualizar_coordenadas_noticia(
+    noticia_id: str,
+    latitud: float = Query(..., description="Latitud (-90 a 90)"),
+    longitud: float = Query(..., description="Longitud (-180 a 180)"),
+    ubicacionTexto: Optional[str] = Query(None, description="Descripción textual del lugar")
+):
+    """
+    ## 📍 Actualizar Coordenadas de Noticia
+
+    Actualiza las coordenadas geográficas de una noticia existente.
+
+    ### Parámetros:
+    * **noticia_id**: ID de la noticia (ruta)
+    * **latitud**: Coordenada latitud (-90 a 90)
+    * **longitud**: Coordenada longitud (-180 a 180)
+    * **ubicacionTexto**: Descripción opcional del lugar (ej: "Parque Central")
+
+    ### Ejemplo de uso:
+    ```
+    PUT /noticias/abc123/coordenadas?latitud=0.3476&longitud=-78.1223&ubicacionTexto=Centro de Ibarra
+    ```
+
+    ### Códigos de respuesta:
+    * **200**: Coordenadas actualizadas exitosamente
+    * **404**: Noticia no encontrada
+    * **400**: Coordenadas inválidas
+    * **500**: Error del servidor
+    """
+    try:
+        # Validar coordenadas
+        if not (-90 <= latitud <= 90):
+            raise HTTPException(status_code=400, detail="Latitud debe estar entre -90 y 90")
+        if not (-180 <= longitud <= 180):
+            raise HTTPException(status_code=400, detail="Longitud debe estar entre -180 y 180")
+
+        # Verificar que la noticia existe
+        doc_ref = db.collection("noticias").document(noticia_id)
+        doc = doc_ref.get()
+
+        if not doc.exists:
+            raise HTTPException(status_code=404, detail="Noticia no encontrada")
+
+        # Actualizar coordenadas
+        update_data = {
+            "ubicacion": firestore.GeoPoint(latitud, longitud)
+        }
+
+        if ubicacionTexto:
+            update_data["ubicacionTexto"] = ubicacionTexto
+
+        doc_ref.update(update_data)
+
+        return {
+            "success": True,
+            "message": "Coordenadas actualizadas exitosamente",
+            "noticia_id": noticia_id,
+            "latitud": latitud,
+            "longitud": longitud,
+            "ubicacionTexto": ubicacionTexto
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/eventos/{evento_id}/inscribir", tags=["Eventos"])
 async def inscribir_evento(evento_id: str, usuario_id: str):
-    """Inscribe a un usuario en un evento"""
+    """
+    ## 📝 Inscribir Usuario a Evento
+
+    Registra a un usuario en un evento verificando cupos disponibles.
+
+    ### Parámetros:
+    * **evento_id**: ID del evento (ruta)
+    * **usuario_id**: ID del usuario (query)
+
+    ### Validaciones:
+    * Verifica que el evento exista
+    * Comprueba cupos disponibles
+    * Incrementa contador de asistentes
+
+    ### Códigos de respuesta:
+    * **200**: Inscripción exitosa
+    * **400**: No hay cupos disponibles
+    * **404**: Evento no encontrado
+    """
     try:
         doc_ref = db.collection("eventos").document(evento_id)
         doc = doc_ref.get()
@@ -412,9 +842,29 @@ async def inscribir_evento(evento_id: str, usuario_id: str):
 
 # ==================== NOTIFICACIONES PUSH ====================
 
-@app.post("/notificaciones/enviar")
+@app.post("/notificaciones/enviar", tags=["Notificaciones"])
 async def enviar_notificacion(notificacion: NotificacionPush):
-    """Envía una notificación push a un topic de FCM"""
+    """
+    ## 🔔 Enviar Notificación Push
+
+    Envía notificación a usuarios suscritos mediante Firebase Cloud Messaging.
+
+    ### Body:
+    * **titulo**: Título de la notificación
+    * **mensaje**: Contenido del mensaje
+    * **topic**: Topic de FCM (default: "todas")
+    * **data**: Datos adicionales (opcional)
+
+    ### Ejemplo:
+    ```json
+    {
+        "titulo": "Nueva Noticia",
+        "mensaje": "Se publicó una noticia destacada",
+        "topic": "noticias",
+        "data": {"noticia_id": "abc123"}
+    }
+    ```
+    """
     try:
         # Crear mensaje FCM
         message = messaging.Message(
@@ -438,9 +888,21 @@ async def enviar_notificacion(notificacion: NotificacionPush):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/notificaciones/nueva-noticia")
+@app.post("/notificaciones/nueva-noticia", tags=["Notificaciones"])
 async def notificar_nueva_noticia(noticia_id: str):
-    """Envía notificación cuando se publica una nueva noticia"""
+    """
+    ## 📢 Notificar Nueva Noticia
+
+    Envía notificación automática cuando se publica una noticia destacada.
+
+    ### Parámetros:
+    * **noticia_id**: ID de la noticia a notificar
+
+    ### Funcionamiento:
+    1. Obtiene datos de la noticia
+    2. Crea notificación con título y descripción
+    3. Envía a topic "noticias"
+    """
     try:
         # Obtener noticia
         doc = db.collection("noticias").document(noticia_id).get()
@@ -478,9 +940,36 @@ async def notificar_nueva_noticia(noticia_id: str):
 
 # ==================== ESTADÍSTICAS ====================
 
-@app.get("/stats")
+@app.get("/stats", tags=["Estadísticas"])
 async def obtener_estadisticas():
-    """Obtiene estadísticas generales"""
+    """
+    ## 📊 Estadísticas Generales
+
+    Retorna métricas y estadísticas del sistema.
+
+    ### Métricas incluidas:
+    * Total de noticias y eventos
+    * Noticias destacadas
+    * Visualizaciones totales
+    * Distribución por parroquias
+    * Eventos próximos
+
+    ### Respuesta:
+    ```json
+    {
+        "noticias": {
+            "total": 7,
+            "destacadas": 3,
+            "visualizaciones_totales": 2450
+        },
+        "eventos": {
+            "total": 5,
+            "proximos": 3
+        },
+        "parroquias": 12
+    }
+    ```
+    """
     try:
         total_noticias = len(db.collection("noticias").get())
         total_eventos = len(db.collection("eventos").get())

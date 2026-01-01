@@ -27,6 +27,11 @@ public class Noticia {
     private String updatedAt;
     private Double distancia; // Distancia en km (solo para búsqueda por radio)
 
+    // Nuevos campos para contenido enriquecido
+    private String citaDestacada; // Cita destacada / Quote
+    private String hashtags; // Hashtags separados por comas
+    private String impactoComunitario; // Sección de impacto comunitario
+
     // Constructor vacío (necesario para Gson)
     public Noticia() {
     }
@@ -207,6 +212,30 @@ public class Noticia {
 
     public void setFirestoreId(String firestoreId) {
         this.firestoreId = firestoreId;
+    }
+
+    public String getCitaDestacada() {
+        return citaDestacada;
+    }
+
+    public void setCitaDestacada(String citaDestacada) {
+        this.citaDestacada = citaDestacada;
+    }
+
+    public String getHashtags() {
+        return hashtags;
+    }
+
+    public void setHashtags(String hashtags) {
+        this.hashtags = hashtags;
+    }
+
+    public String getImpactoComunitario() {
+        return impactoComunitario;
+    }
+
+    public void setImpactoComunitario(String impactoComunitario) {
+        this.impactoComunitario = impactoComunitario;
     }
 
     /**

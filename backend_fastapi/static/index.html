@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Periodista - Noticias Ibarra</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2D3748 0%, #1A202C 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .form-section {
+            padding: 20px;
+        }
+
+        .map-section {
+            position: sticky;
+            top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2D3748;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        #map {
+            height: 500px;
+            border-radius: 12px;
+            border: 2px solid #E2E8F0;
+            margin-bottom: 15px;
+        }
+
+        .map-info {
+            background: #F7FAFC;
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .map-info p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #4A5568;
+        }
+
+        .map-info strong {
+            color: #2D3748;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #CBD5E0;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .alert-success {
+            background: #C6F6D5;
+            color: #22543D;
+            border: 2px solid #9AE6B4;
+        }
+
+        .alert-error {
+            background: #FED7D7;
+            color: #742A2A;
+            border: 2px solid #FC8181;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .required {
+            color: #E53E3E;
+        }
+
+        @media (max-width: 968px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .map-section {
+                position: relative;
+                top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📰 Panel de Periodista</h1>
+            <p>Publica noticias locales de Ibarra con geolocalización</p>
+        </div>
+
+        <div class="content">
+            <!-- FORMULARIO -->
+            <div class="form-section">
+                <div id="alert" class="alert"></div>
+
+                <form id="noticiaForm">
+                    <div class="form-group">
+                        <label for="titulo">
+                            Título de la Noticia <span class="required">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="titulo"
+                            name="titulo"
+                            placeholder="Ej: Inauguración del nuevo parque en El Sagrario"
+                            required
+                            maxlength="200"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descripcion">
+                            Resumen <span class="required">*</span>
+                        </label>
+                        <textarea
+                            id="descripcion"
+                            name="descripcion"
+                            placeholder="Breve resumen de la noticia (1-2 oraciones)"
+                            required
+                            maxlength="300"
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contenido">
+                            Contenido Completo <span class="required">*</span>
+                        </label>
+                        <textarea
+                            id="contenido"
+                            name="contenido"
+                            placeholder="Escribe el contenido completo de la noticia..."
+                            required
+                            style="min-height: 200px;"
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="citaDestacada">
+                            Cita Destacada (opcional)
+                        </label>
+                        <textarea
+                            id="citaDestacada"
+                            name="citaDestacada"
+                            placeholder="Cita o frase destacada de la noticia en estilo quote..."
+                            maxlength="500"
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="impactoComunitario">
+                            Impacto Comunitario (opcional)
+                        </label>
+                        <textarea
+                            id="impactoComunitario"
+                            name="impactoComunitario"
+                            placeholder="Describe el impacto que tendrá esta noticia en la comunidad..."
+                            maxlength="500"
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hashtags">
+                            Hashtags (opcional)
+                        </label>
+                        <input
+                            type="text"
+                            id="hashtags"
+                            name="hashtags"
+                            placeholder="PlanificaciónUrbana, ConcejoMunicipal (separados por coma)"
+                            maxlength="200"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="categoria">
+                            Categoría <span class="required">*</span>
+                        </label>
+                        <select id="categoria" name="categoria" required>
+                            <option value="">-- Selecciona una categoría --</option>
+                            <option value="1">Política</option>
+                            <option value="2">Economía</option>
+                            <option value="3">Cultura</option>
+                            <option value="4">Deportes</option>
+                            <option value="5">Educación</option>
+                            <option value="6">Salud</option>
+                            <option value="7">Seguridad</option>
+                            <option value="8">Medio Ambiente</option>
+                            <option value="9">Turismo</option>
+                            <option value="10">Tecnología</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="imagenUrl">
+                            URL de Imagen (opcional)
+                        </label>
+                        <input
+                            type="url"
+                            id="imagenUrl"
+                            name="imagenUrl"
+                            placeholder="https://ejemplo.com/imagen.jpg"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ubicacionTexto">
+                            Ubicación (Texto) <span class="required">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="ubicacionTexto"
+                            name="ubicacionTexto"
+                            placeholder="Ej: Parque Pedro Moncayo, Centro de Ibarra"
+                            required
+                        >
+                    </div>
+
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <p style="margin-top: 10px; color: #4A5568;">Publicando noticia...</p>
+                    </div>
+
+                    <button type="submit" class="btn" id="btnPublicar">
+                        📤 Publicar Noticia
+                    </button>
+                </form>
+            </div>
+
+            <!-- MAPA -->
+            <div class="map-section">
+                <div class="form-group">
+                    <label>
+                        📍 Selecciona la ubicación en el mapa <span class="required">*</span>
+                    </label>
+                    <p style="font-size: 13px; color: #718096; margin-bottom: 10px;">
+                        Haz clic en el mapa para marcar la ubicación de la noticia
+                    </p>
+                </div>
+
+                <div id="map"></div>
+
+                <div class="map-info">
+                    <p><strong>📍 Coordenadas seleccionadas:</strong></p>
+                    <p id="coordenadas">Haz clic en el mapa para seleccionar</p>
+                    <p id="ubicacion" style="margin-top: 8px; font-style: italic;"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBLwwQZsNs7V4B3Hx3ZPKmLt5l7wFgQwKE"></script>
+
+    <script>
+        // ========================================
+        // CONFIGURACIÓN
+        // ========================================
+        const API_URL = window.location.origin; // Usa la misma URL del backend
+
+        // Coordenadas de Ibarra (centro)
+        const IBARRA_CENTER = { lat: 0.3476, lng: -78.1223 };
+
+        // ========================================
+        // VARIABLES GLOBALES
+        // ========================================
+        let map;
+        let marker;
+        let selectedLocation = null;
+
+        // ========================================
+        // INICIALIZAR MAPA
+        // ========================================
+        function initMap() {
+            // Crear mapa centrado en Ibarra
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 14,
+                center: IBARRA_CENTER,
+                mapTypeControl: true,
+                streetViewControl: false,
+                fullscreenControl: true,
+                styles: [
+                    {
+                        featureType: 'poi',
+                        elementType: 'labels',
+                        stylers: [{ visibility: 'on' }]
+                    }
+                ]
+            });
+
+            // Click en el mapa para seleccionar ubicación
+            map.addListener('click', (event) => {
+                setLocation(event.latLng);
+            });
+
+            // Marcador inicial en el centro
+            marker = new google.maps.Marker({
+                map: map,
+                position: IBARRA_CENTER,
+                draggable: true,
+                title: 'Ubicación de la noticia',
+                animation: google.maps.Animation.DROP
+            });
+
+            // Actualizar ubicación al arrastrar marcador
+            marker.addListener('dragend', (event) => {
+                setLocation(event.latLng);
+            });
+
+            // Establecer ubicación inicial
+            setLocation(IBARRA_CENTER);
+        }
+
+        // ========================================
+        // ESTABLECER UBICACIÓN
+        // ========================================
+        function setLocation(latLng) {
+            const lat = typeof latLng.lat === 'function' ? latLng.lat() : latLng.lat;
+            const lng = typeof latLng.lng === 'function' ? latLng.lng() : latLng.lng;
+
+            selectedLocation = { lat, lng };
+
+            // Mover marcador
+            marker.setPosition(selectedLocation);
+
+            // Actualizar texto de coordenadas
+            document.getElementById('coordenadas').innerHTML =
+                `Latitud: <strong>${lat.toFixed(6)}</strong>, Longitud: <strong>${lng.toFixed(6)}</strong>`;
+
+            // Obtener nombre del lugar (opcional, requiere Geocoding API)
+            document.getElementById('ubicacion').textContent =
+                '📌 Ubicación seleccionada correctamente';
+        }
+
+        // ========================================
+        // MANEJO DEL FORMULARIO
+        // ========================================
+        document.getElementById('noticiaForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Validar que se haya seleccionado ubicación
+            if (!selectedLocation) {
+                showAlert('Por favor, selecciona una ubicación en el mapa', 'error');
+                return;
+            }
+
+            // Obtener datos del formulario
+            const formData = {
+                titulo: document.getElementById('titulo').value.trim(),
+                descripcion: document.getElementById('descripcion').value.trim(),
+                contenido: document.getElementById('contenido').value.trim(),
+                citaDestacada: document.getElementById('citaDestacada').value.trim() || null,
+                impactoComunitario: document.getElementById('impactoComunitario').value.trim() || null,
+                hashtags: document.getElementById('hashtags').value.trim() || null,
+                categoriaId: document.getElementById('categoria').value,
+                imagenUrl: document.getElementById('imagenUrl').value.trim() || null,
+                ubicacionTexto: document.getElementById('ubicacionTexto').value.trim(),
+                latitud: selectedLocation.lat,
+                longitud: selectedLocation.lng,
+                destacada: false,
+                activa: true
+            };
+
+            // Validaciones
+            if (!formData.titulo || !formData.descripcion || !formData.contenido) {
+                showAlert('Por favor, completa todos los campos requeridos', 'error');
+                return;
+            }
+
+            if (!formData.categoriaId) {
+                showAlert('Por favor, selecciona una categoría', 'error');
+                return;
+            }
+
+            // Mostrar loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('btnPublicar').disabled = true;
+
+            try {
+                // Enviar a la API
+                const response = await fetch(`${API_URL}/noticias`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showAlert('✅ ¡Noticia publicada exitosamente!', 'success');
+
+                    // Limpiar formulario
+                    document.getElementById('noticiaForm').reset();
+
+                    // Resetear mapa a centro
+                    setLocation(IBARRA_CENTER);
+                    map.setCenter(IBARRA_CENTER);
+
+                    // Scroll al inicio
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    showAlert(`Error: ${result.detail || 'No se pudo publicar la noticia'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('❌ Error de conexión. Verifica que el servidor esté activo.', 'error');
+            } finally {
+                // Ocultar loading
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('btnPublicar').disabled = false;
+            }
+        });
+
+        // ========================================
+        // MOSTRAR ALERTAS
+        // ========================================
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+
+            // Auto-ocultar después de 5 segundos
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        // ========================================
+        // INICIALIZAR AL CARGAR LA PÁGINA
+        // ========================================
+        window.onload = initMap;
+    </script>
+</body>
+</html>

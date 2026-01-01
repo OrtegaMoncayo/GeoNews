@@ -10,14 +10,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
-import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.squareup.picasso.Picasso;
 import com.tesistitulacion.noticiaslocales.R;
 import com.tesistitulacion.noticiaslocales.firebase.FirebaseManager;
 import com.tesistitulacion.noticiaslocales.modelo.Noticia;
+import com.tesistitulacion.noticiaslocales.utils.UsuarioPreferences;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -35,8 +34,6 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
     private Noticia noticia;
 
     // Views
-    private CollapsingToolbarLayout toolbarLayout;
-    private Toolbar toolbar;
     private ImageView ivPortada;
     private TextView tvCategoria;
     private TextView tvTitulo;
@@ -47,7 +44,18 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
     private TextView tvVisualizaciones;
     private TextView tvEstado;
     private MaterialButton btnVerMapa;
-    private FloatingActionButton fabCompartir;
+
+    // Botones flotantes
+    private ImageView btnBack;
+    private ImageView btnBookmark;
+    private ImageView btnShare;
+
+    // Views para contenido enriquecido
+    private LinearLayout layoutCitaDestacada;
+    private TextView tvCitaDestacada;
+    private LinearLayout layoutImpactoComunitario;
+    private TextView tvImpactoComunitario;
+    private TextView tvHashtags;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,9 +86,6 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
             inicializarVistas();
             Log.d(TAG, "Vistas inicializadas");
 
-            configurarToolbar();
-            Log.d(TAG, "Toolbar configurado");
-
             configurarBotones();
             Log.d(TAG, "Botones configurados");
 
@@ -94,8 +99,6 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
     }
 
     private void inicializarVistas() {
-        toolbarLayout = findViewById(R.id.toolbar_layout);
-        toolbar = findViewById(R.id.toolbar);
         ivPortada = findViewById(R.id.iv_portada);
         tvCategoria = findViewById(R.id.tv_categoria);
         tvTitulo = findViewById(R.id.tv_titulo);
@@ -106,22 +109,52 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
         tvVisualizaciones = findViewById(R.id.tv_visualizaciones);
         tvEstado = findViewById(R.id.tv_estado);
         btnVerMapa = findViewById(R.id.btn_ver_mapa);
-        fabCompartir = findViewById(R.id.fab_compartir);
-    }
 
-    private void configurarToolbar() {
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
-        }
+        // Botones flotantes
+        btnBack = findViewById(R.id.btn_back);
+        btnBookmark = findViewById(R.id.btn_bookmark);
+        btnShare = findViewById(R.id.btn_share);
+
+        // Views para contenido enriquecido
+        layoutCitaDestacada = findViewById(R.id.layout_cita_destacada);
+        tvCitaDestacada = findViewById(R.id.tv_cita_destacada);
+        layoutImpactoComunitario = findViewById(R.id.layout_impacto_comunitario);
+        tvImpactoComunitario = findViewById(R.id.tv_impacto_comunitario);
+        tvHashtags = findViewById(R.id.tv_hashtags);
     }
 
     private void configurarBotones() {
+        // Botón volver
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                finish();
+            });
+        }
+
+        // Botón bookmark/guardar
+        if (btnBookmark != null) {
+            btnBookmark.setOnClickListener(v -> {
+                if (noticia != null) {
+                    // TODO: Implementar funcionalidad de guardar favoritos
+                    Toast.makeText(this, "Noticia guardada en favoritos", Toast.LENGTH_SHORT).show();
+                    // Cambiar icono a estrella llena
+                    btnBookmark.setImageResource(android.R.drawable.star_big_on);
+                }
+            });
+        }
+
+        // Botón compartir
+        if (btnShare != null) {
+            btnShare.setOnClickListener(v -> {
+                if (noticia != null) {
+                    compartirNoticia();
+                }
+            });
+        }
+
         // Botón ver en mapa
         btnVerMapa.setOnClickListener(v -> {
             if (noticia != null && noticia.getLatitud() != null && noticia.getLongitud() != null) {
-                // TODO: Abrir MapaActivity con la ubicación de la noticia
                 Intent intent = new Intent(this, MapaActivity.class);
                 intent.putExtra("latitud", noticia.getLatitud());
                 intent.putExtra("longitud", noticia.getLongitud());
@@ -131,13 +164,28 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
                 Toast.makeText(this, "Esta noticia no tiene ubicación", Toast.LENGTH_SHORT).show();
             }
         });
+    }
 
-        // FAB compartir
-        fabCompartir.setOnClickListener(v -> {
-            if (noticia != null) {
-                compartirNoticia();
-            }
-        });
+    /**
+     * Comparte la noticia usando el Intent de compartir nativo de Android
+     */
+    private void compartirNoticia() {
+        String textoCompartir = noticia.getTitulo() + "\n\n" + noticia.getDescripcion();
+
+        if (noticia.getImagenUrl() != null && !noticia.getImagenUrl().isEmpty()) {
+            textoCompartir += "\n\n" + noticia.getImagenUrl();
+        }
+
+        Intent intentCompartir = new Intent(Intent.ACTION_SEND);
+        intentCompartir.setType("text/plain");
+        intentCompartir.putExtra(Intent.EXTRA_SUBJECT, "GeoNews: " + noticia.getTitulo());
+        intentCompartir.putExtra(Intent.EXTRA_TEXT, textoCompartir);
+
+        try {
+            startActivity(Intent.createChooser(intentCompartir, "Compartir noticia"));
+        } catch (android.content.ActivityNotFoundException e) {
+            Toast.makeText(this, "No se encontró ninguna app para compartir", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void cargarNoticia() {
@@ -169,14 +217,54 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
     }
 
     private void mostrarNoticia() {
-        // Título en el toolbar
-        toolbarLayout.setTitle(noticia.getTitulo());
+        mostrarImagenPortada();
+        mostrarInformacionBasicaNoticia();
+        mostrarFechaNoticia();
+        mostrarUbicacionNoticia();
+        mostrarContenidoNoticia();
+        mostrarContenidoEnriquecido();
+        mostrarVisualizacionesNoticia();
+        mostrarEstadoNoticia();
+        configurarBotonesNoticia();
+        incrementarVisualizaciones();
 
-        // Categoría
+        Log.d(TAG, "Noticia mostrada: " + noticia.getTitulo());
+    }
+
+    private void mostrarImagenPortada() {
+        if (noticia.getImagenUrl() != null && !noticia.getImagenUrl().isEmpty()) {
+            Picasso.get()
+                    .load(noticia.getImagenUrl())
+                    .placeholder(R.color.blue_50)
+                    .error(R.color.blue_50)
+                    .fit()
+                    .centerCrop()
+                    .into(ivPortada);
+            Log.d(TAG, "Imagen cargada: " + noticia.getImagenUrl());
+        } else {
+            ivPortada.setImageResource(R.color.blue_50);
+            Log.d(TAG, "No hay imagen para esta noticia");
+        }
+    }
+
+    private void incrementarVisualizaciones() {
+        if (noticiaId != null) {
+            FirebaseManager.getInstance().incrementarVisualizaciones(noticiaId);
+            Log.d(TAG, "Visualizaciones incrementadas para noticia: " + noticiaId);
+        }
+
+        // Incrementar contador de noticias leídas del usuario
+        String userId = UsuarioPreferences.getUserId(this);
+        if (userId != null && !userId.isEmpty()) {
+            FirebaseManager.getInstance().incrementarNoticiasLeidas(userId);
+            Log.d(TAG, "Noticias leídas incrementadas para usuario: " + userId);
+        }
+    }
+
+    private void mostrarInformacionBasicaNoticia() {
         String categoriaNombre = obtenerNombreCategoria(noticia.getCategoriaId());
         tvCategoria.setText(categoriaNombre);
 
-        // Color de categoría
         String colorHex = noticia.getColorCategoria();
         try {
             tvCategoria.setTextColor(Color.parseColor(colorHex));
@@ -184,18 +272,19 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
             tvCategoria.setTextColor(Color.parseColor("#1976D2"));
         }
 
-        // Título
         tvTitulo.setText(noticia.getTitulo());
+    }
 
-        // Fecha
+    private void mostrarFechaNoticia() {
         String fechaStr = noticia.getFechaPublicacion();
         if (fechaStr != null && !fechaStr.isEmpty()) {
             tvFecha.setText(formatearFecha(fechaStr));
         } else {
             tvFecha.setText("Hoy");
         }
+    }
 
-        // Ubicación
+    private void mostrarUbicacionNoticia() {
         if (noticia.getParroquiaNombre() != null && !noticia.getParroquiaNombre().isEmpty()) {
             tvUbicacion.setText(noticia.getParroquiaNombre());
         } else if (noticia.getUbicacion() != null) {
@@ -203,27 +292,59 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
         } else {
             tvUbicacion.setText("Ibarra");
         }
+    }
 
-        // Descripción
+    private void mostrarContenidoNoticia() {
         if (noticia.getDescripcion() != null && !noticia.getDescripcion().isEmpty()) {
             tvDescripcion.setText(noticia.getDescripcion());
         } else {
             tvDescripcion.setText("");
         }
 
-        // Contenido
         if (noticia.getContenido() != null && !noticia.getContenido().isEmpty()) {
             tvContenido.setText(noticia.getContenido());
         } else {
-            // Si no hay contenido, mostrar la descripción extendida
             tvContenido.setText(noticia.getDescripcion() != null ? noticia.getDescripcion() : "Sin contenido");
         }
+    }
 
-        // Visualizaciones
+    private void mostrarContenidoEnriquecido() {
+        // Mostrar cita destacada si existe
+        if (noticia.getCitaDestacada() != null && !noticia.getCitaDestacada().isEmpty()) {
+            tvCitaDestacada.setText(noticia.getCitaDestacada());
+            layoutCitaDestacada.setVisibility(android.view.View.VISIBLE);
+        } else {
+            layoutCitaDestacada.setVisibility(android.view.View.GONE);
+        }
+
+        // Mostrar impacto comunitario si existe
+        if (noticia.getImpactoComunitario() != null && !noticia.getImpactoComunitario().isEmpty()) {
+            tvImpactoComunitario.setText(noticia.getImpactoComunitario());
+            layoutImpactoComunitario.setVisibility(android.view.View.VISIBLE);
+        } else {
+            layoutImpactoComunitario.setVisibility(android.view.View.GONE);
+        }
+
+        // Mostrar hashtags si existen
+        if (noticia.getHashtags() != null && !noticia.getHashtags().isEmpty()) {
+            // Formatear hashtags (agregar # si no lo tiene)
+            String hashtagsFormateados = noticia.getHashtags();
+            if (!hashtagsFormateados.startsWith("#")) {
+                hashtagsFormateados = "#" + hashtagsFormateados.replace(",", " #").replace(", ", " #");
+            }
+            tvHashtags.setText(hashtagsFormateados);
+            tvHashtags.setVisibility(android.view.View.VISIBLE);
+        } else {
+            tvHashtags.setVisibility(android.view.View.GONE);
+        }
+    }
+
+    private void mostrarVisualizacionesNoticia() {
         int visualizaciones = noticia.getVisualizaciones() != null ? noticia.getVisualizaciones() : 0;
         tvVisualizaciones.setText("👁 " + visualizaciones + " visualizaciones");
+    }
 
-        // Estado
+    private void mostrarEstadoNoticia() {
         String estado = noticia.getEstado();
         if (estado != null) {
             String estadoTexto;
@@ -242,21 +363,13 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
             }
             tvEstado.setText(estadoTexto);
         }
+    }
 
-        // Imagen de portada (por ahora oculta, se puede implementar con Glide después)
-        // Si tiene URL de imagen, cargarla con Glide o Picasso
-        if (noticia.getImagenUrl() != null && !noticia.getImagenUrl().isEmpty()) {
-            // TODO: Cargar imagen con Glide
-            // Glide.with(this).load(noticia.getImagenUrl()).into(ivPortada);
-        }
-
-        // Botón mapa - habilitar solo si tiene coordenadas
+    private void configurarBotonesNoticia() {
         if (noticia.getLatitud() == null || noticia.getLongitud() == null) {
             btnVerMapa.setEnabled(false);
             btnVerMapa.setText("Ubicación no disponible");
         }
-
-        Log.d(TAG, "Noticia mostrada: " + noticia.getTitulo());
     }
 
     private String obtenerNombreCategoria(Integer categoriaId) {
@@ -297,25 +410,4 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
         return fechaStr;
     }
 
-    private void compartirNoticia() {
-        String textoCompartir = noticia.getTitulo() + "\n\n" +
-                (noticia.getDescripcion() != null ? noticia.getDescripcion() : "") +
-                "\n\nNoticia de Ibarra - App Noticias Locales";
-
-        Intent intent = new Intent(Intent.ACTION_SEND);
-        intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_SUBJECT, noticia.getTitulo());
-        intent.putExtra(Intent.EXTRA_TEXT, textoCompartir);
-
-        startActivity(Intent.createChooser(intent, "Compartir noticia"));
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 }
