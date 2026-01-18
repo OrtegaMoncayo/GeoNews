@@ -566,6 +566,110 @@ async def subir_imagen_drive(file: UploadFile = File(...)):
         )
 
 
+@app.get("/api/admin/crear-admin-provisional", tags=["Sistema"])
+async def crear_admin_provisional():
+    """
+    ## 🔧 Crear Admin Provisional
+
+    Crea un usuario admin provisional para acceder al panel.
+
+    **Credenciales:**
+    - Email: admin@geonews.com
+    - Password: admin123 (cambiar después de entrar)
+    """
+    try:
+        import hashlib
+
+        email_admin = "admin@geonews.com"
+        password_temporal = "admin123"
+
+        # Verificar si ya existe
+        existente = list(db.collection("usuarios").where("email", "==", email_admin).limit(1).stream())
+        if existente:
+            return {
+                "success": True,
+                "message": "El admin provisional ya existe",
+                "email": email_admin,
+                "password": password_temporal
+            }
+
+        # Hashear contraseña
+        password_hash = hashlib.sha256(password_temporal.encode()).hexdigest()
+
+        # Crear admin provisional
+        admin_data = {
+            "email": email_admin,
+            "password": password_hash,
+            "nombre": "Administrador",
+            "apellido": "GeoNews",
+            "rol": "admin",
+            "tipoUsuario": "admin",
+            "fechaRegistro": datetime.now(),
+            "activo": True,
+            "verificado": True,
+            "noticiasPublicadas": 0,
+            "noticiasLeidas": 0,
+            "bio": "Administrador provisional del sistema",
+            "ubicacion": "Ibarra, Ecuador"
+        }
+
+        doc_ref = db.collection("usuarios").add(admin_data)
+
+        return {
+            "success": True,
+            "message": "Admin provisional creado exitosamente",
+            "usuario_id": doc_ref[1].id,
+            "email": email_admin,
+            "password": password_temporal,
+            "nota": "¡Cambia la contraseña después de entrar!"
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al crear admin: {str(e)}")
+
+
+@app.post("/api/auth/cambiar-password", tags=["Sistema"])
+async def cambiar_password(email: str, password_actual: str, password_nueva: str):
+    """
+    ## 🔐 Cambiar Contraseña
+
+    Permite cambiar la contraseña de un usuario.
+    """
+    try:
+        import hashlib
+
+        # Buscar usuario
+        usuarios = list(db.collection("usuarios").where("email", "==", email).limit(1).stream())
+        if not usuarios:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+        usuario_doc = usuarios[0]
+        usuario_data = usuario_doc.to_dict()
+
+        # Verificar contraseña actual
+        password_actual_hash = hashlib.sha256(password_actual.encode()).hexdigest()
+        password_guardada = usuario_data.get("password", "")
+
+        if password_guardada != password_actual_hash and password_guardada != password_actual:
+            raise HTTPException(status_code=401, detail="Contraseña actual incorrecta")
+
+        # Actualizar contraseña
+        password_nueva_hash = hashlib.sha256(password_nueva.encode()).hexdigest()
+        db.collection("usuarios").document(usuario_doc.id).update({
+            "password": password_nueva_hash
+        })
+
+        return {
+            "success": True,
+            "message": "Contraseña actualizada exitosamente"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al cambiar contraseña: {str(e)}")
+
+
 @app.get("/api/upload/status", tags=["Sistema"])
 async def estado_servicios_upload():
     """
