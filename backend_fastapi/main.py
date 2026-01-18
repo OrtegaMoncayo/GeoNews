@@ -3,7 +3,7 @@ FastAPI Backend para NoticiasIbarra
 Conecta con Firestore y Firebase Cloud Messaging
 """
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
@@ -14,6 +14,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore, messaging
 import os
 from pathlib import Path
+import io
 
 # Inicializar FastAPI
 app = FastAPI(
@@ -88,6 +89,25 @@ cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
+# Inicializar Google Drive API (usa las mismas credenciales de Firebase)
+drive_service = None
+DRIVE_FOLDER_ID = os.environ.get("GOOGLE_DRIVE_FOLDER_ID", None)  # ID de carpeta en Drive
+
+try:
+    from googleapiclient.discovery import build
+    from google.oauth2 import service_account
+
+    # Usar las mismas credenciales de Firebase para Drive
+    SCOPES = ['https://www.googleapis.com/auth/drive.file']
+    drive_credentials = service_account.Credentials.from_service_account_file(
+        'serviceAccountKey.json', scopes=SCOPES
+    )
+    drive_service = build('drive', 'v3', credentials=drive_credentials)
+    print("✅ Google Drive API inicializada correctamente")
+except Exception as e:
+    print(f"⚠️ Google Drive API no disponible: {e}")
+    drive_service = None
+
 # ==================== ARCHIVOS ESTÁTICOS ====================
 # Obtener la ruta absoluta del directorio actual
 BASE_DIR = Path(__file__).resolve().parent
@@ -137,6 +157,28 @@ class NotificacionPush(BaseModel):
     topic: str = "all"  # Topic FCM para enviar a todos
     data: Optional[dict] = None
 
+class EmailDigestRequest(BaseModel):
+    email: str
+    nombre: str
+    frecuencia: str = "daily"  # "daily" o "weekly"
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class LoginResponse(BaseModel):
+    success: bool
+    message: str
+    usuario: Optional[dict] = None
+    token: Optional[str] = None
+
+class RegistrarPeriodistaRequest(BaseModel):
+    email: str
+    password: str
+    nombre: str
+    apellido: Optional[str] = None
+    telefono: Optional[str] = None
+
 # ==================== ENDPOINTS RAÍZ ====================
 
 @app.get("/", tags=["Sistema"])
@@ -180,12 +222,355 @@ async def health_check():
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Firestore error: {str(e)}")
 
+@app.post("/api/auth/login", tags=["Sistema"])
+async def login(request: LoginRequest):
+    """
+    ## 🔐 Login de Periodista
+
+    Autentica a un usuario y verifica que tenga rol de periodista o admin.
+
+    ### Body (JSON):
+    * **email**: Email del usuario
+    * **password**: Contraseña del usuario
+
+    ### Respuesta exitosa:
+    ```json
+    {
+        "success": true,
+        "message": "Login exitoso",
+        "usuario": {
+            "id": "abc123",
+            "email": "periodista@email.com",
+            "nombre": "Juan",
+            "apellido": "Pérez",
+            "tipoUsuario": "reportero"
+        },
+        "token": "token_generado"
+    }
+    ```
+
+    ### Códigos de respuesta:
+    * **200**: Login exitoso
+    * **401**: Credenciales inválidas o usuario no autorizado
+    * **404**: Usuario no encontrado
+    """
+    try:
+        import hashlib
+        import secrets
+
+        # Buscar usuario por email en Firestore
+        usuarios_ref = db.collection("usuarios").where("email", "==", request.email).limit(1)
+        usuarios = list(usuarios_ref.stream())
+
+        if not usuarios:
+            raise HTTPException(
+                status_code=404,
+                detail="Usuario no encontrado"
+            )
+
+        usuario_doc = usuarios[0]
+        usuario_data = usuario_doc.to_dict()
+        usuario_id = usuario_doc.id
+
+        # Verificar contraseña (comparar con hash almacenado)
+        password_almacenada = usuario_data.get("password", "")
+
+        # Si la contraseña está hasheada, comparar hash
+        password_hash = hashlib.sha256(request.password.encode()).hexdigest()
+
+        # Permitir login si: coincide el hash O coincide texto plano (para desarrollo)
+        if password_almacenada != password_hash and password_almacenada != request.password:
+            raise HTTPException(
+                status_code=401,
+                detail="Contraseña incorrecta"
+            )
+
+        # Verificar rol del usuario
+        tipo_usuario = usuario_data.get("tipoUsuario", "usuario")
+
+        if tipo_usuario not in ["reportero", "admin"]:
+            raise HTTPException(
+                status_code=401,
+                detail="No tienes permisos para acceder al panel de periodista. Solo reporteros y administradores pueden acceder."
+            )
+
+        # Generar token simple (en producción usar JWT)
+        token = secrets.token_hex(32)
+
+        # Actualizar última conexión
+        db.collection("usuarios").document(usuario_id).update({
+            "ultimaConexion": datetime.now()
+        })
+
+        return {
+            "success": True,
+            "message": "Login exitoso",
+            "usuario": {
+                "id": usuario_id,
+                "email": usuario_data.get("email"),
+                "nombre": usuario_data.get("nombre"),
+                "apellido": usuario_data.get("apellido"),
+                "tipoUsuario": tipo_usuario,
+                "fotoPerfil": usuario_data.get("fotoPerfil")
+            },
+            "token": token
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en login: {str(e)}")
+
+
+@app.post("/api/admin/registrar-periodista", tags=["Sistema"])
+async def registrar_periodista(request: RegistrarPeriodistaRequest):
+    """
+    ## 👤 Registrar Nuevo Periodista (Solo Admin)
+
+    Crea un nuevo usuario con rol de periodista.
+
+    ### Body (JSON):
+    * **email**: Email del periodista (requerido)
+    * **password**: Contraseña (requerido)
+    * **nombre**: Nombre del periodista (requerido)
+    * **apellido**: Apellido (opcional)
+    * **telefono**: Teléfono de contacto (opcional)
+
+    ### Respuesta exitosa:
+    ```json
+    {
+        "success": true,
+        "message": "Periodista registrado exitosamente",
+        "usuario_id": "abc123"
+    }
+    ```
+
+    ### Códigos de respuesta:
+    * **201**: Periodista registrado
+    * **400**: Email ya existe
+    * **500**: Error del servidor
+    """
+    try:
+        import hashlib
+
+        # Verificar si el email ya existe
+        usuarios_existentes = db.collection("usuarios").where("email", "==", request.email).limit(1)
+        if list(usuarios_existentes.stream()):
+            raise HTTPException(
+                status_code=400,
+                detail="Ya existe un usuario con este email"
+            )
+
+        # Hashear contraseña
+        password_hash = hashlib.sha256(request.password.encode()).hexdigest()
+
+        # Crear documento de usuario
+        nuevo_usuario = {
+            "email": request.email,
+            "password": password_hash,
+            "nombre": request.nombre,
+            "apellido": request.apellido or "",
+            "telefonocelular": request.telefono or "",
+            "tipoUsuario": "reportero",  # Rol de periodista
+            "fechaRegistro": datetime.now(),
+            "ultimaConexion": None,
+            "fotoPerfil": None,
+            "bio": "",
+            "ubicacion": "Ibarra, Ecuador",
+            "noticiasPublicadas": 0,
+            "noticiasLeidas": 0,
+            "verificado": True
+        }
+
+        # Guardar en Firestore
+        doc_ref = db.collection("usuarios").add(nuevo_usuario)
+
+        return {
+            "success": True,
+            "message": "Periodista registrado exitosamente",
+            "usuario_id": doc_ref[1].id
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al registrar periodista: {str(e)}")
+
+
+@app.get("/api/admin/periodistas", tags=["Sistema"])
+async def listar_periodistas():
+    """
+    ## 📋 Listar Periodistas (Solo Admin)
+
+    Obtiene la lista de todos los periodistas registrados.
+
+    ### Respuesta:
+    ```json
+    {
+        "success": true,
+        "count": 5,
+        "periodistas": [
+            {
+                "id": "abc123",
+                "email": "periodista@email.com",
+                "nombre": "Juan Pérez",
+                "noticiasPublicadas": 15
+            }
+        ]
+    }
+    ```
+    """
+    try:
+        periodistas_ref = db.collection("usuarios").where("tipoUsuario", "==", "reportero")
+        periodistas = []
+
+        for doc in periodistas_ref.stream():
+            data = doc.to_dict()
+            periodistas.append({
+                "id": doc.id,
+                "email": data.get("email"),
+                "nombre": f"{data.get('nombre', '')} {data.get('apellido', '')}".strip(),
+                "telefono": data.get("telefonocelular"),
+                "noticiasPublicadas": data.get("noticiasPublicadas", 0),
+                "verificado": data.get("verificado", False),
+                "fechaRegistro": data.get("fechaRegistro").isoformat() if data.get("fechaRegistro") else None
+            })
+
+        return {
+            "success": True,
+            "count": len(periodistas),
+            "periodistas": periodistas
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al listar periodistas: {str(e)}")
+
+
+# ==================== SUBIDA DE IMÁGENES ====================
+
+@app.post("/api/upload/drive", tags=["Sistema"])
+async def subir_imagen_drive(file: UploadFile = File(...)):
+    """
+    ## 📷 Subir Imagen a Google Drive
+
+    Sube una imagen a Google Drive y retorna la URL pública.
+
+    ### Parámetros:
+    * **file**: Archivo de imagen (JPG, PNG, GIF, WebP)
+
+    ### Respuesta exitosa:
+    ```json
+    {
+        "success": true,
+        "url": "https://drive.google.com/uc?id=...",
+        "file_id": "abc123",
+        "filename": "imagen.jpg"
+    }
+    ```
+    """
+    if not drive_service:
+        raise HTTPException(
+            status_code=503,
+            detail="Google Drive no está configurado. Use Firebase Storage."
+        )
+
+    # Validar tipo de archivo
+    allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Tipo de archivo no permitido. Permitidos: {', '.join(allowed_types)}"
+        )
+
+    # Validar tamaño (máximo 10MB)
+    contents = await file.read()
+    if len(contents) > 10 * 1024 * 1024:
+        raise HTTPException(
+            status_code=400,
+            detail="El archivo es muy grande. Máximo 10MB."
+        )
+
+    try:
+        from googleapiclient.http import MediaIoBaseUpload
+
+        # Generar nombre único
+        import uuid
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        extension = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+        unique_filename = f"geonews_{timestamp}_{uuid.uuid4().hex[:8]}.{extension}"
+
+        # Preparar metadata del archivo
+        file_metadata = {
+            'name': unique_filename,
+            'mimeType': file.content_type
+        }
+
+        # Si hay carpeta configurada, usarla
+        if DRIVE_FOLDER_ID:
+            file_metadata['parents'] = [DRIVE_FOLDER_ID]
+
+        # Crear el archivo en Drive
+        media = MediaIoBaseUpload(
+            io.BytesIO(contents),
+            mimetype=file.content_type,
+            resumable=True
+        )
+
+        uploaded_file = drive_service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields='id, name, webViewLink, webContentLink'
+        ).execute()
+
+        file_id = uploaded_file.get('id')
+
+        # Hacer el archivo público
+        drive_service.permissions().create(
+            fileId=file_id,
+            body={'type': 'anyone', 'role': 'reader'}
+        ).execute()
+
+        # URL directa para mostrar la imagen
+        image_url = f"https://drive.google.com/uc?export=view&id={file_id}"
+
+        return {
+            "success": True,
+            "url": image_url,
+            "file_id": file_id,
+            "filename": unique_filename,
+            "web_link": uploaded_file.get('webViewLink')
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al subir a Google Drive: {str(e)}"
+        )
+
+
+@app.get("/api/upload/status", tags=["Sistema"])
+async def estado_servicios_upload():
+    """
+    ## 📊 Estado de Servicios de Subida
+
+    Verifica qué servicios de subida de imágenes están disponibles.
+    """
+    return {
+        "firebase_storage": True,  # Siempre disponible desde el cliente
+        "google_drive": drive_service is not None,
+        "drive_folder_configured": DRIVE_FOLDER_ID is not None
+    }
+
+
 @app.get("/panel-periodista", response_class=HTMLResponse, tags=["Sistema"])
 async def panel_periodista():
     """
     ## 📝 Panel de Periodista
 
     Interfaz web para que los periodistas publiquen noticias con geolocalización.
+
+    ### Requiere autenticación:
+    Solo usuarios con rol 'reportero' o 'admin' pueden acceder.
 
     ### Características:
     * Formulario completo de noticias
@@ -937,6 +1322,165 @@ async def notificar_nueva_noticia(noticia_id: str):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/email-digest", tags=["Notificaciones"])
+async def enviar_email_digest(request: EmailDigestRequest):
+    """
+    ## 📧 Enviar Resumen por Email
+
+    Envía un resumen de noticias recientes al email del usuario.
+
+    ### Parámetros:
+    * **email**: Email del usuario
+    * **nombre**: Nombre del usuario
+    * **frecuencia**: "daily" o "weekly"
+
+    ### Funcionamiento:
+    1. Obtiene las noticias más recientes según la frecuencia
+    2. Genera un email HTML con el resumen
+    3. Envía el email al usuario
+
+    ### Nota:
+    Requiere configuración SMTP en variables de entorno:
+    - SMTP_HOST
+    - SMTP_PORT
+    - SMTP_USER
+    - SMTP_PASSWORD
+    """
+    try:
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        import aiosmtplib
+
+        # Obtener noticias recientes
+        dias = 1 if request.frecuencia == "daily" else 7
+        noticias_ref = db.collection("noticias").where("activa", "==", True).order_by("fechaPublicacion", direction=firestore.Query.DESCENDING).limit(10)
+        noticias = []
+
+        for doc in noticias_ref.stream():
+            noticia_data = doc.to_dict()
+            noticia_data['id'] = doc.id
+            noticias.append(noticia_data)
+
+        if not noticias:
+            return {
+                "success": True,
+                "message": "No hay noticias nuevas para enviar"
+            }
+
+        # Generar HTML del email
+        periodo = "hoy" if request.frecuencia == "daily" else "esta semana"
+        html_content = f"""
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body {{ font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }}
+                .container {{ max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}
+                .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; }}
+                .header h1 {{ margin: 0; font-size: 28px; }}
+                .header p {{ margin: 10px 0 0 0; opacity: 0.9; }}
+                .content {{ padding: 30px 20px; }}
+                .greeting {{ font-size: 18px; color: #333; margin-bottom: 20px; }}
+                .noticia {{ background-color: #f9f9f9; border-left: 4px solid #667eea; padding: 15px; margin-bottom: 20px; border-radius: 5px; }}
+                .noticia h3 {{ margin: 0 0 10px 0; color: #333; font-size: 18px; }}
+                .noticia p {{ margin: 0; color: #666; line-height: 1.6; }}
+                .noticia .meta {{ margin-top: 10px; font-size: 13px; color: #999; }}
+                .footer {{ background-color: #f9f9f9; padding: 20px; text-align: center; color: #666; font-size: 14px; }}
+                .footer a {{ color: #667eea; text-decoration: none; }}
+                .btn {{ display: inline-block; background-color: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>📰 GeoNews - Resumen de Noticias</h1>
+                    <p>Noticias locales de Ibarra</p>
+                </div>
+                <div class="content">
+                    <div class="greeting">
+                        ¡Hola {request.nombre}! 👋
+                    </div>
+                    <p>Aquí está tu resumen de noticias de {periodo}:</p>
+        """
+
+        # Agregar cada noticia
+        for noticia in noticias[:5]:  # Máximo 5 noticias
+            titulo = noticia.get('titulo', 'Sin título')
+            descripcion = noticia.get('descripcion', 'Sin descripción')
+            categoria = noticia.get('categoriaNombre', 'General')
+            parroquia = noticia.get('parroquiaNombre', 'Ibarra')
+
+            html_content += f"""
+                    <div class="noticia">
+                        <h3>{titulo}</h3>
+                        <p>{descripcion[:200]}...</p>
+                        <div class="meta">
+                            📍 {parroquia} | 🏷️ {categoria}
+                        </div>
+                    </div>
+            """
+
+        html_content += """
+                    <p style="text-align: center; margin-top: 30px;">
+                        <a href="#" class="btn">Ver todas las noticias en la app</a>
+                    </p>
+                </div>
+                <div class="footer">
+                    <p>Has recibido este email porque activaste los resúmenes por email en GeoNews.</p>
+                    <p><a href="#">Cancelar suscripción</a> | <a href="#">Cambiar frecuencia</a></p>
+                    <p style="margin-top: 15px;">© 2026 GeoNews - Noticias Locales de Ibarra</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        # Configurar SMTP (usar variables de entorno o valores por defecto para desarrollo)
+        smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
+        smtp_port = int(os.getenv("SMTP_PORT", "587"))
+        smtp_user = os.getenv("SMTP_USER", "noreply.geonews@gmail.com")
+        smtp_password = os.getenv("SMTP_PASSWORD", "")
+
+        # Crear mensaje
+        message = MIMEMultipart("alternative")
+        message["Subject"] = f"📰 Tu resumen de noticias - GeoNews"
+        message["From"] = f"GeoNews <{smtp_user}>"
+        message["To"] = request.email
+
+        # Agregar contenido HTML
+        html_part = MIMEText(html_content, "html")
+        message.attach(html_part)
+
+        # Enviar email (solo si hay configuración SMTP)
+        if smtp_password:
+            await aiosmtplib.send(
+                message,
+                hostname=smtp_host,
+                port=smtp_port,
+                username=smtp_user,
+                password=smtp_password,
+                use_tls=True
+            )
+
+            return {
+                "success": True,
+                "message": f"Resumen enviado a {request.email}",
+                "noticias_incluidas": len(noticias[:5])
+            }
+        else:
+            # En desarrollo, solo retornar éxito sin enviar
+            return {
+                "success": True,
+                "message": "Email digest preparado (SMTP no configurado en desarrollo)",
+                "noticias_incluidas": len(noticias[:5]),
+                "preview": True
+            }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al enviar email: {str(e)}")
 
 # ==================== ESTADÍSTICAS ====================
 

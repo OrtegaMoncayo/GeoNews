@@ -18,6 +18,370 @@
             padding: 20px;
         }
 
+        /* ========== ESTILOS DE LOGIN ========== */
+        .login-container {
+            max-width: 450px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #2D3748 0%, #1A202C 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .login-header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .login-form {
+            padding: 40px 30px;
+        }
+
+        .login-form .form-group {
+            margin-bottom: 24px;
+        }
+
+        .login-form label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2D3748;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .login-form input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .login-btn:disabled {
+            background: #CBD5E0;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .login-error {
+            background: #FED7D7;
+            color: #742A2A;
+            border: 2px solid #FC8181;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .login-info {
+            background: #E6FFFA;
+            color: #234E52;
+            border: 2px solid #81E6D9;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .login-info strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            background: #F7FAFC;
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+        .user-badge img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #667eea;
+        }
+
+        .user-badge-info {
+            flex: 1;
+        }
+
+        .user-badge-name {
+            font-weight: 600;
+            color: #2D3748;
+            font-size: 14px;
+        }
+
+        .user-badge-role {
+            font-size: 12px;
+            color: #667eea;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: #E53E3E;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #FED7D7;
+        }
+
+        /* ========== PANEL ADMIN ========== */
+        .admin-section {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            border: 2px solid #F59E0B;
+            border-radius: 16px;
+            padding: 24px;
+            margin: 20px;
+            display: none;
+        }
+
+        .admin-section.visible {
+            display: block;
+        }
+
+        .admin-section h2 {
+            color: #92400E;
+            font-size: 20px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .admin-tab {
+            padding: 10px 20px;
+            border: 2px solid #F59E0B;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .admin-tab:hover {
+            background: #FEF3C7;
+        }
+
+        .admin-tab.active {
+            background: #F59E0B;
+            color: white;
+        }
+
+        .admin-content {
+            display: none;
+        }
+
+        .admin-content.active {
+            display: block;
+        }
+
+        .admin-form {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .admin-form .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .admin-form .form-group {
+            margin-bottom: 16px;
+        }
+
+        .admin-form label {
+            display: block;
+            margin-bottom: 6px;
+            color: #92400E;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .admin-form input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #E2E8F0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .admin-form input:focus {
+            border-color: #F59E0B;
+            outline: none;
+        }
+
+        .btn-admin {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-admin:disabled {
+            background: #CBD5E0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .periodistas-list {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .periodista-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid #E2E8F0;
+            gap: 16px;
+        }
+
+        .periodista-item:last-child {
+            border-bottom: none;
+        }
+
+        .periodista-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .periodista-info {
+            flex: 1;
+        }
+
+        .periodista-nombre {
+            font-weight: 600;
+            color: #2D3748;
+            font-size: 15px;
+        }
+
+        .periodista-email {
+            font-size: 13px;
+            color: #718096;
+        }
+
+        .periodista-stats {
+            text-align: right;
+            font-size: 13px;
+            color: #718096;
+        }
+
+        .periodista-stats strong {
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .admin-alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .admin-alert-success {
+            background: #C6F6D5;
+            color: #22543D;
+            border: 1px solid #9AE6B4;
+        }
+
+        .admin-alert-error {
+            background: #FED7D7;
+            color: #742A2A;
+            border: 1px solid #FC8181;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #718096;
+        }
+
+        .empty-state p {
+            margin-top: 10px;
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -25,6 +389,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
+            display: none;
         }
 
         .header {
@@ -191,6 +556,176 @@
             color: #E53E3E;
         }
 
+        /* ========== ESTILOS PARA SUBIDA DE IMAGEN ========== */
+        .image-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: 2px solid #E2E8F0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            color: #4A5568;
+        }
+
+        .tab-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .file-upload-wrapper {
+            position: relative;
+        }
+
+        .file-upload-wrapper input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #CBD5E0;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: #F7FAFC;
+        }
+
+        .file-upload-area:hover {
+            border-color: #667eea;
+            background: #EBF4FF;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #667eea;
+            background: #EBF4FF;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .file-upload-area p {
+            color: #4A5568;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .file-types {
+            font-size: 12px;
+            color: #A0AEC0;
+        }
+
+        .image-preview {
+            position: relative;
+            margin-top: 12px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #E2E8F0;
+        }
+
+        .image-preview img {
+            width: 100%;
+            max-height: 250px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .remove-image {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .remove-image:hover {
+            background: #E53E3E;
+            transform: scale(1.1);
+        }
+
+        .image-info {
+            padding: 10px 15px;
+            background: #F7FAFC;
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #4A5568;
+        }
+
+        .upload-progress {
+            margin-top: 12px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #E2E8F0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        #progressText {
+            display: block;
+            text-align: center;
+            font-size: 13px;
+            color: #667eea;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        .url-hint {
+            font-size: 12px;
+            color: #A0AEC0;
+            margin-top: 8px;
+        }
+
         @media (max-width: 968px) {
             .content {
                 grid-template-columns: 1fr;
@@ -204,10 +739,106 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- ========== PANTALLA DE LOGIN ========== -->
+    <div id="loginContainer" class="login-container">
+        <div class="login-header">
+            <h1>🔐 Panel de Periodista</h1>
+            <p>Inicia sesión para publicar noticias</p>
+        </div>
+        <div class="login-form">
+            <div class="login-info">
+                <strong>ℹ️ Acceso restringido</strong>
+                Solo periodistas y administradores pueden acceder a este panel.
+            </div>
+            <div id="loginError" class="login-error"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Correo electrónico</label>
+                    <input type="email" id="loginEmail" name="email" placeholder="tu@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Contraseña</label>
+                    <input type="password" id="loginPassword" name="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="login-btn" id="btnLogin">
+                    Iniciar Sesión
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========== PANEL DE PERIODISTA (oculto hasta login) ========== -->
+    <div class="container" id="panelContainer">
+        <!-- Barra de usuario logueado -->
+        <div class="user-badge" id="userBadge">
+            <img id="userAvatar" src="https://ui-avatars.com/api/?name=P&background=667eea&color=fff" alt="Avatar">
+            <div class="user-badge-info">
+                <div class="user-badge-name" id="userName">Periodista</div>
+                <div class="user-badge-role" id="userRole">Reportero</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
+        </div>
+
         <div class="header">
             <h1>📰 Panel de Periodista</h1>
             <p>Publica noticias locales de Ibarra con geolocalización</p>
+        </div>
+
+        <!-- ========== SECCIÓN ADMIN (solo visible para admin) ========== -->
+        <div id="adminSection" class="admin-section">
+            <h2>👑 Panel de Administración</h2>
+
+            <div class="admin-tabs">
+                <button class="admin-tab active" onclick="switchAdminTab('registrar')">
+                    ➕ Registrar Periodista
+                </button>
+                <button class="admin-tab" onclick="switchAdminTab('lista')">
+                    📋 Ver Periodistas
+                </button>
+            </div>
+
+            <!-- Tab: Registrar Periodista -->
+            <div id="admin-registrar" class="admin-content active">
+                <div id="adminAlert" class="admin-alert" style="display: none;"></div>
+                <form id="registrarPeriodistaForm" class="admin-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pNombre">Nombre *</label>
+                            <input type="text" id="pNombre" name="nombre" placeholder="Juan" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="pApellido">Apellido</label>
+                            <input type="text" id="pApellido" name="apellido" placeholder="Pérez">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pEmail">Email *</label>
+                            <input type="email" id="pEmail" name="email" placeholder="periodista@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="pTelefono">Teléfono</label>
+                            <input type="tel" id="pTelefono" name="telefono" placeholder="0999999999">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="pPassword">Contraseña *</label>
+                        <input type="password" id="pPassword" name="password" placeholder="Mínimo 6 caracteres" required minlength="6">
+                    </div>
+                    <button type="submit" class="btn-admin" id="btnRegistrarPeriodista">
+                        ➕ Registrar Periodista
+                    </button>
+                </form>
+            </div>
+
+            <!-- Tab: Lista de Periodistas -->
+            <div id="admin-lista" class="admin-content">
+                <div id="periodistasContainer" class="periodistas-list">
+                    <div class="empty-state">
+                        <p>Cargando periodistas...</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="content">
@@ -313,15 +944,86 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="imagenUrl">
-                            URL de Imagen (opcional)
+                        <label for="imagenFile">
+                            Imagen de la Noticia (opcional)
                         </label>
-                        <input
-                            type="url"
-                            id="imagenUrl"
-                            name="imagenUrl"
-                            placeholder="https://ejemplo.com/imagen.jpg"
-                        >
+
+                        <!-- Tabs para elegir método de imagen -->
+                        <div class="image-tabs">
+                            <button type="button" class="tab-btn active" data-tab="firebase" onclick="switchImageTab('firebase')">
+                                🔥 Firebase Storage
+                            </button>
+                            <button type="button" class="tab-btn" data-tab="drive" onclick="switchImageTab('drive')">
+                                📁 Google Drive
+                            </button>
+                        </div>
+
+                        <!-- Tab: Firebase Storage -->
+                        <div id="tab-firebase" class="tab-content active">
+                            <div class="file-upload-wrapper">
+                                <input
+                                    type="file"
+                                    id="imagenFile"
+                                    name="imagenFile"
+                                    accept="image/jpeg,image/png,image/gif,image/webp"
+                                    onchange="previewImage(this, 'firebase')"
+                                >
+                                <div class="file-upload-area" id="firebaseUploadArea" onclick="document.getElementById('imagenFile').click()">
+                                    <div class="upload-icon">🔥</div>
+                                    <p>Subir a Firebase Storage</p>
+                                    <span class="file-types">JPG, PNG, GIF, WebP (máx. 5MB)</span>
+                                </div>
+                            </div>
+                            <div id="imagePreviewFirebase" class="image-preview" style="display: none;">
+                                <img id="previewImgFirebase" src="" alt="Preview">
+                                <button type="button" class="remove-image" onclick="removeImage('firebase')">✕</button>
+                                <div class="image-info">
+                                    <span id="imageNameFirebase"></span>
+                                    <span id="imageSizeFirebase"></span>
+                                </div>
+                            </div>
+                            <div id="uploadProgressFirebase" class="upload-progress" style="display: none;">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progressFillFirebase"></div>
+                                </div>
+                                <span id="progressTextFirebase">Subiendo a Firebase...</span>
+                            </div>
+                        </div>
+
+                        <!-- Tab: Google Drive -->
+                        <div id="tab-drive" class="tab-content" style="display: none;">
+                            <div class="file-upload-wrapper">
+                                <input
+                                    type="file"
+                                    id="imagenFileDrive"
+                                    name="imagenFileDrive"
+                                    accept="image/jpeg,image/png,image/gif,image/webp"
+                                    onchange="previewImage(this, 'drive')"
+                                >
+                                <div class="file-upload-area" id="driveUploadArea" onclick="document.getElementById('imagenFileDrive').click()">
+                                    <div class="upload-icon">📁</div>
+                                    <p>Subir a Google Drive</p>
+                                    <span class="file-types">JPG, PNG, GIF, WebP (máx. 10MB)</span>
+                                </div>
+                            </div>
+                            <div id="imagePreviewDrive" class="image-preview" style="display: none;">
+                                <img id="previewImgDrive" src="" alt="Preview">
+                                <button type="button" class="remove-image" onclick="removeImage('drive')">✕</button>
+                                <div class="image-info">
+                                    <span id="imageNameDrive"></span>
+                                    <span id="imageSizeDrive"></span>
+                                </div>
+                            </div>
+                            <div id="uploadProgressDrive" class="upload-progress" style="display: none;">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progressFillDrive"></div>
+                                </div>
+                                <span id="progressTextDrive">Subiendo a Google Drive...</span>
+                            </div>
+                        </div>
+
+                        <!-- URL de imagen ya subida (hidden) -->
+                        <input type="hidden" id="imagenUrl" name="imagenUrl">
                     </div>
 
                     <div class="form-group">
@@ -371,7 +1073,29 @@
     </div>
 
     <!-- Google Maps API -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBLwwQZsNs7V4B3Hx3ZPKmLt5l7wFgQwKE"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBz76Xsfoq8DJShdLES6ZZyhC4zeVWoPck"></script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <script>
+        // ========================================
+        // CONFIGURACIÓN FIREBASE
+        // ========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_JQPd_t9jwb9Kw39muih7P4Ux55u_U30",
+            authDomain: "noticiaslocalesibarra.firebaseapp.com",
+            projectId: "noticiaslocalesibarra",
+            storageBucket: "noticiaslocalesibarra.firebasestorage.app",
+            messagingSenderId: "166115544761",
+            appId: "1:166115544761:android:b40030a0cf929db4b19568"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const storage = firebase.storage();
+    </script>
 
     <script>
         // ========================================
@@ -388,6 +1112,273 @@
         let map;
         let marker;
         let selectedLocation = null;
+        let currentUser = null;
+
+        // ========================================
+        // SISTEMA DE LOGIN
+        // ========================================
+
+        // Verificar si hay sesión guardada al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            checkSession();
+        });
+
+        function checkSession() {
+            const savedUser = localStorage.getItem('geonews_user');
+            const savedToken = localStorage.getItem('geonews_token');
+
+            if (savedUser && savedToken) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                    showPanel();
+                } catch (e) {
+                    logout();
+                }
+            }
+        }
+
+        // Manejar formulario de login
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showLoginError('Por favor completa todos los campos');
+                return;
+            }
+
+            // Deshabilitar botón
+            const btnLogin = document.getElementById('btnLogin');
+            btnLogin.disabled = true;
+            btnLogin.textContent = 'Iniciando sesión...';
+
+            try {
+                const response = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // Guardar sesión
+                    currentUser = result.usuario;
+                    localStorage.setItem('geonews_user', JSON.stringify(result.usuario));
+                    localStorage.setItem('geonews_token', result.token);
+
+                    // Mostrar panel
+                    showPanel();
+                } else {
+                    showLoginError(result.detail || 'Error al iniciar sesión');
+                }
+            } catch (error) {
+                console.error('Error de login:', error);
+                showLoginError('Error de conexión. Verifica que el servidor esté activo.');
+            } finally {
+                btnLogin.disabled = false;
+                btnLogin.textContent = 'Iniciar Sesión';
+            }
+        });
+
+        function showLoginError(message) {
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showPanel() {
+            // Ocultar login
+            document.getElementById('loginContainer').style.display = 'none';
+
+            // Mostrar panel
+            document.getElementById('panelContainer').style.display = 'block';
+
+            // Actualizar info de usuario
+            if (currentUser) {
+                const nombre = `${currentUser.nombre || ''} ${currentUser.apellido || ''}`.trim() || 'Periodista';
+                document.getElementById('userName').textContent = nombre;
+                document.getElementById('userRole').textContent =
+                    currentUser.tipoUsuario === 'admin' ? 'Administrador' : 'Periodista';
+
+                // Avatar
+                if (currentUser.fotoPerfil) {
+                    document.getElementById('userAvatar').src = currentUser.fotoPerfil;
+                } else {
+                    const initials = nombre.split(' ').map(n => n[0]).join('').substring(0, 2);
+                    document.getElementById('userAvatar').src =
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=667eea&color=fff`;
+                }
+
+                // Mostrar sección de admin solo si es administrador
+                if (currentUser.tipoUsuario === 'admin') {
+                    document.getElementById('adminSection').classList.add('visible');
+                } else {
+                    document.getElementById('adminSection').classList.remove('visible');
+                }
+            }
+
+            // Inicializar mapa después de mostrar el panel
+            setTimeout(() => {
+                if (typeof google !== 'undefined' && !map) {
+                    initMap();
+                }
+            }, 100);
+        }
+
+        function logout() {
+            // Limpiar sesión
+            localStorage.removeItem('geonews_user');
+            localStorage.removeItem('geonews_token');
+            currentUser = null;
+
+            // Mostrar login
+            document.getElementById('loginContainer').style.display = 'block';
+            document.getElementById('panelContainer').style.display = 'none';
+
+            // Ocultar sección admin
+            document.getElementById('adminSection').classList.remove('visible');
+
+            // Limpiar formulario de login
+            document.getElementById('loginForm').reset();
+        }
+
+        // ========================================
+        // FUNCIONES DE ADMINISTRACIÓN
+        // ========================================
+
+        function switchAdminTab(tab) {
+            // Actualizar tabs
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Mostrar contenido
+            document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(`admin-${tab}`).classList.add('active');
+
+            // Cargar lista si es necesario
+            if (tab === 'lista') {
+                cargarPeriodistas();
+            }
+        }
+
+        function showAdminAlert(message, type) {
+            const alertDiv = document.getElementById('adminAlert');
+            alertDiv.textContent = message;
+            alertDiv.className = `admin-alert admin-alert-${type}`;
+            alertDiv.style.display = 'block';
+
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Manejar formulario de registro de periodista
+        document.getElementById('registrarPeriodistaForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const nombre = document.getElementById('pNombre').value.trim();
+            const apellido = document.getElementById('pApellido').value.trim();
+            const email = document.getElementById('pEmail').value.trim();
+            const telefono = document.getElementById('pTelefono').value.trim();
+            const password = document.getElementById('pPassword').value;
+
+            if (!nombre || !email || !password) {
+                showAdminAlert('Por favor completa los campos requeridos', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showAdminAlert('La contraseña debe tener al menos 6 caracteres', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('btnRegistrarPeriodista');
+            btn.disabled = true;
+            btn.textContent = 'Registrando...';
+
+            try {
+                const response = await fetch(`${API_URL}/api/admin/registrar-periodista`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        nombre,
+                        apellido: apellido || null,
+                        telefono: telefono || null
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showAdminAlert(`✅ Periodista "${nombre}" registrado exitosamente`, 'success');
+                    document.getElementById('registrarPeriodistaForm').reset();
+                } else {
+                    showAdminAlert(result.detail || 'Error al registrar periodista', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAdminAlert('Error de conexión', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '➕ Registrar Periodista';
+            }
+        });
+
+        async function cargarPeriodistas() {
+            const container = document.getElementById('periodistasContainer');
+            container.innerHTML = '<div class="empty-state"><p>Cargando periodistas...</p></div>';
+
+            try {
+                const response = await fetch(`${API_URL}/api/admin/periodistas`);
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    if (result.periodistas.length === 0) {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <p>👤 No hay periodistas registrados</p>
+                                <p>Registra el primer periodista en la pestaña anterior</p>
+                            </div>
+                        `;
+                    } else {
+                        container.innerHTML = result.periodistas.map(p => {
+                            const initials = p.nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                            return `
+                                <div class="periodista-item">
+                                    <div class="periodista-avatar">${initials}</div>
+                                    <div class="periodista-info">
+                                        <div class="periodista-nombre">${p.nombre}</div>
+                                        <div class="periodista-email">${p.email}</div>
+                                    </div>
+                                    <div class="periodista-stats">
+                                        <strong>${p.noticiasPublicadas}</strong><br>
+                                        noticias
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+                } else {
+                    container.innerHTML = '<div class="empty-state"><p>Error al cargar periodistas</p></div>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                container.innerHTML = '<div class="empty-state"><p>Error de conexión</p></div>';
+            }
+        }
 
         // ========================================
         // INICIALIZAR MAPA
@@ -465,6 +1456,36 @@
                 return;
             }
 
+            // Obtener URL de imagen
+            let imagenUrlFinal = null;
+
+            // Verificar si hay un archivo seleccionado para subir
+            if (selectedImageFile && selectedImageType) {
+                // Mostrar loading
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('btnPublicar').disabled = true;
+
+                try {
+                    // Subir imagen según el tipo seleccionado
+                    if (selectedImageType === 'firebase') {
+                        imagenUrlFinal = await uploadImageToFirebase(selectedImageFile);
+                        console.log('Imagen subida a Firebase:', imagenUrlFinal);
+                    } else if (selectedImageType === 'drive') {
+                        imagenUrlFinal = await uploadImageToDrive(selectedImageFile);
+                        console.log('Imagen subida a Google Drive:', imagenUrlFinal);
+                    }
+                } catch (error) {
+                    console.error('Error al subir imagen:', error);
+                    showAlert('Error al subir la imagen. Intenta de nuevo.', 'error');
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('btnPublicar').disabled = false;
+                    return;
+                }
+            } else {
+                // Usar URL guardada si existe
+                imagenUrlFinal = document.getElementById('imagenUrl').value.trim() || null;
+            }
+
             // Obtener datos del formulario
             const formData = {
                 titulo: document.getElementById('titulo').value.trim(),
@@ -474,7 +1495,7 @@
                 impactoComunitario: document.getElementById('impactoComunitario').value.trim() || null,
                 hashtags: document.getElementById('hashtags').value.trim() || null,
                 categoriaId: document.getElementById('categoria').value,
-                imagenUrl: document.getElementById('imagenUrl').value.trim() || null,
+                imagenUrl: imagenUrlFinal,
                 ubicacionTexto: document.getElementById('ubicacionTexto').value.trim(),
                 latitud: selectedLocation.lat,
                 longitud: selectedLocation.lng,
@@ -515,6 +1536,11 @@
                     // Limpiar formulario
                     document.getElementById('noticiaForm').reset();
 
+                    // Resetear imágenes
+                    removeImage('firebase');
+                    removeImage('drive');
+                    switchImageTab('firebase');
+
                     // Resetear mapa a centro
                     setLocation(IBARRA_CENTER);
                     map.setCenter(IBARRA_CENTER);
@@ -550,9 +1576,222 @@
         }
 
         // ========================================
+        // FUNCIONES DE IMAGEN
+        // ========================================
+
+        let selectedImageFile = null;
+        let selectedImageType = null; // 'firebase' o 'drive'
+        let uploadedImageUrl = null;
+
+        function switchImageTab(tab) {
+            // Actualizar tabs activos
+            document.querySelectorAll('.image-tabs .tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.tab === tab) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Mostrar/ocultar contenido
+            document.getElementById('tab-firebase').style.display = tab === 'firebase' ? 'block' : 'none';
+            document.getElementById('tab-drive').style.display = tab === 'drive' ? 'block' : 'none';
+
+            // Limpiar al cambiar de tab
+            if (tab === 'firebase') {
+                removeImage('drive');
+            } else {
+                removeImage('firebase');
+            }
+        }
+
+        function previewImage(input, type) {
+            const file = input.files[0];
+
+            if (!file) return;
+
+            // Validar tipo de archivo
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!validTypes.includes(file.type)) {
+                showAlert('Por favor selecciona una imagen válida (JPG, PNG, GIF, WebP)', 'error');
+                input.value = '';
+                return;
+            }
+
+            // Validar tamaño
+            const maxSize = type === 'drive' ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                showAlert(`La imagen es muy grande. El tamaño máximo es ${type === 'drive' ? '10' : '5'}MB`, 'error');
+                input.value = '';
+                return;
+            }
+
+            selectedImageFile = file;
+            selectedImageType = type;
+
+            // Mostrar preview según el tipo
+            const suffix = type === 'firebase' ? 'Firebase' : 'Drive';
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById(`previewImg${suffix}`).src = e.target.result;
+                document.getElementById(`imagePreview${suffix}`).style.display = 'block';
+                document.getElementById(`imageName${suffix}`).textContent = file.name;
+                document.getElementById(`imageSize${suffix}`).textContent = formatFileSize(file.size);
+                document.getElementById(`${type}UploadArea`).style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeImage(type) {
+            if (!type) type = selectedImageType || 'firebase';
+
+            const suffix = type === 'firebase' ? 'Firebase' : 'Drive';
+            const inputId = type === 'firebase' ? 'imagenFile' : 'imagenFileDrive';
+
+            document.getElementById(inputId).value = '';
+            document.getElementById(`previewImg${suffix}`).src = '';
+            document.getElementById(`imagePreview${suffix}`).style.display = 'none';
+            document.getElementById(`${type}UploadArea`).style.display = 'block';
+            document.getElementById(`uploadProgress${suffix}`).style.display = 'none';
+
+            if (selectedImageType === type) {
+                selectedImageFile = null;
+                selectedImageType = null;
+                uploadedImageUrl = null;
+                document.getElementById('imagenUrl').value = '';
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        async function uploadImageToFirebase(file) {
+            return new Promise((resolve, reject) => {
+                // Crear nombre único para el archivo
+                const timestamp = Date.now();
+                const randomId = Math.random().toString(36).substring(2, 8);
+                const extension = file.name.split('.').pop();
+                const fileName = `noticias/${timestamp}_${randomId}.${extension}`;
+
+                // Referencia al storage
+                const storageRef = storage.ref(fileName);
+
+                // Subir archivo
+                const uploadTask = storageRef.put(file);
+
+                // Mostrar barra de progreso
+                document.getElementById('uploadProgressFirebase').style.display = 'block';
+
+                // Monitorear progreso
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        document.getElementById('progressFillFirebase').style.width = progress + '%';
+                        document.getElementById('progressTextFirebase').textContent = `Subiendo a Firebase... ${Math.round(progress)}%`;
+                    },
+                    (error) => {
+                        console.error('Error al subir imagen:', error);
+                        document.getElementById('uploadProgressFirebase').style.display = 'none';
+                        reject(error);
+                    },
+                    async () => {
+                        // Obtener URL de descarga
+                        try {
+                            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                            document.getElementById('progressTextFirebase').textContent = '✅ Imagen subida a Firebase';
+                            setTimeout(() => {
+                                document.getElementById('uploadProgressFirebase').style.display = 'none';
+                            }, 2000);
+                            resolve(downloadURL);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    }
+                );
+            });
+        }
+
+        async function uploadImageToDrive(file) {
+            // Mostrar barra de progreso
+            document.getElementById('uploadProgressDrive').style.display = 'block';
+            document.getElementById('progressFillDrive').style.width = '30%';
+            document.getElementById('progressTextDrive').textContent = 'Subiendo a Google Drive...';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch(`${API_URL}/api/upload/drive`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                document.getElementById('progressFillDrive').style.width = '80%';
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    document.getElementById('progressFillDrive').style.width = '100%';
+                    document.getElementById('progressTextDrive').textContent = '✅ Imagen subida a Google Drive';
+                    setTimeout(() => {
+                        document.getElementById('uploadProgressDrive').style.display = 'none';
+                    }, 2000);
+                    return result.url;
+                } else {
+                    throw new Error(result.detail || 'Error al subir a Google Drive');
+                }
+            } catch (error) {
+                document.getElementById('uploadProgressDrive').style.display = 'none';
+                throw error;
+            }
+        }
+
+        // Drag and Drop
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadArea = document.querySelector('.file-upload-area');
+
+            if (uploadArea) {
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    uploadArea.addEventListener(eventName, preventDefaults, false);
+                });
+
+                function preventDefaults(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    uploadArea.addEventListener(eventName, () => {
+                        uploadArea.classList.add('dragover');
+                    }, false);
+                });
+
+                ['dragleave', 'drop'].forEach(eventName => {
+                    uploadArea.addEventListener(eventName, () => {
+                        uploadArea.classList.remove('dragover');
+                    }, false);
+                });
+
+                uploadArea.addEventListener('drop', (e) => {
+                    const dt = e.dataTransfer;
+                    const files = dt.files;
+                    if (files.length > 0) {
+                        document.getElementById('imagenFile').files = files;
+                        previewImage(document.getElementById('imagenFile'));
+                    }
+                }, false);
+            }
+        });
+
+        // ========================================
         // INICIALIZAR AL CARGAR LA PÁGINA
         // ========================================
-        window.onload = initMap;
+        // El mapa se inicializa desde showPanel() después del login exitoso
+        // window.onload = initMap;  // Deshabilitado - el mapa se inicia después del login
     </script>
 </body>
 </html>
