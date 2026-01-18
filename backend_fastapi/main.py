@@ -135,6 +135,11 @@ class Noticia(BaseModel):
     destacada: bool = False
     activa: bool = True
     tags: List[str] = []
+    # Campos de autoría
+    autorNombre: Optional[str] = None
+    autorId: Optional[str] = None
+    esContenidoPropio: bool = True
+    urlFuente: Optional[str] = None
 
 class Evento(BaseModel):
     descripcion: str
