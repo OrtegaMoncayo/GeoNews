@@ -285,8 +285,8 @@ async def login(request: LoginRequest):
                 detail="Contraseña incorrecta"
             )
 
-        # Verificar rol del usuario
-        tipo_usuario = usuario_data.get("tipoUsuario", "usuario")
+        # Verificar rol del usuario (soporta 'rol' y 'tipoUsuario')
+        tipo_usuario = usuario_data.get("rol") or usuario_data.get("tipoUsuario", "usuario")
 
         if tipo_usuario not in ["reportero", "admin"]:
             raise HTTPException(
@@ -421,20 +421,38 @@ async def listar_periodistas():
     ```
     """
     try:
-        periodistas_ref = db.collection("usuarios").where("tipoUsuario", "==", "reportero")
         periodistas = []
+        seen_ids = set()
 
-        for doc in periodistas_ref.stream():
-            data = doc.to_dict()
-            periodistas.append({
-                "id": doc.id,
-                "email": data.get("email"),
-                "nombre": f"{data.get('nombre', '')} {data.get('apellido', '')}".strip(),
-                "telefono": data.get("telefonocelular"),
-                "noticiasPublicadas": data.get("noticiasPublicadas", 0),
-                "verificado": data.get("verificado", False),
-                "fechaRegistro": data.get("fechaRegistro").isoformat() if data.get("fechaRegistro") else None
-            })
+        # Buscar por 'rol' = 'reportero'
+        for doc in db.collection("usuarios").where("rol", "==", "reportero").stream():
+            if doc.id not in seen_ids:
+                seen_ids.add(doc.id)
+                data = doc.to_dict()
+                periodistas.append({
+                    "id": doc.id,
+                    "email": data.get("email"),
+                    "nombre": f"{data.get('nombre', '')} {data.get('apellido', '')}".strip(),
+                    "telefono": data.get("telefonocelular"),
+                    "noticiasPublicadas": data.get("noticiasPublicadas", 0),
+                    "verificado": data.get("verificado", False),
+                    "fechaRegistro": data.get("fechaRegistro").isoformat() if data.get("fechaRegistro") else None
+                })
+
+        # Buscar por 'tipoUsuario' = 'reportero'
+        for doc in db.collection("usuarios").where("tipoUsuario", "==", "reportero").stream():
+            if doc.id not in seen_ids:
+                seen_ids.add(doc.id)
+                data = doc.to_dict()
+                periodistas.append({
+                    "id": doc.id,
+                    "email": data.get("email"),
+                    "nombre": f"{data.get('nombre', '')} {data.get('apellido', '')}".strip(),
+                    "telefono": data.get("telefonocelular"),
+                    "noticiasPublicadas": data.get("noticiasPublicadas", 0),
+                    "verificado": data.get("verificado", False),
+                    "fechaRegistro": data.get("fechaRegistro").isoformat() if data.get("fechaRegistro") else None
+                })
 
         return {
             "success": True,
