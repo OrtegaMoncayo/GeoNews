@@ -1113,6 +1113,9 @@
         let marker;
         let selectedLocation = null;
         let currentUser = null;
+        let selectedImageFile = null;
+        let selectedImageType = null; // 'firebase' o 'drive'
+        let uploadedImageUrl = null;
 
         // ========================================
         // SISTEMA DE LOGIN
@@ -1578,10 +1581,6 @@
         // ========================================
         // FUNCIONES DE IMAGEN
         // ========================================
-
-        let selectedImageFile = null;
-        let selectedImageType = null; // 'firebase' o 'drive'
-        let uploadedImageUrl = null;
 
         function switchImageTab(tab) {
             // Actualizar tabs activos
