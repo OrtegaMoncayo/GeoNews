@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Login GeoNews - Diseño claro moderno -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:attr/colorBackground"
+    android:background="@color/bg_primary"
     android:fillViewport="true">
 
     <LinearLayout
@@ -18,43 +20,68 @@
             android:layout_height="0dp"
             android:layout_weight="1"/>
 
-        <!-- Logo -->
-        <ImageView
+        <!-- Logo con fondo redondeado -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:src="@mipmap/ic_launcher"
-            android:contentDescription="Logo"/>
+            app:cardCornerRadius="24dp"
+            app:cardBackgroundColor="@color/white"
+            app:cardElevation="4dp"
+            app:strokeWidth="0dp">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="20dp"
+                android:src="@drawable/ic_logo_noticias_ibarra"
+                app:tint="@color/primary"
+                android:contentDescription="Logo"/>
+
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Título -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Noticias Locales Ibarra"
-            android:textSize="24sp"
+            android:layout_marginTop="24dp"
+            android:text="@string/login_title"
+            android:textSize="32sp"
             android:textStyle="bold"
-            android:textColor="?attr/colorPrimary"/>
+            android:fontFamily="sans-serif-black"
+            android:textColor="@color/text_primary"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="32dp"
-            android:text="Inicia sesión para continuar"
-            android:textSize="14sp"
-            android:textColor="?android:attr/textColorSecondary"/>
+            android:layout_marginBottom="40dp"
+            android:text="@string/login_subtitle"
+            android:textSize="15sp"
+            android:textColor="@color/text_secondary"/>
 
         <!-- Formulario de Login -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:hint="Email">
+            android:layout_marginBottom="20dp"
+            android:hint="@string/email"
+            app:boxBackgroundColor="@color/bg_input"
+            app:boxBackgroundMode="filled"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="0dp"
+            app:hintTextColor="@color/primary"
+            style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_email"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_hint"
                 android:inputType="textEmailAddress"
                 android:maxLines="1"/>
         </com.google.android.material.textfield.TextInputLayout>
@@ -62,51 +89,65 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:hint="Contraseña"
+            android:layout_marginBottom="28dp"
+            android:hint="@string/password"
+            app:boxBackgroundColor="@color/bg_input"
+            app:boxBackgroundMode="filled"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="0dp"
             app:passwordToggleEnabled="true"
-            xmlns:app="http://schemas.android.com/apk/res-auto">
+            app:passwordToggleTint="@color/text_hint"
+            app:hintTextColor="@color/primary"
+            style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_hint"
                 android:inputType="textPassword"
                 android:maxLines="1"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Botón Login -->
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_login"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="Iniciar Sesión"
-            android:textColor="@android:color/white"
+            android:text="@string/login_sign_in"
+            android:textColor="@color/text_primary"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:background="?attr/colorPrimary"/>
+            android:textAllCaps="false"
+            app:backgroundTint="@color/primary"
+            app:cornerRadius="12dp"/>
 
         <!-- Link a Registro -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="24dp"
             android:orientation="horizontal">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="¿No tienes cuenta? "
+                android:text="@string/no_account"
                 android:textSize="14sp"
-                android:textColor="?android:attr/textColorSecondary"/>
+                android:textColor="@color/text_secondary"/>
 
             <TextView
                 android:id="@+id/tv_registro"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Regístrate"
+                android:text="@string/login_sign_up"
                 android:textSize="14sp"
-                android:textColor="?attr/colorPrimary"
+                android:textColor="@color/primary"
                 android:textStyle="bold"
                 android:clickable="true"
                 android:focusable="true"
@@ -125,10 +166,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="v1.0.0"
-            android:textSize="12sp"
-            android:textColor="?android:attr/textColorSecondary"
-            android:alpha="0.6"/>
+            android:text="@string/app_version"
+            android:textSize="11sp"
+            android:textColor="@color/text_secondary"
+            android:alpha="0.5"/>
 
     </LinearLayout>
 

@@ -1,36 +1,167 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Colores principales de la app -->
-    <color name="primary">#1976D2</color>
-    <color name="primary_dark">#0D47A1</color>
-    <color name="primary_light">#BBDEFB</color>
-    <color name="accent">#FF5722</color>
+    <!-- ==================== PALETA GEONEWS - MODO CLARO ==================== -->
 
-    <!-- Colores de estado -->
+    <!-- Colores primarios -->
+    <color name="md_theme_light_primary">#0d7ff2</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_primaryContainer">#D6EBFF</color>
+    <color name="md_theme_light_onPrimaryContainer">#0d7ff2</color>
+
+    <!-- Colores secundarios -->
+    <color name="md_theme_light_secondary">#D90429</color>
+    <color name="md_theme_light_onSecondary">#FFFFFF</color>
+    <color name="md_theme_light_secondaryContainer">#FFCCD5</color>
+    <color name="md_theme_light_onSecondaryContainer">#D90429</color>
+
+    <!-- Colores terciarios -->
+    <color name="md_theme_light_tertiary">#6C757D</color>
+    <color name="md_theme_light_onTertiary">#FFFFFF</color>
+    <color name="md_theme_light_tertiaryContainer">#E9ECEF</color>
+    <color name="md_theme_light_onTertiaryContainer">#6C757D</color>
+
+    <!-- Colores de error -->
+    <color name="md_theme_light_error">#D90429</color>
+    <color name="md_theme_light_onError">#FFFFFF</color>
+    <color name="md_theme_light_errorContainer">#FFCCD5</color>
+    <color name="md_theme_light_onErrorContainer">#D90429</color>
+
+    <!-- Colores de fondo y superficie -->
+    <color name="md_theme_light_background">#FFFFFF</color>
+    <color name="md_theme_light_onBackground">#000000</color>
+    <color name="md_theme_light_surface">#FFFFFF</color>
+    <color name="md_theme_light_onSurface">#000000</color>
+    <color name="md_theme_light_surfaceVariant">#FFFFFF</color>
+    <color name="md_theme_light_onSurfaceVariant">#000000</color>
+
+    <!-- Colores de outline -->
+    <color name="md_theme_light_outline">#DEE2E6</color>
+    <color name="md_theme_light_outlineVariant">#E9ECEF</color>
+
+    <!-- ==================== PALETA GEONEWS - MODO OSCURO ==================== -->
+
+    <!-- Colores primarios -->
+    <color name="md_theme_dark_primary">#0d7ff2</color>
+    <color name="md_theme_dark_onPrimary">#FFFFFF</color>
+    <color name="md_theme_dark_primaryContainer">#0a5fb8</color>
+    <color name="md_theme_dark_onPrimaryContainer">#D6EBFF</color>
+
+    <!-- Colores secundarios -->
+    <color name="md_theme_dark_secondary">#EF233C</color>
+    <color name="md_theme_dark_onSecondary">#FFFFFF</color>
+    <color name="md_theme_dark_secondaryContainer">#D90429</color>
+    <color name="md_theme_dark_onSecondaryContainer">#FFE5E9</color>
+
+    <!-- Colores terciarios -->
+    <color name="md_theme_dark_tertiary">#ADB5BD</color>
+    <color name="md_theme_dark_onTertiary">#003049</color>
+    <color name="md_theme_dark_tertiaryContainer">#6C757D</color>
+    <color name="md_theme_dark_onTertiaryContainer">#F8F9FA</color>
+
+    <!-- Colores de error -->
+    <color name="md_theme_dark_error">#EF233C</color>
+    <color name="md_theme_dark_onError">#FFFFFF</color>
+    <color name="md_theme_dark_errorContainer">#D90429</color>
+    <color name="md_theme_dark_onErrorContainer">#FFE5E9</color>
+
+    <!-- Colores de fondo y superficie -->
+    <color name="md_theme_dark_background">#101922</color>
+    <color name="md_theme_dark_onBackground">#FFFFFF</color>
+    <color name="md_theme_dark_surface">#1a2530</color>
+    <color name="md_theme_dark_onSurface">#FFFFFF</color>
+    <color name="md_theme_dark_surfaceVariant">#1a2530</color>
+    <color name="md_theme_dark_onSurfaceVariant">#94a3b8</color>
+
+    <!-- Colores de outline -->
+    <color name="md_theme_dark_outline">#2d3748</color>
+    <color name="md_theme_dark_outlineVariant">#2d3748</color>
+
+    <!-- ==================== COLORES BASE GEONEWS ==================== -->
+
+    <color name="primary">#0d7ff2</color>
     <color name="success">#4CAF50</color>
-    <color name="error">#F44336</color>
     <color name="warning">#FF9800</color>
-    <color name="info">#2196F3</color>
-
-    <!-- Colores de categorías (para marcadores de mapa y etiquetas) -->
-    <color name="cat_politica">#FF6B35</color>
-    <color name="cat_economia">#004E89</color>
-    <color name="cat_cultura">#9B59B6</color>
-    <color name="cat_deportes">#27AE60</color>
-    <color name="cat_educacion">#F39C12</color>
-    <color name="cat_salud">#E74C3C</color>
-    <color name="cat_seguridad">#34495E</color>
-    <color name="cat_medio_ambiente">#16A085</color>
-    <color name="cat_turismo">#8E44AD</color>
-    <color name="cat_tecnologia">#3498DB</color>
-
-    <!-- Colores básicos -->
     <color name="white">#FFFFFF</color>
-    <color name="black">#000000</color>
-    <color name="gray_light">#F5F5F5</color>
-    <color name="gray">#9E9E9E</color>
-    <color name="gray_dark">#424242</color>
+    <color name="background_light">#FFFFFF</color>
+    <color name="background_dark">#FFFFFF</color>
+    <color name="surface_dark">#FFFFFF</color>
+    <color name="text_gray">#000000</color>
 
-    <!-- Launcher icon -->
-    <color name="ic_launcher_background">#1976D2</color>
+    <!-- ==================== COLORES SEMÁNTICOS (Modo Claro) ==================== -->
+    <!-- Estos colores cambian automáticamente en modo oscuro via values-night -->
+
+    <!-- Fondos -->
+    <color name="bg_primary">#FFFFFF</color>
+    <color name="bg_secondary">#F5F5F5</color>
+    <color name="bg_card">#FFFFFF</color>
+    <color name="bg_input">#F5F5F5</color>
+
+    <!-- Textos -->
+    <color name="text_primary">#000000</color>
+    <color name="text_secondary">#666666</color>
+    <color name="text_hint">#9cabba</color>
+    <color name="text_on_primary">#FFFFFF</color>
+
+    <!-- Iconos -->
+    <color name="icon_primary">#000000</color>
+    <color name="icon_secondary">#666666</color>
+    <color name="icon_active">#0d7ff2</color>
+
+    <!-- Bordes y divisores -->
+    <color name="divider">#E0E0E0</color>
+    <color name="border">#CCCCCC</color>
+    <color name="stroke">#E0E0E0</color>
+
+    <!-- Navegación -->
+    <color name="nav_background">#FFFFFF</color>
+    <color name="nav_indicator">#0d7ff2</color>
+    <color name="nav_icon_active">#0d7ff2</color>
+    <color name="nav_icon_inactive">#666666</color>
+    <color name="nav_text_active">#000000</color>
+    <color name="nav_text_inactive">#666666</color>
+
+    <!-- Status bar -->
+    <color name="status_bar">#FFFFFF</color>
+
+    <!-- Chips y badges -->
+    <color name="chip_background">#F5F5F5</color>
+    <color name="chip_text">#666666</color>
+    <color name="chip_selected_bg">#0d7ff2</color>
+    <color name="chip_selected_text">#FFFFFF</color>
+
+    <!-- Carrusel del mapa (siempre oscuro para contrastar con el mapa) -->
+    <color name="bg_card_mapa">#1a2530</color>
+    <color name="text_card_mapa">#FFFFFF</color>
+    <color name="text_metadata_mapa">#94a3b8</color>
+
+    <!-- ==================== CATEGORÍAS DE NOTICIAS (Colores únicos) ==================== -->
+
+    <color name="cat_politica">#1e40af</color>          <!-- Azul Rey - Gobierno -->
+    <color name="cat_economia">#047857</color>          <!-- Verde Esmeralda - Dinero -->
+    <color name="cat_cultura">#c026d3</color>           <!-- Fucsia - Artes -->
+    <color name="cat_deportes">#65a30d</color>          <!-- Verde Lima - Energía -->
+    <color name="cat_educacion">#ca8a04</color>         <!-- Dorado - Conocimiento -->
+    <color name="cat_salud">#dc2626</color>             <!-- Rojo - Médico -->
+    <color name="cat_seguridad">#475569</color>         <!-- Gris Pizarra - Protección -->
+    <color name="cat_medio_ambiente">#0891b2</color>    <!-- Cian - Agua/Naturaleza -->
+    <color name="cat_turismo">#ea580c</color>           <!-- Naranja - Aventura -->
+    <color name="cat_tecnologia">#7c3aed</color>        <!-- Violeta - Digital -->
+
+    <!-- ==================== COMPATIBILIDAD ==================== -->
+
+    <color name="blue_50">#E3F2FD</color>
+    <color name="corporate_light_blue">#0d7ff2</color>
+    <color name="corporate_bg_light">#FFFFFF</color>
+    <color name="gray_400">#000000</color>
+    <color name="ic_launcher_background">#003049</color>
+
+    <!-- Colores base para modo claro (requeridos para evitar MissingDefaultResource) -->
+    <color name="corporate_navy">#003049</color>
+    <color name="corporate_red">#D90429</color>
+    <color name="corporate_red_neon">#EF233C</color>
+    <color name="corporate_gray">#000000</color>
+    <color name="corporate_gray_light">#000000</color>
+    <color name="corporate_bg_dark">#101922</color>
+    <color name="corporate_blue">#0d7ff2</color>
+    <color name="gray_300">#DEE2E6</color>
 </resources>

@@ -153,10 +153,10 @@ public class UbicacionUtils {
             return metros + " m";
         } else if (distanciaKm < 10.0) {
             // 1-10 km → 1 decimal
-            return String.format("%.1f km", distanciaKm);
+            return String.format(java.util.Locale.US, "%.1f km", distanciaKm);
         } else {
             // Más de 10 km → sin decimales
-            return String.format("%.0f km", distanciaKm);
+            return String.format(java.util.Locale.US, "%.0f km", distanciaKm);
         }
     }
 

@@ -20,10 +20,9 @@ import java.util.concurrent.TimeUnit;
 public class NoticiaServiceHTTP {
     private static final String TAG = "NoticiaServiceHTTP";
 
-    // TODO: Reemplazar con la IP de tu servidor FastAPI
-    // Ejemplo: "http://192.168.1.100:8000/api/"
-    private static final String BASE_URL = "http://10.0.2.2:8000/api/"; // 10.0.2.2 para emulador
-    private static final String NOTICIAS_ENDPOINT = "noticias/";
+    // Usa la configuración centralizada de ApiConfig
+    private static final String BASE_URL = ApiConfig.BASE_URL;
+    private static final String NOTICIAS_ENDPOINT = "noticias";
 
     private static final OkHttpClient client = new OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
@@ -41,7 +40,7 @@ public class NoticiaServiceHTTP {
         List<Noticia> noticias = new ArrayList<>();
 
         try {
-            String url = BASE_URL + NOTICIAS_ENDPOINT;
+            String url = BASE_URL + NOTICIAS_ENDPOINT + "?limit=100";
             Log.d(TAG, "Obteniendo noticias de: " + url);
 
             Request request = new Request.Builder()
@@ -55,11 +54,12 @@ public class NoticiaServiceHTTP {
                 String jsonResponse = response.body().string();
                 Log.d(TAG, "Respuesta recibida: " + jsonResponse.substring(0, Math.min(100, jsonResponse.length())));
 
-                // Parsear JSON a List<Noticia>
-                Type listType = new TypeToken<List<Noticia>>(){}.getType();
-                noticias = gson.fromJson(jsonResponse, listType);
-
-                Log.i(TAG, "Noticias obtenidas: " + (noticias != null ? noticias.size() : 0));
+                // La API retorna: {"success": true, "count": X, "noticias": [...]}
+                NoticiasResponse wrapper = gson.fromJson(jsonResponse, NoticiasResponse.class);
+                if (wrapper != null && wrapper.noticias != null) {
+                    noticias = wrapper.noticias;
+                    Log.i(TAG, "Noticias obtenidas: " + noticias.size());
+                }
             } else {
                 Log.e(TAG, "Error en respuesta: " + response.code() + " - " + response.message());
             }
@@ -120,9 +120,9 @@ public class NoticiaServiceHTTP {
         List<Noticia> noticias = new ArrayList<>();
 
         try {
-            String url = BASE_URL + NOTICIAS_ENDPOINT + "cercanas/" +
-                    "?lat=" + latitud +
-                    "&lon=" + longitud +
+            String url = BASE_URL + NOTICIAS_ENDPOINT + "/cercanas" +
+                    "?latitud=" + latitud +
+                    "&longitud=" + longitud +
                     "&radio=" + radioKm;
 
             Log.d(TAG, "Obteniendo noticias cercanas de: " + url);
@@ -136,9 +136,15 @@ public class NoticiaServiceHTTP {
 
             if (response.isSuccessful() && response.body() != null) {
                 String jsonResponse = response.body().string();
-                Type listType = new TypeToken<List<Noticia>>(){}.getType();
-                noticias = gson.fromJson(jsonResponse, listType);
-                Log.i(TAG, "Noticias cercanas obtenidas: " + (noticias != null ? noticias.size() : 0));
+                Log.d(TAG, "Respuesta cercanas: " + jsonResponse.substring(0, Math.min(200, jsonResponse.length())));
+
+                // La API retorna: {"success": true, "count": X, "noticias": [...]}
+                // Parsear usando una clase wrapper
+                NoticiasCercanasResponse wrapper = gson.fromJson(jsonResponse, NoticiasCercanasResponse.class);
+                if (wrapper != null && wrapper.noticias != null) {
+                    noticias = wrapper.noticias;
+                    Log.i(TAG, "Noticias cercanas obtenidas: " + noticias.size());
+                }
             } else {
                 Log.e(TAG, "Error en respuesta cercanas: " + response.code());
             }
@@ -187,5 +193,23 @@ public class NoticiaServiceHTTP {
 
         Log.i(TAG, "Noticias destacadas: " + destacadas.size());
         return destacadas;
+    }
+
+    /**
+     * Clase auxiliar para parsear la respuesta de noticias
+     */
+    private static class NoticiasResponse {
+        public boolean success;
+        public int count;
+        public List<Noticia> noticias;
+    }
+
+    /**
+     * Clase auxiliar para parsear la respuesta de noticias cercanas
+     */
+    private static class NoticiasCercanasResponse {
+        public boolean success;
+        public int count;
+        public List<Noticia> noticias;
     }
 }

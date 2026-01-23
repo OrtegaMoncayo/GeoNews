@@ -1,0 +1,16 @@
+[
+  {
+    "origin": [
+      "https://noticias-ibarra-fastapi-166115544761.us-central1.run.app",
+      "http://localhost:8000",
+      "http://127.0.0.1:8000"
+    ],
+    "method": ["GET", "POST", "PUT", "DELETE", "HEAD"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": [
+      "Content-Type",
+      "Access-Control-Allow-Origin",
+      "x-goog-resumable"
+    ]
+  }
+]

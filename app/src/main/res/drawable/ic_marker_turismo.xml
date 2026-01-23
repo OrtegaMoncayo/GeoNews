@@ -1,0 +1,37 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Fondo circular Naranja para turismo #ea580c -->
+    <path
+        android:fillColor="#ea580c"
+        android:pathData="M24,2C11.85,2 2,11.85 2,24s9.85,22 22,22 22,-9.85 22,-22S36.15,2 24,2z"/>
+    <!-- Maleta de viaje -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M10,18h28v18c0,2 -2,4 -4,4H14c-2,0 -4,-2 -4,-4V18z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M8,16h32v4H8z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M18,10h12v6H18z"
+        android:strokeWidth="3"
+        android:strokeColor="#FFFFFF"/>
+    <path
+        android:fillColor="#ea580c"
+        android:pathData="M20,12h8v4h-8z"/>
+    <path
+        android:fillColor="#ea580c"
+        android:pathData="M8,22h32v2H8z"/>
+    <path
+        android:fillColor="#ea580c"
+        android:pathData="M32,26h4v8h-4z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M33,28h2v4h-2z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M14,40a2,2 0,1 0,0.1 0M34,40a2,2 0,1 0,0.1 0"/>
+</vector>

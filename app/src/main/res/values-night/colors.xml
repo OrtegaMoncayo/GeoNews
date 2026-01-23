@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ==================== COLORES SEMÁNTICOS (Modo Oscuro) ==================== -->
+
+    <!-- Fondos -->
+    <color name="bg_primary">#121212</color>
+    <color name="bg_secondary">#1E1E1E</color>
+    <color name="bg_card">#1E1E1E</color>
+    <color name="bg_input">#2C2C2C</color>
+
+    <!-- Textos -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B0B0B0</color>
+    <color name="text_hint">#808080</color>
+    <color name="text_on_primary">#000000</color>
+
+    <!-- Iconos -->
+    <color name="icon_primary">#FFFFFF</color>
+    <color name="icon_secondary">#B0B0B0</color>
+    <color name="icon_active">#64B5F6</color>
+
+    <!-- Bordes y divisores -->
+    <color name="divider">#333333</color>
+    <color name="border">#444444</color>
+    <color name="stroke">#333333</color>
+
+    <!-- Navegación -->
+    <color name="nav_background">#1E1E1E</color>
+    <color name="nav_indicator">#64B5F6</color>
+    <color name="nav_icon_active">#64B5F6</color>
+    <color name="nav_icon_inactive">#808080</color>
+    <color name="nav_text_active">#FFFFFF</color>
+    <color name="nav_text_inactive">#808080</color>
+
+    <!-- Status bar -->
+    <color name="status_bar">#121212</color>
+
+    <!-- Chips y badges -->
+    <color name="chip_background">#2C2C2C</color>
+    <color name="chip_text">#B0B0B0</color>
+    <color name="chip_selected_bg">#64B5F6</color>
+    <color name="chip_selected_text">#000000</color>
+
+    <!-- Carrusel del mapa (siempre oscuro para contrastar con el mapa) -->
+    <color name="bg_card_mapa">#1E1E1E</color>
+    <color name="text_card_mapa">#FFFFFF</color>
+    <color name="text_metadata_mapa">#94a3b8</color>
+
+    <!-- Colores base que cambian en modo oscuro -->
+    <color name="background_dark">#121212</color>
+    <color name="surface_dark">#1E1E1E</color>
+    <color name="white">#121212</color>
+    <color name="background_light">#121212</color>
+
+    <!-- Primary en modo oscuro (más claro para mejor visibilidad) -->
+    <color name="primary">#64B5F6</color>
+
+    <!-- ==================== COLORES DE CATEGORÍAS - MODO OSCURO (más claros) ==================== -->
+    <color name="cat_politica">#60a5fa</color>          <!-- Azul claro -->
+    <color name="cat_economia">#34d399</color>          <!-- Verde Esmeralda claro -->
+    <color name="cat_cultura">#e879f9</color>           <!-- Fucsia claro -->
+    <color name="cat_deportes">#a3e635</color>          <!-- Lima claro -->
+    <color name="cat_educacion">#fbbf24</color>         <!-- Dorado claro -->
+    <color name="cat_salud">#f87171</color>             <!-- Rojo claro -->
+    <color name="cat_seguridad">#94a3b8</color>         <!-- Gris Pizarra claro -->
+    <color name="cat_medio_ambiente">#22d3ee</color>    <!-- Cian claro -->
+    <color name="cat_turismo">#fb923c</color>           <!-- Naranja claro -->
+    <color name="cat_tecnologia">#a78bfa</color>        <!-- Violeta claro -->
+
+    <!-- ==================== COMPATIBILIDAD ==================== -->
+    <color name="corporate_navy">#1E3A5F</color>
+    <color name="corporate_red">#EF5350</color>
+    <color name="corporate_red_neon">#EF5350</color>
+    <color name="corporate_gray">#B0B0B0</color>
+    <color name="corporate_gray_light">#B0B0B0</color>
+    <color name="corporate_bg_light">#121212</color>
+    <color name="corporate_bg_dark">#121212</color>
+    <color name="corporate_light_blue">#64B5F6</color>
+    <color name="corporate_blue">#64B5F6</color>
+    <color name="text_gray">#B0B0B0</color>
+    <color name="blue_50">#1E1E1E</color>
+    <color name="gray_300">#444444</color>
+    <color name="gray_400">#B0B0B0</color>
+</resources>

@@ -1,0 +1,33 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Fondo circular Violeta para tecnología #7c3aed -->
+    <path
+        android:fillColor="#7c3aed"
+        android:pathData="M24,2C11.85,2 2,11.85 2,24s9.85,22 22,22 22,-9.85 22,-22S36.15,2 24,2z"/>
+    <!-- Chip/Procesador -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M14,14h20v20H14z"/>
+    <path
+        android:fillColor="#7c3aed"
+        android:pathData="M18,18h12v12H18z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M21,21h6v6h-6z"/>
+    <!-- Pines -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M17,8v6h2v-6zM21,8v6h2v-6zM25,8v6h2v-6zM29,8v6h2v-6z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M17,34v6h2v-6zM21,34v6h2v-6zM25,34v6h2v-6zM29,34v6h2v-6z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M8,17h6v2h-6zM8,21h6v2h-6zM8,25h6v2h-6zM8,29h6v2h-6z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,17h6v2h-6zM34,21h6v2h-6zM34,25h6v2h-6zM34,29h6v2h-6z"/>
+</vector>

@@ -39,4 +39,157 @@
     <string name="cd_avatar">Foto de perfil</string>
     <string name="cd_map">Mapa</string>
     <string name="cd_location">Ubicación</string>
+
+    <!-- Ajustes -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_done">Listo</string>
+    <string name="settings_account">CUENTA</string>
+    <string name="settings_edit_profile">Editar Perfil</string>
+    <string name="settings_my_locations">Mis Ubicaciones</string>
+    <string name="settings_security">Seguridad y Privacidad</string>
+    <string name="settings_content">CONTENIDO</string>
+    <string name="settings_categories">Categorías de Noticias</string>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_theme">Tema</string>
+    <string name="settings_theme_auto">Automático</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Oscuro</string>
+    <string name="settings_all">Todas</string>
+    <string name="settings_notifications">NOTIFICACIONES</string>
+    <string name="settings_push_notifications">Notificaciones</string>
+    <string name="settings_email_digest">Resumen por Email</string>
+    <string name="settings_email_digest_desc">Resumen diario a las 8 AM</string>
+    <string name="settings_support">SOPORTE</string>
+    <string name="settings_help_center">Centro de Ayuda</string>
+    <string name="settings_about">Acerca de GeoNews</string>
+    <string name="settings_logout">Cerrar Sesión</string>
+    <string name="settings_version">Versión 0.1.0 (Build 2024)</string>
+
+    <!-- Perfil -->
+    <string name="profile_title">Perfil</string>
+    <string name="profile_settings">Ajustes</string>
+    <string name="profile_edit">Editar Perfil</string>
+    <string name="profile_news_read">Noticias leídas</string>
+    <string name="profile_saved">Guardadas</string>
+    <string name="profile_days_active">Días activo</string>
+    <string name="profile_interests">Mis Intereses</string>
+    <string name="profile_ocultar_noticias_mode">Ocultar noticias</string>
+    <string name="profile_ocultar_noticias_desc">Solo ver noticias cercanas a tu ubicación</string>
+    <string name="profile_saved_articles">Artículos Guardados</string>
+    <string name="profile_privacy">Privacidad y Seguridad</string>
+
+    <!-- Selector de idioma -->
+    <string name="language_spanish">Español</string>
+    <string name="language_english">English</string>
+    <string name="language_select">Seleccionar idioma</string>
+
+    <!-- Navegación inferior -->
+    <string name="nav_news">Noticias</string>
+    <string name="nav_map">Mapa</string>
+    <string name="nav_profile">Perfil</string>
+
+    <!-- Editar Perfil -->
+    <string name="edit_profile_cancel">Cancelar</string>
+    <string name="edit_profile_title">Editar Perfil</string>
+    <string name="edit_profile_change_photo">Cambiar Foto de Perfil</string>
+    <string name="edit_profile_full_name">Nombre Completo</string>
+    <string name="edit_profile_full_name_hint">Ingresa tu nombre</string>
+    <string name="edit_profile_username">Nombre de Usuario</string>
+    <string name="edit_profile_username_hint">usuario</string>
+    <string name="edit_profile_bio">Biografía</string>
+    <string name="edit_profile_bio_hint">Cuéntanos sobre ti...</string>
+    <string name="edit_profile_location">Ubicación</string>
+    <string name="edit_profile_location_hint">Ibarra, Ecuador</string>
+    <string name="edit_profile_email">Correo Electrónico</string>
+    <string name="edit_profile_email_hint">email@ejemplo.com</string>
+    <string name="edit_profile_verified">✓ VERIFICADO</string>
+    <string name="edit_profile_save">Guardar Cambios</string>
+    <string name="cd_profile_photo">Foto de perfil</string>
+    <string name="cd_change_photo">Cambiar foto</string>
+
+    <!-- Login -->
+    <string name="login_title">GeoNews</string>
+    <string name="login_subtitle">Inicia sesión para continuar</string>
+    <string name="login_email_hint">correo@ejemplo.com</string>
+    <string name="login_password_hint">Tu contraseña</string>
+    <string name="login_forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="login_sign_in">Iniciar Sesión</string>
+    <string name="login_sign_up">Registrarse</string>
+
+    <!-- Registro -->
+    <string name="register_title">Crear Cuenta</string>
+    <string name="register_subtitle">Completa tus datos para comenzar</string>
+    <string name="register_full_name">Nombre Completo</string>
+    <string name="register_name">Nombre</string>
+    <string name="register_name_hint">Tu nombre completo</string>
+    <string name="register_confirm_password">Confirmar Contraseña</string>
+    <string name="register_confirm_hint">Repite tu contraseña</string>
+    <string name="register_back">Volver</string>
+
+    <!-- Detalle Noticia -->
+    <string name="detail_views">visualizaciones</string>
+    <string name="detail_published">Publicado</string>
+    <string name="detail_draft">Borrador</string>
+    <string name="detail_archived">Archivado</string>
+    <string name="detail_view_map">Ver en Mapa</string>
+    <string name="detail_no_location">Ubicación no disponible</string>
+    <string name="detail_share">Compartir noticia</string>
+    <string name="detail_article_saved">Artículo guardado</string>
+    <string name="detail_article_removed">Artículo eliminado de guardados</string>
+    <string name="detail_today">Hoy</string>
+
+    <!-- Lista Noticias -->
+    <string name="search_hint">Buscar noticias locales...</string>
+    <string name="filter_by_parish">Filtrar por parroquia</string>
+    <string name="filter_all">Todas</string>
+    <string name="news_count">%d noticias</string>
+
+    <!-- Mapa -->
+    <string name="map_title">Mapa de Noticias</string>
+    <string name="map_search">Buscar en el mapa</string>
+    <string name="map_nearby_news">Noticias cercanas</string>
+
+    <!-- Splash -->
+    <string name="splash_loading">CARGANDO APLICACIÓN</string>
+    <string name="splash_location">IBARRA</string>
+    <string name="app_version">v2.4.0</string>
+
+    <!-- Perfil Bio -->
+    <string name="profile_bio_default">Mantente informado de las noticias\nlocales de Ibarra y sus alrededores</string>
+    <string name="profile_default_location">Ibarra, Ecuador</string>
+    <string name="profile_default_user">Usuario</string>
+
+    <!-- Artículos Guardados -->
+    <string name="saved_no_articles">No tienes artículos guardados</string>
+    <string name="saved_hint">Guarda artículos tocando la estrella\nen el detalle de cualquier noticia</string>
+    <string name="saved_explore">Explorar Noticias</string>
+
+    <!-- Notificaciones -->
+    <string name="notifications_title">Notificaciones</string>
+    <string name="notifications_subtitle">Configura qué tipo de notificaciones deseas recibir</string>
+    <string name="notifications_enable">Activar notificaciones</string>
+    <string name="notifications_enable_desc">Recibe alertas de noticias y eventos</string>
+    <string name="notifications_types">Tipos de notificaciones</string>
+    <string name="notifications_news">Noticias</string>
+    <string name="notifications_news_desc">Nuevas noticias publicadas</string>
+    <string name="notifications_breaking">Noticias Destacadas</string>
+    <string name="notifications_breaking_desc">Alertas de noticias importantes</string>
+    <string name="notifications_help">Las notificaciones te ayudan a estar al día con las últimas noticias y eventos de Ibarra</string>
+
+    <!-- Detalle Noticia Extra -->
+    <string name="detail_community_impact">Impacto en la Comunidad</string>
+    <string name="detail_view_project_map">Ver Mapa del Proyecto</string>
+    <string name="detail_location">Ubicación</string>
+    <string name="detail_open_full_map">Ver en mapa completo</string>
+
+    <!-- Placeholders para items -->
+    <string name="placeholder_category">Categoría</string>
+    <string name="placeholder_title">Título de la noticia</string>
+    <string name="placeholder_description">Descripción de la noticia</string>
+    <string name="placeholder_time">Hace 1h</string>
+    <string name="placeholder_distance">0 km</string>
+    <string name="breaking_news">URGENTE</string>
+
+    <!-- Contador de caracteres -->
+    <string name="char_counter" formatted="false">%d/%d</string>
 </resources>

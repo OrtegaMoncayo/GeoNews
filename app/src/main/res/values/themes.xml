@@ -1,34 +1,119 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Tema base de la aplicación -->
-    <style name="Theme.NoticiasIbarra" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
-        <!-- Colores principales -->
+    <!-- ==================== TEMA BASE - DayNight (Automático) ==================== -->
+    <style name="Base.Theme.NoticiasIbarra" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Colores primarios -->
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+        <item name="colorOnPrimary">@color/text_on_primary</item>
+        <item name="colorPrimaryContainer">@color/bg_secondary</item>
+        <item name="colorOnPrimaryContainer">@color/primary</item>
 
-        <!-- Colores de fondo -->
-        <item name="android:colorBackground">@color/white</item>
-        <item name="colorSurface">@color/white</item>
+        <!-- Colores secundarios -->
+        <item name="colorSecondary">@color/cat_salud</item>
+        <item name="colorOnSecondary">@color/text_on_primary</item>
+        <item name="colorSecondaryContainer">@color/bg_secondary</item>
+        <item name="colorOnSecondaryContainer">@color/cat_salud</item>
 
-        <!-- Colores de texto -->
-        <item name="android:textColorPrimary">@color/black</item>
-        <item name="android:textColorSecondary">@color/gray</item>
+        <!-- Colores terciarios -->
+        <item name="colorTertiary">@color/text_secondary</item>
+        <item name="colorOnTertiary">@color/text_on_primary</item>
+        <item name="colorTertiaryContainer">@color/bg_secondary</item>
+        <item name="colorOnTertiaryContainer">@color/text_secondary</item>
+
+        <!-- Colores de error -->
+        <item name="colorError">@color/cat_salud</item>
+        <item name="colorOnError">@color/text_on_primary</item>
+        <item name="colorErrorContainer">@color/bg_secondary</item>
+        <item name="colorOnErrorContainer">@color/cat_salud</item>
+
+        <!-- Colores de fondo y superficie -->
+        <item name="android:colorBackground">@color/bg_primary</item>
+        <item name="colorOnBackground">@color/text_primary</item>
+        <item name="colorSurface">@color/bg_card</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorSurfaceVariant">@color/bg_secondary</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+
+        <!-- Colores de outline -->
+        <item name="colorOutline">@color/divider</item>
+        <item name="colorOutlineVariant">@color/stroke</item>
+
+        <!-- Control colors -->
+        <item name="colorControlActivated">@color/primary</item>
+        <item name="colorControlNormal">@color/icon_secondary</item>
+
+        <!-- Text colors -->
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
 
         <!-- Status bar -->
-        <item name="android:statusBarColor">@color/primary_dark</item>
-        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">@color/status_bar</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/nav_background</item>
+        <item name="android:windowBackground">@color/bg_primary</item>
+
+        <!-- Formas redondeadas -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.NoticiasIbarra.SmallComponent</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.NoticiasIbarra.MediumComponent</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.NoticiasIbarra.LargeComponent</item>
+
+        <!-- Widgets -->
+        <item name="materialButtonStyle">@style/Widget.NoticiasIbarra.Button</item>
+        <item name="materialCardViewStyle">@style/Widget.NoticiasIbarra.CardView</item>
+        <item name="textInputStyle">@style/Widget.NoticiasIbarra.TextInputLayout</item>
     </style>
 
-    <!-- Tema sin ActionBar (para Login, Splash, etc.) -->
-    <style name="Theme.NoticiasIbarra.NoActionBar">
+    <!-- Tema principal -->
+    <style name="Theme.NoticiasIbarra" parent="Base.Theme.NoticiasIbarra" />
+
+    <!-- Tema sin Action Bar -->
+    <style name="Theme.NoticiasIbarra.NoActionBar" parent="Theme.NoticiasIbarra">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
 
-    <!-- Tema para pantallas con Toolbar personalizado -->
-    <style name="Theme.NoticiasIbarra.Toolbar" parent="Theme.NoticiasIbarra">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
+    <!-- ==================== FORMAS REDONDEADAS ==================== -->
+
+    <style name="ShapeAppearance.NoticiasIbarra.SmallComponent" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+
+    <style name="ShapeAppearance.NoticiasIbarra.MediumComponent" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <style name="ShapeAppearance.NoticiasIbarra.LargeComponent" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">24dp</item>
+    </style>
+
+    <!-- ==================== WIDGETS ==================== -->
+
+    <!-- Botones -->
+    <style name="Widget.NoticiasIbarra.Button" parent="Widget.Material3.Button">
+        <item name="cornerRadius">12dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:paddingTop">14dp</item>
+        <item name="android:paddingBottom">14dp</item>
+    </style>
+
+    <!-- Cards -->
+    <style name="Widget.NoticiasIbarra.CardView" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">2dp</item>
+        <item name="cardBackgroundColor">?attr/colorSurface</item>
+        <item name="strokeWidth">0dp</item>
+    </style>
+
+    <!-- Text Fields -->
+    <style name="Widget.NoticiasIbarra.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">12dp</item>
+        <item name="boxCornerRadiusTopEnd">12dp</item>
+        <item name="boxCornerRadiusBottomStart">12dp</item>
+        <item name="boxCornerRadiusBottomEnd">12dp</item>
+        <item name="boxStrokeWidth">1.5dp</item>
     </style>
 </resources>

@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Card de noticia VERTICAL estilo GeoNews - Imagen arriba -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp"
+    android:layout_marginStart="12dp"
+    android:layout_marginEnd="12dp"
+    android:layout_marginTop="6dp"
+    android:layout_marginBottom="6dp"
+    app:cardBackgroundColor="@color/bg_card"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground">
@@ -15,43 +22,64 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Imagen de la noticia (opcional) -->
-        <ImageView
-            android:id="@+id/iv_imagen_noticia"
+        <!-- Imagen de la noticia ARRIBA (como en el diseño) -->
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="180dp"
-            android:scaleType="centerCrop"
-            android:background="?android:attr/colorBackground"
-            android:visibility="gone"
-            android:contentDescription="Imagen de noticia"/>
+            android:layout_height="160dp">
 
+            <ImageView
+                android:id="@+id/iv_imagen_noticia"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:background="@color/bg_secondary"
+                android:contentDescription="Imagen de noticia"/>
+
+            <!-- Bookmark icon (esquina superior derecha) -->
+            <ImageView
+                android:id="@+id/iv_bookmark"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="10dp"
+                android:padding="6dp"
+                android:src="@drawable/ic_bookmark_outline"
+                app:tint="@android:color/white"
+                android:background="@drawable/bg_circle"
+                android:contentDescription="Guardar"/>
+
+        </FrameLayout>
+
+        <!-- Contenido de texto -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="14dp">
 
-            <!-- Categoría -->
+            <!-- Categoría (EVENTS, BREAKING, etc.) -->
             <TextView
                 android:id="@+id/tv_categoria"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Categoría"
-                android:textSize="12sp"
+                android:text="@string/placeholder_category"
+                android:textSize="11sp"
                 android:textStyle="bold"
-                android:textColor="?attr/colorPrimary"
+                android:textColor="#FF8C42"
                 android:textAllCaps="true"
-                android:layout_marginBottom="4dp"/>
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="8dp"/>
 
             <!-- Título -->
             <TextView
                 android:id="@+id/tv_titulo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Título de la noticia"
-                android:textSize="18sp"
+                android:text="@string/placeholder_title"
+                android:textSize="17sp"
                 android:textStyle="bold"
-                android:textColor="?android:attr/textColorPrimary"
+                android:textColor="@color/text_primary"
+                android:lineSpacingExtra="2dp"
                 android:maxLines="2"
                 android:ellipsize="end"
                 android:layout_marginBottom="8dp"/>
@@ -61,56 +89,69 @@
                 android:id="@+id/tv_descripcion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Descripción breve de la noticia que aparecerá en la lista"
-                android:textSize="14sp"
-                android:textColor="?android:attr/textColorSecondary"
-                android:maxLines="3"
+                android:text="@string/placeholder_description"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:lineSpacingExtra="2dp"
+                android:maxLines="2"
                 android:ellipsize="end"
-                android:layout_marginBottom="12dp"/>
+                android:layout_marginBottom="10dp"/>
 
-            <!-- Footer: Fecha, ubicación y distancia -->
+            <!-- Footer: Ubicación + Distancia + Tiempo -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
-                <!-- Fecha -->
+                <!-- Icono de ubicación + Distancia -->
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:src="@drawable/ic_location"
+                    app:tint="#3F51B5"
+                    android:contentDescription="Ubicación"/>
+
+                <TextView
+                    android:id="@+id/tv_distancia"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/placeholder_distance"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="8dp"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
+
+                <!-- Separador -->
+                <View
+                    android:layout_width="3dp"
+                    android:layout_height="3dp"
+                    android:background="@color/text_hint"
+                    android:alpha="0.5"
+                    android:layout_marginEnd="8dp"/>
+
+                <!-- Tiempo -->
                 <TextView
                     android:id="@+id/tv_fecha"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Hoy"
+                    android:text="@string/placeholder_time"
                     android:textSize="12sp"
-                    android:textColor="?android:attr/textColorSecondary"/>
+                    android:textColor="@color/text_secondary"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
 
-                <!-- Ubicación -->
+                <!-- Ubicación (texto) -->
                 <TextView
                     android:id="@+id/tv_ubicacion"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="El Sagrario"
-                    android:textSize="12sp"
-                    android:textColor="?android:attr/textColorSecondary"
-                    android:drawablePadding="4dp"
-                    android:layout_marginEnd="8dp"
-                    android:gravity="center_vertical"/>
-
-                <!-- Distancia (se muestra solo si está disponible) -->
-                <TextView
-                    android:id="@+id/tv_distancia"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="2.5 km"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="?attr/colorPrimary"
-                    android:visibility="gone"
-                    android:drawableStart="@drawable/ic_location"
-                    android:drawableTint="?attr/colorPrimary"
-                    android:drawablePadding="2dp"
-                    android:gravity="center_vertical"/>
+                    android:text=""
+                    android:visibility="gone"/>
 
             </LinearLayout>
 
@@ -118,4 +159,4 @@
 
     </LinearLayout>
 
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

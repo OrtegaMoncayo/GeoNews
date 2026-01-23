@@ -1,144 +1,265 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Feed de noticias estilo GeoNews - Modo claro con búsqueda y filtros -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/bg_primary">
 
-    <!-- Toolbar superior -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        android:elevation="4dp"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Noticias Locales"
-            android:textColor="@android:color/white"
-            android:textSize="20sp"
-            android:textStyle="bold"/>
-    </androidx.appcompat.widget.Toolbar>
-
-    <!-- Panel de Filtros (Geolocalización + Parroquias) -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_filtros"
+    <!-- Header con título y notificaciones -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="2dp">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp"
+        android:paddingTop="20dp">
 
-        <LinearLayout
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/login_title"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"/>
+
+        <!-- Icono de búsqueda -->
+        <ImageView
+            android:id="@+id/iv_buscar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:src="@android:drawable/ic_menu_search"
+            app:tint="@color/icon_primary"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/action_search"/>
+
+        <!-- Icono de notificaciones -->
+        <ImageView
+            android:id="@+id/iv_notificaciones"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:src="@android:drawable/ic_popup_reminder"
+            app:tint="@color/icon_primary"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/settings_push_notifications"/>
+
+    </LinearLayout>
+
+    <!-- Búsqueda -->
+    <LinearLayout
+        android:id="@+id/layout_busqueda_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_busqueda"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="12dp">
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="8dp"
+            app:boxBackgroundColor="@color/bg_input"
+            app:boxBackgroundMode="filled"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="1dp"
+            app:boxStrokeColor="@color/primary"
+            app:startIconDrawable="@android:drawable/ic_menu_search"
+            app:startIconTint="@color/icon_secondary"
+            app:endIconMode="clear_text"
+            app:endIconTint="@color/icon_secondary"
+            app:hintTextColor="@color/text_secondary"
+            style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox">
 
-            <!-- Selector de Radio de búsqueda -->
-            <TextView
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_busqueda"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/search_hint"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_hint"
+                android:inputType="text"
+                android:maxLines="1"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Contador de resultados -->
+        <TextView
+            android:id="@+id/tv_resultados_busqueda"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="6dp"
+            android:text="13 noticias"
+            android:textSize="13sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:visibility="visible"/>
+
+    </LinearLayout>
+
+    <!-- Filtros horizontales visuales (estilo GeoNews) -->
+    <HorizontalScrollView
+        android:id="@+id/hsv_filtros"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chip_group_radio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            app:singleSelection="true"
+            app:selectionRequired="false">
+
+            <!-- Chip Todas -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_todas"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="📍 Buscar noticias cercanas"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="?android:attr/textColorPrimary"/>
+                android:layout_height="38dp"
+                android:text="@string/filter_all"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp"
+                android:checked="true"
+                app:chipBackgroundColor="@color/primary"
+                app:chipCornerRadius="20dp"/>
 
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chip_group_radio"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:singleSelection="true"
-                app:selectionRequired="false">
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_todas"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Todas"
-                    android:checked="true"/>
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_2km"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="2 km"/>
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_5km"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="5 km"/>
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_10km"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="10 km"/>
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_20km"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="20 km"/>
-            </com.google.android.material.chip.ChipGroup>
-
-            <!-- Separador -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginVertical="12dp"
-                android:background="#E0E0E0"/>
-
-            <!-- Selector de Parroquia -->
-            <TextView
+            <!-- Chip 2km -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_2km"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🏘️ Filtrar por parroquia"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="?android:attr/textColorPrimary"/>
+                android:layout_height="38dp"
+                android:text="2 km"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                app:chipBackgroundColor="@color/chip_background"
+                app:chipStrokeColor="@color/border"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="20dp"/>
 
-            <Spinner
-                android:id="@+id/spinner_parroquias"
+            <!-- Chip 5km -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_5km"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:text="5 km"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                app:chipBackgroundColor="@color/chip_background"
+                app:chipStrokeColor="@color/border"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="20dp"/>
+
+            <!-- Chip 10km -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_10km"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:text="10 km"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                app:chipBackgroundColor="@color/chip_background"
+                app:chipStrokeColor="@color/border"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="20dp"/>
+
+            <!-- Chip 20km -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_20km"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:text="20 km"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                app:chipBackgroundColor="@color/chip_background"
+                app:chipStrokeColor="@color/border"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="20dp"/>
+
+        </com.google.android.material.chip.ChipGroup>
+
+    </HorizontalScrollView>
+
+    <!-- Panel de filtros expandible (oculto por defecto) -->
+    <LinearLayout
+        android:id="@+id/layout_busqueda_filtros"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_filtros"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            app:cardBackgroundColor="@color/bg_card"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:minHeight="48dp"/>
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/filter_by_parish"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"/>
 
-    <!-- Indicador de ubicación actual -->
+                <Spinner
+                    android:id="@+id/spinner_parroquias"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:minHeight="48dp"/>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+
+    <!-- Indicador de ubicación (oculto) -->
     <TextView
         android:id="@+id/tv_ubicacion_actual"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:text="📍 Obteniendo tu ubicación..."
-        android:textSize="12sp"
-        android:textColor="?android:attr/textColorSecondary"
         android:visibility="gone"/>
 
-    <!-- Contenido principal: RecyclerView de noticias -->
+    <!-- RecyclerView de noticias -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_noticias"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="8dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="80dp"
         android:clipToPadding="false"/>
 
-    <!-- Navegación inferior (incluida desde bottom_navigation.xml) -->
+    <!-- Navegación inferior -->
     <include layout="@layout/bottom_navigation"/>
 
 </LinearLayout>

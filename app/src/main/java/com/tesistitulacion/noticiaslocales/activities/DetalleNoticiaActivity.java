@@ -1,21 +1,31 @@
 package com.tesistitulacion.noticiaslocales.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.button.MaterialButton;
 import com.squareup.picasso.Picasso;
 import com.tesistitulacion.noticiaslocales.R;
 import com.tesistitulacion.noticiaslocales.firebase.FirebaseManager;
 import com.tesistitulacion.noticiaslocales.modelo.Noticia;
+import com.tesistitulacion.noticiaslocales.utils.AnimationHelper;
+import com.tesistitulacion.noticiaslocales.utils.LocaleManager;
 import com.tesistitulacion.noticiaslocales.utils.UsuarioPreferences;
 
 import java.text.SimpleDateFormat;
@@ -24,11 +34,13 @@ import java.util.Locale;
 
 /**
  * Activity que muestra el detalle completo de una noticia
+ * Incluye mini-mapa para mostrar la ubicación de la noticia
  */
-public class DetalleNoticiaActivity extends AppCompatActivity {
+public class DetalleNoticiaActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final String TAG = "DetalleNoticiaActivity";
     public static final String EXTRA_NOTICIA_ID = "noticia_id";
+    private static final float ZOOM_MAPA_DETALLE = 15f;
 
     private String noticiaId;
     private Noticia noticia;
@@ -43,6 +55,7 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
     private TextView tvContenido;
     private TextView tvVisualizaciones;
     private TextView tvEstado;
+    private TextView tvAutor;
     private MaterialButton btnVerMapa;
 
     // Botones flotantes
@@ -57,6 +70,18 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
     private TextView tvImpactoComunitario;
     private TextView tvHashtags;
 
+    // Views para mini-mapa
+    private LinearLayout layoutUbicacionMapa;
+    private TextView tvDireccionMapa;
+    private ImageView btnExpandirMapa;
+    private GoogleMap miniMapa;
+    private SupportMapFragment mapFragment;
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(LocaleManager.applyLocale(newBase));
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,7 +92,7 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
             Log.d(TAG, "Layout inflado correctamente");
         } catch (Exception e) {
             Log.e(TAG, "Error al inflar layout", e);
-            Toast.makeText(this, "Error al cargar la vista: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            showToast("Error al cargar la vista: " + e.getMessage(), Toast.LENGTH_LONG);
             finish();
             return;
         }
@@ -77,7 +102,7 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
         Log.d(TAG, "Noticia ID recibido: " + noticiaId);
 
         if (noticiaId == null) {
-            Toast.makeText(this, "Error: No se especificó la noticia", Toast.LENGTH_SHORT).show();
+            showToast("Error: No se especificó la noticia");
             finish();
             return;
         }
@@ -93,7 +118,7 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
             Log.d(TAG, "Carga de noticia iniciada");
         } catch (Exception e) {
             Log.e(TAG, "Error en onCreate", e);
-            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            showToast("Error: " + e.getMessage(), Toast.LENGTH_LONG);
             finish();
         }
     }
@@ -108,6 +133,7 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
         tvContenido = findViewById(R.id.tv_contenido);
         tvVisualizaciones = findViewById(R.id.tv_visualizaciones);
         tvEstado = findViewById(R.id.tv_estado);
+        tvAutor = findViewById(R.id.tv_autor);
         btnVerMapa = findViewById(R.id.btn_ver_mapa);
 
         // Botones flotantes
@@ -121,6 +147,11 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
         layoutImpactoComunitario = findViewById(R.id.layout_impacto_comunitario);
         tvImpactoComunitario = findViewById(R.id.tv_impacto_comunitario);
         tvHashtags = findViewById(R.id.tv_hashtags);
+
+        // Views para mini-mapa
+        layoutUbicacionMapa = findViewById(R.id.layout_ubicacion_mapa);
+        tvDireccionMapa = findViewById(R.id.tv_direccion_mapa);
+        btnExpandirMapa = findViewById(R.id.btn_expandir_mapa);
     }
 
     private void configurarBotones() {
@@ -133,14 +164,7 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
 
         // Botón bookmark/guardar
         if (btnBookmark != null) {
-            btnBookmark.setOnClickListener(v -> {
-                if (noticia != null) {
-                    // TODO: Implementar funcionalidad de guardar favoritos
-                    Toast.makeText(this, "Noticia guardada en favoritos", Toast.LENGTH_SHORT).show();
-                    // Cambiar icono a estrella llena
-                    btnBookmark.setImageResource(android.R.drawable.star_big_on);
-                }
-            });
+            btnBookmark.setOnClickListener(v -> toggleGuardarNoticia());
         }
 
         // Botón compartir
@@ -152,18 +176,28 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
             });
         }
 
-        // Botón ver en mapa
-        btnVerMapa.setOnClickListener(v -> {
-            if (noticia != null && noticia.getLatitud() != null && noticia.getLongitud() != null) {
-                Intent intent = new Intent(this, MapaActivity.class);
-                intent.putExtra("latitud", noticia.getLatitud());
-                intent.putExtra("longitud", noticia.getLongitud());
-                intent.putExtra("titulo", noticia.getTitulo());
-                startActivity(intent);
-            } else {
-                Toast.makeText(this, "Esta noticia no tiene ubicación", Toast.LENGTH_SHORT).show();
-            }
-        });
+        // Botón ver en mapa (oculto por defecto)
+        btnVerMapa.setOnClickListener(v -> abrirMapaCompleto());
+
+        // Ocultar botón expandir - el mapa solo muestra la ubicación
+        if (btnExpandirMapa != null) {
+            btnExpandirMapa.setVisibility(android.view.View.GONE);
+        }
+    }
+
+    /**
+     * Abre el mapa completo centrándose en la ubicación de la noticia
+     */
+    private void abrirMapaCompleto() {
+        if (noticia != null && noticia.getLatitud() != null && noticia.getLongitud() != null) {
+            Intent intent = new Intent(this, MapaActivity.class);
+            intent.putExtra("latitud", noticia.getLatitud());
+            intent.putExtra("longitud", noticia.getLongitud());
+            intent.putExtra("titulo", noticia.getTitulo());
+            startActivity(intent);
+        } else {
+            showToast("Esta noticia no tiene ubicación");
+        }
     }
 
     /**
@@ -184,7 +218,7 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
         try {
             startActivity(Intent.createChooser(intentCompartir, "Compartir noticia"));
         } catch (android.content.ActivityNotFoundException e) {
-            Toast.makeText(this, "No se encontró ninguna app para compartir", Toast.LENGTH_SHORT).show();
+            showToast("No se encontró ninguna app para compartir");
         }
     }
 
@@ -198,9 +232,7 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
                     noticia = noticiaObtenida;
                     mostrarNoticia();
                 } else {
-                    Toast.makeText(DetalleNoticiaActivity.this,
-                            "No se encontró la noticia",
-                            Toast.LENGTH_SHORT).show();
+                    showToast("No se encontró la noticia");
                     finish();
                 }
             }
@@ -208,9 +240,7 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
             @Override
             public void onError(Exception e) {
                 Log.e(TAG, "Error al cargar noticia", e);
-                Toast.makeText(DetalleNoticiaActivity.this,
-                        "Error al cargar la noticia: " + e.getMessage(),
-                        Toast.LENGTH_LONG).show();
+                showToast("Error al cargar la noticia: " + e.getMessage(), Toast.LENGTH_LONG);
                 finish();
             }
         });
@@ -219,6 +249,7 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
     private void mostrarNoticia() {
         mostrarImagenPortada();
         mostrarInformacionBasicaNoticia();
+        mostrarAutorNoticia();
         mostrarFechaNoticia();
         mostrarUbicacionNoticia();
         mostrarContenidoNoticia();
@@ -226,6 +257,7 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
         mostrarVisualizacionesNoticia();
         mostrarEstadoNoticia();
         configurarBotonesNoticia();
+        actualizarIconoBookmark();
         incrementarVisualizaciones();
 
         Log.d(TAG, "Noticia mostrada: " + noticia.getTitulo());
@@ -273,6 +305,17 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
         }
 
         tvTitulo.setText(noticia.getTitulo());
+    }
+
+    private void mostrarAutorNoticia() {
+        if (tvAutor != null) {
+            String autorNombre = noticia.getAutorNombre();
+            if (autorNombre != null && !autorNombre.isEmpty()) {
+                tvAutor.setText(autorNombre);
+            } else {
+                tvAutor.setText("Redacción GeoNews");
+            }
+        }
     }
 
     private void mostrarFechaNoticia() {
@@ -366,9 +409,72 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
     }
 
     private void configurarBotonesNoticia() {
-        if (noticia.getLatitud() == null || noticia.getLongitud() == null) {
+        // Verificar si la noticia tiene ubicación
+        if (noticia.getLatitud() != null && noticia.getLongitud() != null) {
+            // Mostrar mini-mapa y ocultar botón
+            layoutUbicacionMapa.setVisibility(android.view.View.VISIBLE);
+            btnVerMapa.setVisibility(android.view.View.GONE);
+
+            // Inicializar mini-mapa
+            inicializarMiniMapa();
+
+            // Mostrar dirección
+            String direccion = noticia.getParroquiaNombre() != null ?
+                noticia.getParroquiaNombre() + ", Ibarra" : "Ibarra, Ecuador";
+            tvDireccionMapa.setText(direccion);
+        } else {
+            // No hay ubicación, ocultar mapa y mostrar botón deshabilitado
+            layoutUbicacionMapa.setVisibility(android.view.View.GONE);
+            btnVerMapa.setVisibility(android.view.View.VISIBLE);
             btnVerMapa.setEnabled(false);
             btnVerMapa.setText("Ubicación no disponible");
+        }
+    }
+
+    /**
+     * Inicializa el mini-mapa de la noticia
+     */
+    private void inicializarMiniMapa() {
+        // Crear SupportMapFragment dinámicamente
+        mapFragment = SupportMapFragment.newInstance();
+
+        // Agregar el fragment al contenedor
+        getSupportFragmentManager()
+            .beginTransaction()
+            .replace(R.id.map_container_detalle, mapFragment)
+            .commit();
+
+        // Obtener el mapa de forma asíncrona
+        mapFragment.getMapAsync(this);
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        miniMapa = googleMap;
+
+        // Configurar mapa (modo lite para mejor rendimiento)
+        miniMapa.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        miniMapa.getUiSettings().setZoomControlsEnabled(false);
+        miniMapa.getUiSettings().setAllGesturesEnabled(false); // Deshabilitar gestos en mini-mapa
+        miniMapa.getUiSettings().setMapToolbarEnabled(false);
+
+        // Mostrar ubicación de la noticia
+        if (noticia != null && noticia.getLatitud() != null && noticia.getLongitud() != null) {
+            LatLng ubicacionNoticia = new LatLng(noticia.getLatitud(), noticia.getLongitud());
+
+            // Agregar marcador
+            miniMapa.addMarker(new MarkerOptions()
+                .position(ubicacionNoticia)
+                .title(noticia.getTitulo()));
+
+            // Centrar cámara
+            miniMapa.moveCamera(CameraUpdateFactory.newLatLngZoom(ubicacionNoticia, ZOOM_MAPA_DETALLE));
+
+            // Deshabilitar interacción - solo mostrar ubicación
+            miniMapa.getUiSettings().setAllGesturesEnabled(false);
+            miniMapa.getUiSettings().setMapToolbarEnabled(false);
+
+            Log.d(TAG, "Mini-mapa configurado en: " + ubicacionNoticia);
         }
     }
 
@@ -408,6 +514,78 @@ public class DetalleNoticiaActivity extends AppCompatActivity {
         }
 
         return fechaStr;
+    }
+
+    // ==================== GUARDAR/BOOKMARK ====================
+
+    /**
+     * Alterna entre guardar y eliminar la noticia de favoritos
+     * Incluye animaciones visuales para feedback del usuario
+     */
+    private void toggleGuardarNoticia() {
+        if (noticia == null || noticiaId == null) {
+            showToast("Error: No se puede guardar la noticia");
+            return;
+        }
+
+        boolean estaGuardada = UsuarioPreferences.isNoticiaGuardada(this, noticiaId);
+
+        if (estaGuardada) {
+            // Eliminar de guardados con animación
+            AnimationHelper.removeAnimation(btnBookmark, () -> {
+                UsuarioPreferences.eliminarNoticiaGuardada(this, noticiaId);
+                btnBookmark.setImageResource(R.drawable.ic_bookmark_outline);
+                btnBookmark.setImageTintList(android.content.res.ColorStateList.valueOf(
+                    getResources().getColor(R.color.icon_primary, getTheme())));
+            });
+            showToast("Artículo eliminado de guardados");
+            Log.d(TAG, "Noticia eliminada de guardados: " + noticiaId);
+        } else {
+            // Guardar con animación especial
+            AnimationHelper.bookmarkToggle(btnBookmark, true, () -> {
+                UsuarioPreferences.guardarNoticia(this, noticiaId);
+                btnBookmark.setImageResource(R.drawable.ic_bookmark_filled);
+                // Quitar tint para mostrar el color dorado del icono
+                btnBookmark.setImageTintList(null);
+            });
+            showToast("Artículo guardado");
+            Log.d(TAG, "Noticia guardada: " + noticiaId);
+        }
+    }
+
+    /**
+     * Actualiza el ícono del bookmark según el estado guardado
+     * Se llama al cargar la noticia para mostrar el estado correcto
+     */
+    private void actualizarIconoBookmark() {
+        if (btnBookmark != null && noticiaId != null) {
+            boolean estaGuardada = UsuarioPreferences.isNoticiaGuardada(this, noticiaId);
+            if (estaGuardada) {
+                btnBookmark.setImageResource(R.drawable.ic_bookmark_filled);
+                // Quitar tint para mostrar el color dorado
+                btnBookmark.setImageTintList(null);
+            } else {
+                btnBookmark.setImageResource(R.drawable.ic_bookmark_outline);
+                btnBookmark.setImageTintList(android.content.res.ColorStateList.valueOf(
+                    getResources().getColor(R.color.icon_primary, getTheme())));
+            }
+        }
+    }
+
+    // ==================== HELPER METHODS ====================
+
+    /**
+     * Muestra un Toast de manera consistente
+     */
+    private void showToast(String mensaje) {
+        Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Muestra un Toast con duración personalizada
+     */
+    private void showToast(String mensaje, int duracion) {
+        Toast.makeText(this, mensaje, duracion).show();
     }
 
 }

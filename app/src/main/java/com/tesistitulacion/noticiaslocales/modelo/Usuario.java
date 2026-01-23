@@ -17,6 +17,7 @@ public class Usuario {
     private Long fechaRegistro;
     private Long ultimaConexion;
     private Integer noticiasPublicadas;
+    private Integer noticiasLeidas;
     private Boolean verificado;
     private String tipoUsuario; // 'usuario', 'reportero', 'admin'
     private String createdAt;
@@ -129,6 +130,14 @@ public class Usuario {
 
     public void setNoticiasPublicadas(Integer noticiasPublicadas) {
         this.noticiasPublicadas = noticiasPublicadas;
+    }
+
+    public Integer getNoticiasLeidas() {
+        return noticiasLeidas;
+    }
+
+    public void setNoticiasLeidas(Integer noticiasLeidas) {
+        this.noticiasLeidas = noticiasLeidas;
     }
 
     public Boolean getVerificado() {

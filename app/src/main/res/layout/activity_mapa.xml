@@ -1,95 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Mapa GeoNews - Diseño moderno con búsqueda y filtros flotantes -->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/bg_primary">
 
-    <!-- Google Maps -->
-    <fragment
+    <!-- Mapa - ocupa desde arriba hasta el carrusel -->
+    <androidx.fragment.app.FragmentContainerView
         android:id="@+id/map_container"
         android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/layout_noticias_carousel"/>
 
-
-    <!-- Chips de filtros horizontales -->
-    <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:scrollbars="none"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp">
-
-
-    </HorizontalScrollView>
-
-    <!-- Botón de ubicación actual (flotante derecha) -->
-
-    <!-- Lista horizontal de noticias en la parte inferior -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_mi_ubicacion"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|end"
-        android:layout_marginTop="90dp"
-        android:layout_marginEnd="20dp"
-        android:contentDescription="Mi ubicación"
-        app:backgroundTint="@color/primary"
-        app:fabSize="normal"
-        app:srcCompat="@drawable/ic_location"
-        app:tint="@color/white" />
-
-    <LinearLayout
-        android:id="@+id/layout_noticias_carousel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_marginBottom="80dp"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <!-- Botón cerrar -->
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/btn_cerrar_carousel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="8dp"
-            app:srcCompat="@android:drawable/ic_menu_close_clear_cancel"
-            app:tint="#FFFFFF"
-            app:backgroundTint="#1a2530"
-            app:fabSize="mini"
-            android:contentDescription="Cerrar lista"/>
-
-        <!-- RecyclerView horizontal de noticias -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_noticias_mapa"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:clipToPadding="false"/>
-
-    </LinearLayout>
-
-    <!-- Lista de noticias visibles (flotante en la parte superior) - Compatibilidad -->
-    <com.google.android.material.card.MaterialCardView
+    <!-- Card lista de noticias (overlay opcional) -->
+    <androidx.cardview.widget.CardView
         android:id="@+id/card_lista_noticias"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="top"
         android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
         android:layout_marginTop="80dp"
-        android:maxHeight="300dp"
-        app:cardBackgroundColor="#1a2530"
-        app:cardCornerRadius="16dp"
+        android:layout_marginEnd="16dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/bg_card"
+        app:cardCornerRadius="12dp"
         app:cardElevation="8dp"
-        android:visibility="gone">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -97,7 +40,6 @@
             android:orientation="vertical"
             android:padding="12dp">
 
-            <!-- Cabecera de la lista -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -109,55 +51,154 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Noticias cercanas"
-                    android:textStyle="bold"
+                    android:text="@string/map_nearby_news"
+                    android:textColor="@color/text_primary"
                     android:textSize="16sp"
-                    android:textColor="#FFFFFF"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tv_contador_noticias"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="0"
-                    android:textSize="13sp"
-                    android:textColor="#FFFFFF"
-                    android:textStyle="bold"
                     android:background="@color/primary"
                     android:paddingStart="10dp"
-                    android:paddingEnd="10dp"
                     android:paddingTop="4dp"
-                    android:paddingBottom="4dp"/>
+                    android:paddingEnd="10dp"
+                    android:paddingBottom="4dp"
+                    android:text="0"
+                    android:textColor="@color/white"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
 
                 <ImageButton
                     android:id="@+id/btn_cerrar_lista"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:layout_marginStart="8dp"
-                    android:src="@android:drawable/ic_menu_close_clear_cancel"
-                    android:tint="#FFFFFF"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Cerrar lista"/>
+                    android:contentDescription="Cerrar lista"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                    app:tint="@color/icon_primary"
+                    tools:ignore="UseAppTint" />
 
             </LinearLayout>
 
-            <!-- RecyclerView para la lista de noticias -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_noticias_visibles"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxHeight="250dp"
-                android:scrollbars="vertical"/>
+                android:scrollbars="vertical" />
 
         </LinearLayout>
 
-    </com.google.android.material.card.MaterialCardView>
+    </androidx.cardview.widget.CardView>
 
-    <!-- Navegación inferior -->
-    <FrameLayout
-        android:layout_width="match_parent"
+    <!-- Carrusel de noticias - fijo en la parte inferior, arriba de la navegación -->
+    <LinearLayout
+        android:id="@+id/layout_noticias_carousel"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom">
-        <include layout="@layout/bottom_navigation"/>
+        android:background="@color/bg_card_mapa"
+        android:elevation="4dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@id/bottom_nav_container"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Header compacto -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="12dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/map_nearby_news"
+                android:textColor="@color/text_card_mapa"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <!-- Indicador de deslizamiento -->
+            <TextView
+                android:id="@+id/tv_swipe_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="← →"
+                android:textSize="10sp"
+                android:textColor="@color/text_metadata_mapa"
+                android:layout_marginEnd="8dp"/>
+
+            <ImageButton
+                android:id="@+id/btn_cerrar_carousel"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="Cerrar carrusel"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="@color/text_metadata_mapa"
+                android:scaleType="centerInside"
+                tools:ignore="UseAppTint" />
+
+        </LinearLayout>
+
+        <!-- Carrusel compacto -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_noticias_mapa"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="8dp"
+                android:overScrollMode="never"/>
+
+            <!-- Indicador izquierdo -->
+            <ImageView
+                android:id="@+id/indicator_left"
+                android:layout_width="20dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="start|center_vertical"
+                android:background="@drawable/bg_gradient_left"
+                android:visibility="gone"
+                android:contentDescription="Más a la izquierda"/>
+
+            <!-- Indicador derecho -->
+            <ImageView
+                android:id="@+id/indicator_right"
+                android:layout_width="20dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="end|center_vertical"
+                android:background="@drawable/bg_gradient_right"
+                android:contentDescription="Más a la derecha"/>
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+    <!-- Bottom Navigation -->
+    <FrameLayout
+        android:id="@+id/bottom_nav_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <include layout="@layout/bottom_navigation" />
+
     </FrameLayout>
 
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

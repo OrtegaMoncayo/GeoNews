@@ -1,5 +1,6 @@
 package com.tesistitulacion.noticiaslocales.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.tesistitulacion.noticiaslocales.R;
+import com.tesistitulacion.noticiaslocales.utils.LocaleManager;
 import com.tesistitulacion.noticiaslocales.utils.UsuarioPreferences;
 
 /**
@@ -23,6 +25,11 @@ public class LoginActivity extends AppCompatActivity {
     private Button btnLogin;
     private TextView tvRegistro;
     private boolean procesando = false;
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(LocaleManager.applyLocale(newBase));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,7 +116,7 @@ public class LoginActivity extends AppCompatActivity {
                     );
 
                     Log.i(TAG, "Login exitoso para: " + email);
-                    Toast.makeText(this, "¡Bienvenido!", Toast.LENGTH_SHORT).show();
+                    showToast("¡Bienvenido!");
 
                     // Ir a pantalla principal (Lista de Noticias)
                     Intent intent = new Intent(this, ListaNoticiasActivity.class);
@@ -118,15 +125,23 @@ public class LoginActivity extends AppCompatActivity {
                     finish();
                 });
 
+            } catch (InterruptedException e) {
+                // Re-interrumpir el hilo para preservar el estado de interrupción
+                Thread.currentThread().interrupt();
+                Log.e(TAG, "Login interrumpido", e);
+                runOnUiThread(() -> {
+                    procesando = false;
+                    btnLogin.setEnabled(true);
+                    btnLogin.setText("Iniciar Sesión");
+                    showToast("Login cancelado", Toast.LENGTH_SHORT);
+                });
             } catch (Exception e) {
                 Log.e(TAG, "Error en login: " + e.getMessage(), e);
                 runOnUiThread(() -> {
                     procesando = false;
                     btnLogin.setEnabled(true);
                     btnLogin.setText("Iniciar Sesión");
-                    Toast.makeText(this,
-                            "Error al iniciar sesión: " + e.getMessage(),
-                            Toast.LENGTH_LONG).show();
+                    showToast("Error al iniciar sesión: " + e.getMessage(), Toast.LENGTH_LONG);
                 });
             }
         }).start();
@@ -208,11 +223,25 @@ public class LoginActivity extends AppCompatActivity {
                     procesando = false;
                     btnLogin.setEnabled(true);
                     btnLogin.setText("Iniciar Sesión");
-                    Toast.makeText(this,
-                            "Error: " + e.getMessage(),
-                            Toast.LENGTH_LONG).show();
+                    showToast("Error: " + e.getMessage(), Toast.LENGTH_LONG);
                 });
             }
         }).start();
+    }
+
+    // ==================== HELPER METHODS ====================
+
+    /**
+     * Muestra un Toast de manera consistente
+     */
+    private void showToast(String mensaje) {
+        Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Muestra un Toast con duración personalizada
+     */
+    private void showToast(String mensaje, int duracion) {
+        Toast.makeText(this, mensaje, duracion).show();
     }
 }

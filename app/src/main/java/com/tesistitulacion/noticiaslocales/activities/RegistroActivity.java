@@ -1,5 +1,6 @@
 package com.tesistitulacion.noticiaslocales.activities;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -7,13 +8,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.tesistitulacion.noticiaslocales.R;
+import com.tesistitulacion.noticiaslocales.utils.LocaleManager;
 
 /**
  * Pantalla de Registro
  * Permite a nuevos usuarios registrarse en la aplicación
  */
 public class RegistroActivity extends AppCompatActivity {
-    private static final String TAG = "RegistroActivity";
 
     private EditText etNombre;
     private EditText etEmail;
@@ -21,6 +22,11 @@ public class RegistroActivity extends AppCompatActivity {
     private EditText etPasswordConfirm;
     private Button btnRegistro;
     private TextView tvLogin;
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(LocaleManager.applyLocale(newBase));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,11 +99,25 @@ public class RegistroActivity extends AppCompatActivity {
         }
 
         // TODO: Implementar registro con API
-        Toast.makeText(this,
-                "Funcionalidad de registro en desarrollo.\nPor ahora usa el login.",
-                Toast.LENGTH_LONG).show();
+        showToast("Funcionalidad de registro en desarrollo.\nPor ahora usa el login.", Toast.LENGTH_LONG);
 
         // Volver a login
         finish();
+    }
+
+    // ==================== HELPER METHODS ====================
+
+    /**
+     * Muestra un Toast de manera consistente
+     */
+    private void showToast(String mensaje) {
+        Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Muestra un Toast con duración personalizada
+     */
+    private void showToast(String mensaje, int duracion) {
+        Toast.makeText(this, mensaje, duracion).show();
     }
 }

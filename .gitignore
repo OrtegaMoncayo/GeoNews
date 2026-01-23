@@ -51,11 +51,10 @@ ENV/
 *.egg-info/
 dist/
 
-# Backend
-backend_flask/.env
-backend_flask/venv/
-backend_flask/token.pickle
-backend_flask/credentials.json
+# Backend FastAPI
+backend_fastapi/.env
+backend_fastapi/venv/
+backend_fastapi/__pycache__/
 
 # Logs
 *.log
@@ -75,9 +74,33 @@ nul
 # OS
 Thumbs.db
 .DS_Store
+desktop.ini
+*.lnk
+
+# Screenshots and images (dev)
+Captura de pantalla*.png
+vista*.jpg
+vista*.jpeg
 
 # Documentation folder (keep in repo but ignore temp files)
 documentacion/*.tmp
+
+# Archive folder (old files and documentation)
+archive/
+
+# SonarQube
+.scannerwork/
+sonar-project.properties
+sonar*.json
+
+# Claude Code temporary files
+tmpclaude-*
+.claude/
+
+# Development scripts
+*.bat
+*.ps1
+*.sh
 
 # Firebase credentials
 firebase-service-account.json
@@ -89,3 +112,6 @@ backend_fastapi/serviceAccountKey.json
 .firebaserc
 firebase-debug.log
 firestore-debug.log
+
+# Google Maps API Key (NUNCA subir esto)
+app/src/main/res/values/secrets.xml

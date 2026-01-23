@@ -1,0 +1,26 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Fondo circular Azul Rey para política #1e40af -->
+    <path
+        android:fillColor="#1e40af"
+        android:pathData="M24,2C11.85,2 2,11.85 2,24s9.85,22 22,22 22,-9.85 22,-22S36.15,2 24,2z"/>
+    <!-- Edificio del gobierno/capitolio -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M24,8L10,18h28z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M21,8h6v-3a3,3 0,0 0,-6 0z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M13,18v16h3v-14h-3zM19,18v16h3v-14h-3zM26,18v16h3v-14h-3zM32,18v16h3v-14h-3z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M10,34h28v4H10z"/>
+    <path
+        android:fillColor="#1e40af"
+        android:pathData="M14,20h1v12h-1zM20,20h1v12h-1zM27,20h1v12h-1zM33,20h1v12h-1z"/>
+</vector>

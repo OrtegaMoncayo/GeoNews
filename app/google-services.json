@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "166115544761",
+    "project_id": "noticiaslocalesibarra",
+    "storage_bucket": "noticiaslocalesibarra.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:166115544761:android:b40030a0cf929db4b19568",
+        "android_client_info": {
+          "package_name": "com.tesistitulacion.noticiaslocales"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_JQPd_t9jwb9Kw39muih7P4Ux55u_U30"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

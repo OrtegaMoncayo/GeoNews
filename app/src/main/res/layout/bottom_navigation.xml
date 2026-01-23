@@ -1,127 +1,154 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Barra de navegación inferior reutilizable para todas las pantallas -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/ll_navegacion_bottom"
+<!-- Navegación inferior GeoNews - Soporta modo claro/oscuro -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="56dp"
-    android:orientation="horizontal"
-    android:background="?android:attr/colorBackground"
-    android:elevation="8dp">
+    android:layout_height="wrap_content"
+    app:cardBackgroundColor="@color/nav_background"
+    app:cardCornerRadius="0dp"
+    app:cardElevation="4dp"
+    app:strokeWidth="0dp"
+    app:strokeColor="@color/nav_background">
 
-    <!-- NOTICIAS -->
     <LinearLayout
-        android:id="@+id/ll_nav_noticias"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:clickable="true"
-        android:focusable="true">
+        android:id="@+id/ll_navegacion_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp">
 
-        <ImageView
-            android:id="@+id/iv_nav_noticias"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_list"
-            android:tint="?android:attr/textColorSecondary"
-            android:contentDescription="Noticias"/>
-
-        <TextView
-            android:id="@+id/tv_nav_noticias"
-            android:layout_width="wrap_content"
+        <!-- FEED / NOTICIAS -->
+        <LinearLayout
+            android:id="@+id/ll_nav_noticias"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Noticias"
-            android:textSize="12sp"
-            android:textColor="?android:attr/textColorSecondary"/>
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <ImageView
+                android:id="@+id/iv_nav_noticias"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="@string/nav_news"
+                android:src="@drawable/ic_list"
+                app:tint="@color/nav_icon_active"
+                android:alpha="1.0"/>
+
+            <TextView
+                android:id="@+id/tv_nav_noticias"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/nav_news"
+                android:textColor="@color/nav_text_active"
+                android:textSize="9sp"
+                android:textStyle="bold"/>
+
+            <!-- Indicador activo -->
+            <View
+                android:id="@+id/indicator_noticias"
+                android:layout_width="32dp"
+                android:layout_height="3dp"
+                android:layout_marginTop="3dp"
+                android:background="@color/nav_indicator"
+                android:visibility="visible"/>
+
+        </LinearLayout>
+
+        <!-- MAP / MAPA -->
+        <LinearLayout
+            android:id="@+id/ll_nav_mapa"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <ImageView
+                android:id="@+id/iv_nav_mapa"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="@string/nav_map"
+                android:src="@drawable/ic_location"
+                app:tint="@color/nav_icon_inactive"
+                android:alpha="0.9"/>
+
+            <TextView
+                android:id="@+id/tv_nav_mapa"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/nav_map"
+                android:textColor="@color/nav_text_inactive"
+                android:textSize="9sp"/>
+
+            <!-- Indicador inactivo -->
+            <View
+                android:id="@+id/indicator_mapa"
+                android:layout_width="32dp"
+                android:layout_height="3dp"
+                android:layout_marginTop="3dp"
+                android:background="@color/nav_indicator"
+                android:visibility="gone"/>
+
+        </LinearLayout>
+
+        <!-- PROFILE / PERFIL -->
+        <LinearLayout
+            android:id="@+id/ll_nav_perfil"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <ImageView
+                android:id="@+id/iv_nav_perfil"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="@string/nav_profile"
+                android:src="@drawable/ic_person"
+                app:tint="@color/nav_icon_inactive"
+                android:alpha="0.9"/>
+
+            <TextView
+                android:id="@+id/tv_nav_perfil"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/nav_profile"
+                android:textColor="@color/nav_text_inactive"
+                android:textSize="9sp"/>
+
+            <!-- Indicador inactivo -->
+            <View
+                android:id="@+id/indicator_perfil"
+                android:layout_width="32dp"
+                android:layout_height="3dp"
+                android:layout_marginTop="3dp"
+                android:background="@color/nav_indicator"
+                android:visibility="gone"/>
+
+        </LinearLayout>
+
     </LinearLayout>
 
-    <!-- EVENTOS -->
-    <LinearLayout
-        android:id="@+id/ll_nav_eventos"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:clickable="true"
-        android:focusable="true">
-
-        <ImageView
-            android:id="@+id/iv_nav_eventos"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_time"
-            android:tint="?android:attr/textColorSecondary"
-            android:contentDescription="Eventos"/>
-
-        <TextView
-            android:id="@+id/tv_nav_eventos"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Eventos"
-            android:textSize="12sp"
-            android:textColor="?android:attr/textColorSecondary"/>
-    </LinearLayout>
-
-    <!-- MAPA -->
-    <LinearLayout
-        android:id="@+id/ll_nav_mapa"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:clickable="true"
-        android:focusable="true">
-
-        <ImageView
-            android:id="@+id/iv_nav_mapa"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_location"
-            android:tint="?android:attr/textColorSecondary"
-            android:contentDescription="Mapa"/>
-
-        <TextView
-            android:id="@+id/tv_nav_mapa"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Mapa"
-            android:textSize="12sp"
-            android:textColor="?android:attr/textColorSecondary"/>
-    </LinearLayout>
-
-    <!-- PERFIL -->
-    <LinearLayout
-        android:id="@+id/ll_nav_perfil"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:clickable="true"
-        android:focusable="true">
-
-        <ImageView
-            android:id="@+id/iv_nav_perfil"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_person"
-            android:tint="?android:attr/textColorSecondary"
-            android:contentDescription="Perfil"/>
-
-        <TextView
-            android:id="@+id/tv_nav_perfil"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Perfil"
-            android:textSize="12sp"
-            android:textColor="?android:attr/textColorSecondary"/>
-    </LinearLayout>
-
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

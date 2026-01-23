@@ -8,8 +8,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.squareup.picasso.Picasso;
 import com.tesistitulacion.noticiaslocales.R;
 import com.tesistitulacion.noticiaslocales.modelo.Noticia;
+import com.tesistitulacion.noticiaslocales.utils.LocationHelper;
+import com.tesistitulacion.noticiaslocales.utils.UsuarioPreferences;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -59,6 +62,7 @@ public class NoticiaAdapter extends RecyclerView.Adapter<NoticiaAdapter.NoticiaV
     /**
      * Actualiza la lista completa de noticias
      */
+    @android.annotation.SuppressLint("NotifyDataSetChanged")
     public void actualizarLista(List<Noticia> nuevasNoticias) {
         this.noticias.clear();
         if (nuevasNoticias != null) {
@@ -86,6 +90,7 @@ public class NoticiaAdapter extends RecyclerView.Adapter<NoticiaAdapter.NoticiaV
         private final TextView tvUbicacion;
         private final TextView tvDistancia;
         private final ImageView ivImagen;
+        private final ImageView ivBookmark;
 
         public NoticiaViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -96,6 +101,7 @@ public class NoticiaAdapter extends RecyclerView.Adapter<NoticiaAdapter.NoticiaV
             tvUbicacion = itemView.findViewById(R.id.tv_ubicacion);
             tvDistancia = itemView.findViewById(R.id.tv_distancia);
             ivImagen = itemView.findViewById(R.id.iv_imagen_noticia);
+            ivBookmark = itemView.findViewById(R.id.iv_bookmark);
         }
 
         public void bind(Noticia noticia, OnNoticiaClickListener listener) {
@@ -145,14 +151,27 @@ public class NoticiaAdapter extends RecyclerView.Adapter<NoticiaAdapter.NoticiaV
 
             // Distancia (se muestra solo si fue calculada)
             if (noticia.getDistancia() != null && noticia.getDistancia() >= 0) {
-                tvDistancia.setText(formatearDistancia(noticia.getDistancia()));
+                tvDistancia.setText(LocationHelper.formatearDistancia(noticia.getDistancia()));
                 tvDistancia.setVisibility(View.VISIBLE);
             } else {
                 tvDistancia.setVisibility(View.GONE);
             }
 
-            // Imagen (por ahora oculta, se puede implementar con Glide/Picasso después)
-            ivImagen.setVisibility(View.GONE);
+            // Imagen de la noticia
+            if (noticia.getImagenUrl() != null && !noticia.getImagenUrl().isEmpty()) {
+                ivImagen.setVisibility(View.VISIBLE);
+                Picasso.get()
+                        .load(noticia.getImagenUrl())
+                        .placeholder(R.color.surface_dark)
+                        .error(R.color.surface_dark)
+                        .fit()
+                        .centerCrop()
+                        .into(ivImagen);
+            } else {
+                // Si no hay imagen, mostrar placeholder
+                ivImagen.setVisibility(View.VISIBLE);
+                ivImagen.setImageResource(R.color.surface_dark);
+            }
 
             // Click listener
             itemView.setOnClickListener(v -> {
@@ -160,6 +179,44 @@ public class NoticiaAdapter extends RecyclerView.Adapter<NoticiaAdapter.NoticiaV
                     listener.onNoticiaClick(noticia, getAdapterPosition());
                 }
             });
+
+            // Bookmark: verificar estado y configurar
+            // Usar firestoreId si existe, sino usar id numérico
+            String noticiaId = noticia.getFirestoreId();
+            if (noticiaId == null && noticia.getId() != null) {
+                noticiaId = String.valueOf(noticia.getId());
+            }
+            final String finalNoticiaId = noticiaId;
+            if (finalNoticiaId != null && ivBookmark != null) {
+                boolean isGuardada = UsuarioPreferences.isNoticiaGuardada(itemView.getContext(), finalNoticiaId);
+                actualizarIconoBookmark(isGuardada);
+
+                ivBookmark.setOnClickListener(v -> {
+                    boolean guardadaActual = UsuarioPreferences.isNoticiaGuardada(itemView.getContext(), finalNoticiaId);
+                    if (guardadaActual) {
+                        UsuarioPreferences.eliminarNoticiaGuardada(itemView.getContext(), finalNoticiaId);
+                        actualizarIconoBookmark(false);
+                    } else {
+                        UsuarioPreferences.guardarNoticia(itemView.getContext(), finalNoticiaId);
+                        actualizarIconoBookmark(true);
+                    }
+                });
+            }
+        }
+
+        /**
+         * Actualiza el icono del bookmark según el estado
+         */
+        private void actualizarIconoBookmark(boolean isGuardada) {
+            if (ivBookmark != null) {
+                if (isGuardada) {
+                    ivBookmark.setImageResource(R.drawable.ic_bookmark_filled);
+                    ivBookmark.clearColorFilter(); // Mostrar color dorado del icono
+                } else {
+                    ivBookmark.setImageResource(R.drawable.ic_bookmark_outline);
+                    ivBookmark.setColorFilter(android.graphics.Color.WHITE);
+                }
+            }
         }
 
         /**
@@ -223,27 +280,6 @@ public class NoticiaAdapter extends RecyclerView.Adapter<NoticiaAdapter.NoticiaV
             }
 
             return fechaStr.substring(0, Math.min(10, fechaStr.length()));
-        }
-
-        /**
-         * Formatea la distancia para mostrar en UI
-         */
-        private String formatearDistancia(Double distanciaKm) {
-            if (distanciaKm == null || distanciaKm < 0) {
-                return "";
-            }
-
-            if (distanciaKm < 1.0) {
-                // Menos de 1 km → mostrar en metros
-                int metros = (int) (distanciaKm * 1000);
-                return metros + " m";
-            } else if (distanciaKm < 10.0) {
-                // 1-10 km → 1 decimal
-                return String.format(Locale.getDefault(), "%.1f km", distanciaKm);
-            } else {
-                // Más de 10 km → sin decimales
-                return String.format(Locale.getDefault(), "%.0f km", distanciaKm);
-            }
         }
     }
 }

@@ -1,0 +1,21 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Fondo circular Gris Pizarra para seguridad #475569 -->
+    <path
+        android:fillColor="#475569"
+        android:pathData="M24,2C11.85,2 2,11.85 2,24s9.85,22 22,22 22,-9.85 22,-22S36.15,2 24,2z"/>
+    <!-- Escudo de seguridad -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M24,6L8,12v10c0,9 6.8,17.4 16,20 9.2,-2.6 16,-11 16,-20V12L24,6z"/>
+    <path
+        android:fillColor="#475569"
+        android:pathData="M24,9L11,14v8c0,7.5 5.6,14.5 13,16.8 7.4,-2.3 13,-9.3 13,-16.8v-8L24,9z"/>
+    <!-- Check de verificación -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M21,28l-5,-5 2,-2 3,3 8,-8 2,2z"/>
+</vector>

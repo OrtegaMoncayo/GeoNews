@@ -1,21 +1,27 @@
 package com.tesistitulacion.noticiaslocales.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import com.tesistitulacion.noticiaslocales.R;
+import com.tesistitulacion.noticiaslocales.utils.FirebaseCallbackHelper;
+import com.tesistitulacion.noticiaslocales.utils.LocaleManager;
+import com.tesistitulacion.noticiaslocales.utils.LocationHelper;
+import com.tesistitulacion.noticiaslocales.utils.ThemeManager;
 
 /**
  * Activity base con navegación inferior reutilizable.
  * Todas las pantallas principales extienden de esta clase.
  *
  * Funcionalidades:
- * - Barra de navegación con 4 secciones: Noticias, Eventos, Mapa, Perfil
+ * - Barra de navegación con 3 secciones: Noticias, Mapa, Perfil
  * - Gestión automática del estado activo/inactivo
  * - Navegación entre activities sin duplicados en stack
  */
@@ -23,14 +29,18 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     // IDs de las secciones de navegación
     public static final int NAV_NOTICIAS = 1;
-    public static final int NAV_EVENTOS = 2;
     public static final int NAV_MAPA = 3;
     public static final int NAV_PERFIL = 4;
 
     // Views de navegación
-    private LinearLayout llNavNoticias, llNavEventos, llNavMapa, llNavPerfil;
-    private ImageView ivNavNoticias, ivNavEventos, ivNavMapa, ivNavPerfil;
-    private TextView tvNavNoticias, tvNavEventos, tvNavMapa, tvNavPerfil;
+    private LinearLayout llNavNoticias, llNavMapa, llNavPerfil;
+    private ImageView ivNavNoticias, ivNavMapa, ivNavPerfil;
+    private TextView tvNavNoticias, tvNavMapa, tvNavPerfil;
+    private View indicatorNoticias, indicatorMapa, indicatorPerfil;
+
+    // Helpers reutilizables (inicialización lazy)
+    private LocationHelper locationHelper;
+    private FirebaseCallbackHelper.LoadingStateManager loadingStateManager;
 
     /**
      * Método abstracto que cada activity debe implementar
@@ -44,7 +54,16 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected abstract int getLayoutResourceId();
 
     @Override
+    protected void attachBaseContext(Context newBase) {
+        // Aplicar idioma guardado antes de crear el contexto
+        super.attachBaseContext(LocaleManager.applyLocale(newBase));
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Aplicar tema guardado (por defecto: CLARO)
+        ThemeManager.applyTheme(this);
+
         super.onCreate(savedInstanceState);
         setContentView(getLayoutResourceId());
 
@@ -58,7 +77,6 @@ public abstract class BaseActivity extends AppCompatActivity {
     private void configurarNavegacion() {
         // Buscar views de navegación
         llNavNoticias = findViewById(R.id.ll_nav_noticias);
-        llNavEventos = findViewById(R.id.ll_nav_eventos);
         llNavMapa = findViewById(R.id.ll_nav_mapa);
         llNavPerfil = findViewById(R.id.ll_nav_perfil);
 
@@ -66,18 +84,20 @@ public abstract class BaseActivity extends AppCompatActivity {
         if (llNavNoticias == null) return;
 
         ivNavNoticias = findViewById(R.id.iv_nav_noticias);
-        ivNavEventos = findViewById(R.id.iv_nav_eventos);
         ivNavMapa = findViewById(R.id.iv_nav_mapa);
         ivNavPerfil = findViewById(R.id.iv_nav_perfil);
 
         tvNavNoticias = findViewById(R.id.tv_nav_noticias);
-        tvNavEventos = findViewById(R.id.tv_nav_eventos);
         tvNavMapa = findViewById(R.id.tv_nav_mapa);
         tvNavPerfil = findViewById(R.id.tv_nav_perfil);
 
+        // Indicadores de selección
+        indicatorNoticias = findViewById(R.id.indicator_noticias);
+        indicatorMapa = findViewById(R.id.indicator_mapa);
+        indicatorPerfil = findViewById(R.id.indicator_perfil);
+
         // Configurar clicks
         llNavNoticias.setOnClickListener(v -> navegarA(NAV_NOTICIAS));
-        llNavEventos.setOnClickListener(v -> navegarA(NAV_EVENTOS));
         llNavMapa.setOnClickListener(v -> navegarA(NAV_MAPA));
         llNavPerfil.setOnClickListener(v -> navegarA(NAV_PERFIL));
 
@@ -91,47 +111,66 @@ public abstract class BaseActivity extends AppCompatActivity {
     private void marcarSeccionActiva() {
         int seccionActiva = getNavegacionActiva();
 
-        // Color primario para activo, textColorSecondary para inactivo (adaptable a modo oscuro)
-        int colorPrimary = ContextCompat.getColor(this, R.color.primary);
-
-        // Obtener color de texto secundario del tema (se adapta a modo claro/oscuro)
+        // Obtener colores del tema (se adaptan a modo claro/oscuro)
         android.util.TypedValue typedValue = new android.util.TypedValue();
-        getTheme().resolveAttribute(android.R.attr.textColorSecondary, typedValue, true);
+
+        // Color para iconos/texto activo (sobre el indicador de color)
+        getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnSecondaryContainer, typedValue, true);
+        int colorActivo = typedValue.data;
+
+        // Color para iconos/texto inactivo
+        getTheme().resolveAttribute(com.google.android.material.R.attr.colorOnSurfaceVariant, typedValue, true);
         int colorInactivo = typedValue.data;
 
         // Resetear todos a inactivo
-        setEstadoNavegacion(ivNavNoticias, tvNavNoticias, colorInactivo, false);
-        setEstadoNavegacion(ivNavEventos, tvNavEventos, colorInactivo, false);
-        setEstadoNavegacion(ivNavMapa, tvNavMapa, colorInactivo, false);
-        setEstadoNavegacion(ivNavPerfil, tvNavPerfil, colorInactivo, false);
+        setEstadoNavegacion(ivNavNoticias, tvNavNoticias, indicatorNoticias, colorInactivo, false);
+        setEstadoNavegacion(ivNavMapa, tvNavMapa, indicatorMapa, colorInactivo, false);
+        setEstadoNavegacion(ivNavPerfil, tvNavPerfil, indicatorPerfil, colorInactivo, false);
 
         // Marcar activo según sección
         switch (seccionActiva) {
             case NAV_NOTICIAS:
-                setEstadoNavegacion(ivNavNoticias, tvNavNoticias, colorPrimary, true);
-                break;
-            case NAV_EVENTOS:
-                setEstadoNavegacion(ivNavEventos, tvNavEventos, colorPrimary, true);
+                setEstadoNavegacion(ivNavNoticias, tvNavNoticias, indicatorNoticias, colorActivo, true);
                 break;
             case NAV_MAPA:
-                setEstadoNavegacion(ivNavMapa, tvNavMapa, colorPrimary, true);
+                setEstadoNavegacion(ivNavMapa, tvNavMapa, indicatorMapa, colorActivo, true);
                 break;
             case NAV_PERFIL:
-                setEstadoNavegacion(ivNavPerfil, tvNavPerfil, colorPrimary, true);
+                setEstadoNavegacion(ivNavPerfil, tvNavPerfil, indicatorPerfil, colorActivo, true);
+                break;
+            default:
+                // No hay sección activa
                 break;
         }
     }
 
     /**
-     * Establece el estado visual de un botón de navegación
+     * Establece el estado visual de un botón de navegación con indicador moderno
      */
-    private void setEstadoNavegacion(ImageView icon, TextView text, int color, boolean activo) {
+    private void setEstadoNavegacion(ImageView icon, TextView text, View indicator, int color, boolean activo) {
         if (icon != null) {
             icon.setColorFilter(color);
         }
         if (text != null) {
             text.setTextColor(color);
             text.setTypeface(null, activo ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
+        }
+        if (indicator != null) {
+            // Mostrar/ocultar indicador con animación suave
+            if (activo) {
+                indicator.setVisibility(View.VISIBLE);
+                indicator.setAlpha(0f);
+                indicator.animate()
+                    .alpha(1f)
+                    .setDuration(200)
+                    .start();
+            } else {
+                indicator.animate()
+                    .alpha(0f)
+                    .setDuration(150)
+                    .withEndAction(() -> indicator.setVisibility(View.INVISIBLE))
+                    .start();
+            }
         }
     }
 
@@ -150,15 +189,15 @@ public abstract class BaseActivity extends AppCompatActivity {
             case NAV_NOTICIAS:
                 intent = new Intent(this, ListaNoticiasActivity.class);
                 break;
-            case NAV_EVENTOS:
-                intent = new Intent(this, ListaEventosActivity.class);
-                break;
             case NAV_MAPA:
                 intent = new Intent(this, MapaActivity.class);
                 break;
             case NAV_PERFIL:
                 intent = new Intent(this, PerfilActivity.class);
                 break;
+            default:
+                // Sección no válida, no navegar
+                return;
         }
 
         if (intent != null) {
@@ -177,5 +216,59 @@ public abstract class BaseActivity extends AppCompatActivity {
         super.onResume();
         // Actualizar estado visual al volver a la activity
         marcarSeccionActiva();
+    }
+
+    // ============================================================
+    // MÉTODOS HELPER PROTEGIDOS PARA SUBCLASES
+    // ============================================================
+
+    /**
+     * Obtiene el LocationHelper (inicialización lazy)
+     * Útil para Activities que necesitan gestión de GPS
+     * @return LocationHelper compartido
+     */
+    protected LocationHelper getLocationHelper() {
+        if (locationHelper == null) {
+            locationHelper = new LocationHelper(this);
+        }
+        return locationHelper;
+    }
+
+    /**
+     * Obtiene el LoadingStateManager (inicialización lazy)
+     * Útil para Activities que cargan datos de Firebase
+     * @return LoadingStateManager compartido
+     */
+    protected FirebaseCallbackHelper.LoadingStateManager getLoadingStateManager() {
+        if (loadingStateManager == null) {
+            loadingStateManager = new FirebaseCallbackHelper.LoadingStateManager();
+        }
+        return loadingStateManager;
+    }
+
+    /**
+     * Muestra un Toast de manera consistente
+     * @param mensaje Mensaje a mostrar
+     * @param duracion Toast.LENGTH_SHORT o Toast.LENGTH_LONG
+     */
+    protected void showToast(String mensaje, int duracion) {
+        Toast.makeText(this, mensaje, duracion).show();
+    }
+
+    /**
+     * Muestra un Toast corto
+     * @param mensaje Mensaje a mostrar
+     */
+    protected void showToast(String mensaje) {
+        showToast(mensaje, Toast.LENGTH_SHORT);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Limpiar recursos del LocationHelper si fue creado
+        if (locationHelper != null) {
+            locationHelper.stopLocationUpdates();
+        }
     }
 }

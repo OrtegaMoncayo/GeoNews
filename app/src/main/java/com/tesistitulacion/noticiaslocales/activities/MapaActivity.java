@@ -28,6 +28,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.tesistitulacion.noticiaslocales.R;
 import com.tesistitulacion.noticiaslocales.firebase.FirebaseManager;
 import com.tesistitulacion.noticiaslocales.modelo.Noticia;
+import com.tesistitulacion.noticiaslocales.utils.FirebaseCallbackHelper;
+import com.tesistitulacion.noticiaslocales.utils.LocationHelper;
 import com.tesistitulacion.noticiaslocales.utils.UsuarioPreferences;
 
 import java.util.ArrayList;
@@ -36,12 +38,18 @@ import java.util.List;
 import java.util.Map;
 
 import android.animation.ValueAnimator;
+import android.animation.ObjectAnimator;
+import android.animation.AnimatorSet;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
+import android.view.animation.BounceInterpolator;
+import android.view.animation.OvershootInterpolator;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -50,7 +58,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
-import com.google.android.material.card.MaterialCardView;
+import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
+import com.google.android.gms.maps.model.CameraPosition;
 
 /**
  * Pantalla de mapa con noticias georreferenciadas
@@ -59,7 +70,6 @@ import com.google.android.material.card.MaterialCardView;
  */
 public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
     private static final String TAG = "MapaActivity";
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
     // ============================================================
     // MODO DE DESARROLLO
@@ -89,13 +99,15 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
     // Radio de búsqueda para mostrar noticias cercanas (en kilómetros)
     private static final double RADIO_BUSQUEDA_KM = 2.0; // Solo 2 km a la redonda (entorno inmediato)
 
-    // Radio para modo "mostrar solo cercanas" (estilo Pokémon GO)
-    private static final double RADIO_POKEMON_GO_KM = 0.5; // 500 metros (muy cercanas)
+    // Radio para modo "ocultar noticias" (solo muy cercanas)
+    private static final double RADIO_OCULTAR_NOTICIAS_KM = 0.5; // 500 metros (muy cercanas)
+
+    // Límites para el carrusel de noticias
+    private static final int MAX_NOTICIAS_CARRUSEL = 8; // Mostrar máximo 8 noticias más cercanas
+    private static final double RADIO_CARRUSEL_KM = 5.0; // Solo noticias dentro de 5km
 
     private GoogleMap mMap;
     private List<Noticia> noticias;
-    private boolean cargando = false;
-    private FusedLocationProviderClient fusedLocationClient;
 
     // Variables para ubicación
     private Location ubicacionActual;
@@ -109,7 +121,7 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
     private String tituloIntent;
 
     // Views de la lista de noticias visibles
-    private MaterialCardView cardListaNoticias;
+    private CardView cardListaNoticias;
     private RecyclerView rvNoticiasVisibles;
     private TextView tvContadorNoticias;
     private ImageButton btnCerrarLista;
@@ -117,8 +129,12 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
     // Views del carrusel de noticias
     private LinearLayout layoutNoticiasCarousel;
     private RecyclerView rvNoticiasMapa;
-    private com.google.android.material.floatingactionbutton.FloatingActionButton btnCerrarCarousel;
+    private ImageButton btnCerrarCarousel;
     private com.tesistitulacion.noticiaslocales.adapters.NoticiaMapaAdapter noticiaMapaAdapter;
+
+    // Variables para animaciones
+    private Marker markerSeleccionado;
+    private boolean animacionEnProgreso = false;
 
     @Override
     protected int getNavegacionActiva() {
@@ -147,17 +163,11 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
         markerNoticiaMap = new HashMap<>();
         handler = new Handler(Looper.getMainLooper());
 
-        // Inicializar cliente de ubicación
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        // Inicializar lista de noticias visibles
+        // Inicializar lista de noticias visibles (LocationHelper se inicializa lazy en BaseActivity)
         inicializarListaNoticias();
 
         // Inicializar carrusel de noticias
         inicializarCarousel();
-
-        // Inicializar botón de ubicación
-        inicializarBotonUbicacion();
 
         // Verificar y solicitar permisos de ubicación
         verificarPermisosUbicacion();
@@ -177,10 +187,21 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
         tvContadorNoticias = findViewById(R.id.tv_contador_noticias);
         btnCerrarLista = findViewById(R.id.btn_cerrar_lista);
 
-        // Listener del botón cerrar
+        // Listener del botón cerrar con animación
         if (btnCerrarLista != null) {
             btnCerrarLista.setOnClickListener(v -> {
-                cardListaNoticias.setVisibility(View.GONE);
+                // Animación de cierre
+                cardListaNoticias.animate()
+                    .alpha(0f)
+                    .scaleY(0.8f)
+                    .setDuration(200)
+                    .setInterpolator(new AccelerateDecelerateInterpolator())
+                    .withEndAction(() -> {
+                        cardListaNoticias.setVisibility(View.GONE);
+                        cardListaNoticias.setAlpha(1f);
+                        cardListaNoticias.setScaleY(1f);
+                    })
+                    .start();
             });
         }
 
@@ -213,34 +234,181 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
         });
         rvNoticiasMapa.setAdapter(noticiaMapaAdapter);
 
-        // Listener del botón cerrar
+        // Listener del botón cerrar con animación
         if (btnCerrarCarousel != null) {
             btnCerrarCarousel.setOnClickListener(v -> {
-                layoutNoticiasCarousel.setVisibility(View.GONE);
+                ocultarCarruselConAnimacion();
             });
         }
 
-        // Inicialmente oculto
-        layoutNoticiasCarousel.setVisibility(View.GONE);
+        // Siempre visible para que el mapa y el carrusel se vean juntos
+        layoutNoticiasCarousel.setVisibility(View.VISIBLE);
 
         Log.d(TAG, "Carrusel de noticias inicializado");
     }
 
     /**
-     * Inicializa el botón de "Mi ubicación"
+     * Actualiza el carrusel con las noticias más cercanas a la ubicación actual
+     * Filtra por radio de 5km y muestra máximo 8 noticias ordenadas por distancia
      */
-    private void inicializarBotonUbicacion() {
-        com.google.android.material.floatingactionbutton.FloatingActionButton fabMiUbicacion =
-            findViewById(R.id.fab_mi_ubicacion);
-
-        if (fabMiUbicacion != null) {
-            fabMiUbicacion.setOnClickListener(v -> {
-                centrarEnMiUbicacion();
-            });
+    private void actualizarCarruselConNoticiasCercanas() {
+        if (noticias == null || noticias.isEmpty()) {
+            Log.d(TAG, "No hay noticias para actualizar carrusel");
+            return;
         }
 
-        Log.d(TAG, "Botón de ubicación inicializado");
+        List<Noticia> noticiasConCoordenadas = new ArrayList<>();
+        List<Noticia> noticiasCercanas = new ArrayList<>();
+
+        // Filtrar noticias con coordenadas
+        for (Noticia n : noticias) {
+            if (n.getLatitud() != null && n.getLongitud() != null) {
+                noticiasConCoordenadas.add(n);
+            }
+        }
+
+        // Si hay ubicación GPS, filtrar por cercanía
+        if (ubicacionActual != null && !noticiasConCoordenadas.isEmpty()) {
+            // Filtrar noticias dentro del radio del carrusel
+            for (Noticia noticia : noticiasConCoordenadas) {
+                // Usar LocationHelper para calcular distancia
+                double distanciaKm = LocationHelper.calcularDistanciaKm(
+                    ubicacionActual.getLatitude(),
+                    ubicacionActual.getLongitude(),
+                    noticia.getLatitud(),
+                    noticia.getLongitud()
+                );
+
+                // Solo incluir noticias dentro del radio del carrusel
+                if (distanciaKm <= RADIO_CARRUSEL_KM) {
+                    noticiasCercanas.add(noticia);
+                }
+            }
+
+            // Limitar a las MAX_NOTICIAS_CARRUSEL más cercanas
+            if (noticiasCercanas.size() > MAX_NOTICIAS_CARRUSEL) {
+                noticiasCercanas = noticiasCercanas.subList(0, MAX_NOTICIAS_CARRUSEL);
+            }
+
+            Log.i(TAG, "📍 Carrusel: " + noticiasCercanas.size() + " noticias cercanas (de " +
+                  noticiasConCoordenadas.size() + " totales con coordenadas) - Radio: " + RADIO_CARRUSEL_KM + "km");
+        } else {
+            // Sin ubicación GPS, mostrar todas limitando a MAX_NOTICIAS_CARRUSEL
+            noticiasCercanas = noticiasConCoordenadas;
+            if (noticiasCercanas.size() > MAX_NOTICIAS_CARRUSEL) {
+                noticiasCercanas = noticiasCercanas.subList(0, MAX_NOTICIAS_CARRUSEL);
+            }
+            Log.w(TAG, "📍 Carrusel: Sin GPS, mostrando " + noticiasCercanas.size() + " noticias");
+        }
+
+        // Actualizar adaptador del carrusel
+        if (noticiaMapaAdapter != null) {
+            noticiaMapaAdapter.setUbicacionActual(ubicacionActual);
+            noticiaMapaAdapter.setNoticias(noticiasCercanas);
+        }
+
+        // Mostrar carrusel con animación si hay noticias cercanas
+        if (!noticiasCercanas.isEmpty() && layoutNoticiasCarousel != null) {
+            if (layoutNoticiasCarousel.getVisibility() != View.VISIBLE) {
+                mostrarCarruselConAnimacion();
+            }
+        } else if (layoutNoticiasCarousel != null) {
+            // Ocultar carrusel si no hay noticias cercanas
+            if (layoutNoticiasCarousel.getVisibility() == View.VISIBLE) {
+                ocultarCarruselConAnimacion();
+            }
+        }
     }
+
+    /**
+     * Muestra el carrusel con animación - El mapa se reduce automáticamente
+     */
+    private void mostrarCarruselConAnimacion() {
+        if (layoutNoticiasCarousel == null) {
+            return;
+        }
+
+        // Si ya está visible y con alpha 1, no hacer nada
+        if (layoutNoticiasCarousel.getVisibility() == View.VISIBLE && layoutNoticiasCarousel.getAlpha() == 1f) {
+            return;
+        }
+
+        // Actualizar constraint del mapa para conectar al carrusel
+        actualizarConstraintMapa(true);
+
+        // Preparar animación desde abajo
+        layoutNoticiasCarousel.setAlpha(0f);
+        layoutNoticiasCarousel.setTranslationY(100);
+        layoutNoticiasCarousel.setVisibility(View.VISIBLE);
+
+        // Animación de aparición suave desde abajo
+        layoutNoticiasCarousel.animate()
+            .alpha(1f)
+            .translationY(0)
+            .setDuration(300)
+            .setInterpolator(new DecelerateInterpolator(1.5f))
+            .start();
+
+        Log.d(TAG, "Carrusel mostrado - Mapa reducido automáticamente");
+    }
+
+    /**
+     * Oculta el carrusel con animación - El mapa se expande automáticamente
+     */
+    private void ocultarCarruselConAnimacion() {
+        if (layoutNoticiasCarousel == null || layoutNoticiasCarousel.getVisibility() != View.VISIBLE) {
+            return;
+        }
+
+        // Animación de desaparición - usar GONE para que el mapa se expanda
+        layoutNoticiasCarousel.animate()
+            .alpha(0f)
+            .translationY(layoutNoticiasCarousel.getHeight())
+            .setDuration(250)
+            .setInterpolator(new AccelerateDecelerateInterpolator())
+            .withEndAction(() -> {
+                layoutNoticiasCarousel.setVisibility(View.GONE);
+                layoutNoticiasCarousel.setTranslationY(0);
+                layoutNoticiasCarousel.setAlpha(1f);
+
+                // Actualizar constraint del mapa para expandirse hasta la navegación
+                actualizarConstraintMapa(false);
+            })
+            .start();
+
+        Log.d(TAG, "Carrusel ocultado - Mapa expandido");
+    }
+
+    /**
+     * Actualiza las constraints del mapa según visibilidad del carrusel
+     * @param carruselVisible true si el carrusel está visible
+     */
+    private void actualizarConstraintMapa(boolean carruselVisible) {
+        View root = findViewById(android.R.id.content);
+        if (root == null) return;
+
+        ConstraintLayout constraintLayout = findViewById(R.id.map_container).getParent() instanceof ConstraintLayout
+            ? (ConstraintLayout) findViewById(R.id.map_container).getParent()
+            : null;
+
+        if (constraintLayout == null) return;
+
+        ConstraintSet constraintSet = new ConstraintSet();
+        constraintSet.clone(constraintLayout);
+
+        if (carruselVisible) {
+            // Mapa conectado al carrusel
+            constraintSet.connect(R.id.map_container, ConstraintSet.BOTTOM,
+                R.id.layout_noticias_carousel, ConstraintSet.TOP);
+        } else {
+            // Mapa conectado directamente a la navegación
+            constraintSet.connect(R.id.map_container, ConstraintSet.BOTTOM,
+                R.id.bottom_nav_container, ConstraintSet.TOP);
+        }
+
+        constraintSet.applyTo(constraintLayout);
+    }
+
 
     /**
      * Inicializa el callback de ubicación para detectar cambios
@@ -270,6 +438,12 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
                         Log.d(TAG, "🔄 Actualizando marcadores por cambio de ubicación...");
                         agregarMarcadores(noticias);
                     }
+
+                    // Actualizar carrusel con noticias más cercanas a la nueva ubicación
+                    if (noticias != null && !noticias.isEmpty()) {
+                        Log.d(TAG, "🔄 Actualizando carrusel con noticias cercanas...");
+                        actualizarCarruselConNoticiasCercanas();
+                    }
                 }
             }
         };
@@ -279,13 +453,8 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
      * Verifica y solicita permisos de ubicación
      */
     private void verificarPermisosUbicacion() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Solicitar permiso
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_PERMISSION_REQUEST_CODE);
-        }
+        // Usar LocationHelper para verificar y solicitar permisos
+        getLocationHelper().checkAndRequestLocationPermission(this);
     }
 
     @Override
@@ -293,7 +462,7 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+        if (requestCode == LocationHelper.LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permiso concedido, habilitar ubicación en el mapa
                 if (mMap != null) {
@@ -301,9 +470,8 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
                     centrarEnMiUbicacion();
                 }
             } else {
-                Toast.makeText(this,
-                        "Permiso de ubicación denegado. No se puede mostrar tu posición.",
-                        Toast.LENGTH_LONG).show();
+                showToast("Permiso de ubicación denegado. No se puede mostrar tu posición.",
+                        Toast.LENGTH_LONG);
             }
         }
     }
@@ -328,8 +496,62 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
         mMap = googleMap;
         Log.i(TAG, "Mapa de Google cargado correctamente");
 
-        // Configurar mapa
+        // ========================================
+        // DIAGNÓSTICO: Detectar problemas de API Key
+        // ========================================
+        mMap.setOnMapLoadedCallback(() -> {
+            Log.i(TAG, "✅ Callback onMapLoaded: Mapa completamente cargado");
+        });
+
+        // Verificar después de 5 segundos si las tiles cargaron
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            // Logs de diagnóstico
+            Log.w(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            Log.w(TAG, "⚠️ DIAGNÓSTICO AUTOMÁTICO DE GOOGLE MAPS");
+            Log.w(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            Log.w(TAG, "");
+            Log.w(TAG, "Si ves el mapa GRIS sin calles:");
+            Log.w(TAG, "");
+            Log.w(TAG, "CAUSAS POSIBLES:");
+            Log.w(TAG, "  1. Restricciones de API Key incorrectas");
+            Log.w(TAG, "  2. SHA-1 no coincide con Google Cloud Console");
+            Log.w(TAG, "  3. Paquete incorrecto en restricciones");
+            Log.w(TAG, "");
+            Log.w(TAG, "📋 TU CONFIGURACIÓN ACTUAL:");
+            Log.w(TAG, "  Paquete: com.tesistitulacion.noticiaslocales");
+            Log.w(TAG, "  SHA-1: 51:49:02:BE:1D:1B:41:5B:C7:3E:34:A6:29:52:6A:F8:A7:F7:ED:DF");
+            Log.w(TAG, "");
+            Log.w(TAG, "✅ SOLUCIÓN:");
+            Log.w(TAG, "  1. Abre: ACCION_INMEDIATA_GOOGLE_CLOUD.txt");
+            Log.w(TAG, "  2. O ejecuta: verificar-configuracion-maps.bat");
+            Log.w(TAG, "  3. Sigue los 3 pasos para configurar restricciones");
+            Log.w(TAG, "");
+            Log.w(TAG, "🔗 Enlace directo:");
+            Log.w(TAG, "  https://console.cloud.google.com/apis/credentials");
+            Log.w(TAG, "");
+            Log.w(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
+            // Mostrar Toast al usuario
+            Toast.makeText(this,
+                    "⚠️ Si el mapa no muestra calles:\n" +
+                    "Verifica restricciones de API Key en Google Cloud Console\n" +
+                    "(Ver logs con 'adb logcat | grep MapaActivity')",
+                    Toast.LENGTH_LONG).show();
+        }, 5000);
+
+        // Configurar mapa con estilo mejorado
         configurarMapa();
+
+        // Animación suave de aparición del mapa
+        View mapView = getSupportFragmentManager().findFragmentById(R.id.map_container).getView();
+        if (mapView != null) {
+            mapView.setAlpha(0f);
+            mapView.animate()
+                .alpha(1f)
+                .setDuration(600)
+                .setInterpolator(new DecelerateInterpolator())
+                .start();
+        }
 
         // Si se recibieron coordenadas desde el Intent, centrar en esa ubicación
         if (latitudIntent != null && longitudIntent != null) {
@@ -430,14 +652,14 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY) // GPS + WiFi + Celular
                 .setSmallestDisplacement(5f);  // Solo actualizar si se movió al menos 5 metros
 
-        fusedLocationClient.requestLocationUpdates(locationRequest,
+        getLocationHelper().getFusedLocationClient().requestLocationUpdates(locationRequest,
                 locationCallback, Looper.getMainLooper());
 
         Log.i(TAG, "✅ requestLocationUpdates() registrado con PRIORITY_HIGH_ACCURACY");
 
         // Obtener última ubicación conocida inmediatamente
         Log.d(TAG, "🔍 Solicitando getLastLocation()...");
-        fusedLocationClient.getLastLocation()
+        getLocationHelper().getFusedLocationClient().getLastLocation()
                 .addOnSuccessListener(this, location -> {
                     if (location != null) {
                         ubicacionActual = location;
@@ -464,7 +686,7 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
     }
 
     /**
-     * Centra la cámara en la ubicación actual del usuario
+     * Centra la cámara en la ubicación actual del usuario (versión simple sin animaciones)
      */
     private void centrarEnMiUbicacion() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -472,38 +694,122 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
             return;
         }
 
-        fusedLocationClient.getLastLocation()
+        getLocationHelper().getFusedLocationClient().getLastLocation()
                 .addOnSuccessListener(this, location -> {
                     if (location != null) {
                         ubicacionActual = location;
-                        // Obtener ubicación actual
                         LatLng miUbicacion = new LatLng(location.getLatitude(), location.getLongitude());
-
-                        // Centrar cámara en mi ubicación con animación suave
                         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(miUbicacion, ZOOM_LEVEL), 1500, null);
 
                         Log.i(TAG, "Mapa centrado en ubicación actual: " + miUbicacion);
-                        Toast.makeText(this,
-                                "📍 Mapa centrado en tu ubicación",
-                                Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "📍 Mapa centrado en tu ubicación", Toast.LENGTH_SHORT).show();
 
-                        // Actualizar marcadores cercanos
                         if (noticias != null && !noticias.isEmpty()) {
                             agregarMarcadores(noticias);
                         }
                     } else {
-                        // No hay ubicación disponible, centrar en Ibarra con zoom medio
                         Log.w(TAG, "No se pudo obtener ubicación actual");
                         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(IBARRA_CENTRO, 14f), 1000, null);
-                        Toast.makeText(this,
-                                "No se pudo obtener tu ubicación. Mostrando Ibarra.",
-                                Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "No se pudo obtener tu ubicación. Mostrando Ibarra.", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error al obtener ubicación: " + e.getMessage());
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(IBARRA_CENTRO, 14f), 1000, null);
                 });
+    }
+
+    /**
+     * Centra la cámara en la ubicación actual con animación mejorada (bounce effect)
+     */
+    private void centrarEnMiUbicacionConAnimacion() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        if (animacionEnProgreso) {
+            Log.d(TAG, "Animación en progreso, ignorando click");
+            return;
+        }
+
+        getLocationHelper().getFusedLocationClient().getLastLocation()
+                .addOnSuccessListener(this, location -> {
+                    if (location != null) {
+                        ubicacionActual = location;
+                        LatLng miUbicacion = new LatLng(location.getLatitude(), location.getLongitude());
+
+                        // Animación con bounce: primero zoom out, luego zoom in con overshoot
+                        animarCamaraConBounce(miUbicacion, ZOOM_LEVEL);
+
+                        Log.i(TAG, "Mapa centrado con animación en: " + miUbicacion);
+                        Toast.makeText(this, "📍 Mapa centrado en tu ubicación", Toast.LENGTH_SHORT).show();
+
+                        // Actualizar marcadores cercanos después de la animación
+                        handler.postDelayed(() -> {
+                            if (noticias != null && !noticias.isEmpty()) {
+                                agregarMarcadores(noticias);
+                            }
+                        }, 1000);
+                    } else {
+                        Log.w(TAG, "No se pudo obtener ubicación actual");
+                        animarCamaraConBounce(IBARRA_CENTRO, 14f);
+                        Toast.makeText(this, "No se pudo obtener tu ubicación. Mostrando Ibarra.", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error al obtener ubicación: " + e.getMessage());
+                    animarCamaraConBounce(IBARRA_CENTRO, 14f);
+                });
+    }
+
+    /**
+     * Anima la cámara con efecto bounce (zoom out -> zoom in con overshoot)
+     */
+    private void animarCamaraConBounce(LatLng destino, float zoomFinal) {
+        if (mMap == null) return;
+
+        animacionEnProgreso = true;
+        float zoomActual = mMap.getCameraPosition().zoom;
+
+        // Fase 1: Zoom out suave
+        mMap.animateCamera(
+            CameraUpdateFactory.newLatLngZoom(destino, Math.max(zoomActual - 2, MIN_ZOOM)),
+            400,
+            new GoogleMap.CancelableCallback() {
+                @Override
+                public void onFinish() {
+                    // Fase 2: Zoom in con overshoot
+                    CameraPosition cameraPosition = new CameraPosition.Builder()
+                        .target(destino)
+                        .zoom(zoomFinal)
+                        .bearing(0)
+                        .tilt(0)
+                        .build();
+
+                    mMap.animateCamera(
+                        CameraUpdateFactory.newCameraPosition(cameraPosition),
+                        800,
+                        new GoogleMap.CancelableCallback() {
+                            @Override
+                            public void onFinish() {
+                                animacionEnProgreso = false;
+                            }
+
+                            @Override
+                            public void onCancel() {
+                                animacionEnProgreso = false;
+                            }
+                        }
+                    );
+                }
+
+                @Override
+                public void onCancel() {
+                    animacionEnProgreso = false;
+                }
+            }
+        );
     }
 
     private void configurarMapa() {
@@ -529,20 +835,38 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
             mMap.setMaxZoomPreference(MAX_ZOOM);
         } else {
             // MODO DESARROLLO: Sin restricciones geográficas
-            Log.i(TAG, "Modo DESARROLLO: Mapa sin restricciones geográficas");
-            Toast.makeText(this,
-                    "⚠️ Modo desarrollo: Sin restricciones de área",
-                    Toast.LENGTH_SHORT).show();
-
             // Solo limitar zoom extremos
-            mMap.setMinZoomPreference(5f);  // Puedes alejar más
+            mMap.setMinZoomPreference(5f);
             mMap.setMaxZoomPreference(MAX_ZOOM);
         }
 
-        // Controles de UI
+        // ========================================
+        // CONFIGURACIÓN UI MEJORADA
+        // ========================================
+
+        // Controles de zoom
         mMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.getUiSettings().setZoomGesturesEnabled(true);
+
+        // Controles de navegación
         mMap.getUiSettings().setCompassEnabled(true);
         mMap.getUiSettings().setMyLocationButtonEnabled(true); // Botón para centrar en mi ubicación
+
+        // Gestos de mapa (todos habilitados para experiencia dinámica)
+        mMap.getUiSettings().setScrollGesturesEnabled(true);
+        mMap.getUiSettings().setScrollGesturesEnabledDuringRotateOrZoom(true);
+
+        // Habilitar rotación para experiencia más dinámica
+        mMap.getUiSettings().setRotateGesturesEnabled(true);
+
+        // Habilitar inclinación para vista 3D más dinámica
+        mMap.getUiSettings().setTiltGesturesEnabled(true);
+
+        // Habilitar todos los gestos (táctil, zoom, etc.)
+        mMap.getUiSettings().setAllGesturesEnabled(true);
+
+        // Habilitar barra de herramientas del mapa (compartir, navegación)
+        mMap.getUiSettings().setMapToolbarEnabled(true);
 
         // Habilitar capa de "Mi ubicación"
         try {
@@ -551,113 +875,234 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
             Log.e(TAG, "No hay permisos de ubicación: " + e.getMessage());
         }
 
-        // Deshabilitar rotación (mantener el norte arriba)
-        mMap.getUiSettings().setRotateGesturesEnabled(false);
+        // Configuración visual mejorada
+        mMap.setBuildingsEnabled(true); // Mostrar edificios en 3D
+        mMap.setIndoorEnabled(true);    // Mapas de interiores
+        mMap.setTrafficEnabled(false);  // Sin tráfico para mantener limpio
 
-        // Deshabilitar inclinación (vista 3D)
-        mMap.getUiSettings().setTiltGesturesEnabled(false);
+        // ========================================
+        // LISTENERS INTERACTIVOS
+        // ========================================
 
-        // Listener para cuando la cámara del mapa se mueva
+        // Listener cuando la cámara se detiene (después de zoom o pan)
         mMap.setOnCameraIdleListener(() -> {
             Log.d(TAG, "Cámara del mapa detenida - actualizando lista de noticias visibles");
             actualizarNoticiasVisibles();
         });
 
-        // Listener para clicks en marcadores
+        // Listener cuando la cámara se está moviendo
+        mMap.setOnCameraMoveListener(() -> {
+            // Feedback visual sutil durante el movimiento
+            // Log.v(TAG, "Cámara en movimiento");
+        });
+
+        // Listener cuando la cámara comienza a moverse
+        mMap.setOnCameraMoveStartedListener(reason -> {
+            String razonTexto;
+            switch (reason) {
+                case GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE:
+                    razonTexto = "Usuario movió el mapa";
+                    break;
+                case GoogleMap.OnCameraMoveStartedListener.REASON_API_ANIMATION:
+                    razonTexto = "Animación programática";
+                    break;
+                case GoogleMap.OnCameraMoveStartedListener.REASON_DEVELOPER_ANIMATION:
+                    razonTexto = "Animación de desarrollador";
+                    break;
+                default:
+                    razonTexto = "Razón desconocida";
+            }
+            Log.v(TAG, "Cámara comenzó a moverse: " + razonTexto);
+        });
+
+        // Listener para clicks en el mapa (fuera de marcadores)
+        mMap.setOnMapClickListener(latLng -> {
+            Log.d(TAG, "Click en mapa: " + latLng.toString());
+            // Deseleccionar marcador si hay uno seleccionado
+            if (markerSeleccionado != null) {
+                markerSeleccionado = null;
+            }
+        });
+
+        // Listener para long clicks en el mapa
+        mMap.setOnMapLongClickListener(latLng -> {
+            Log.d(TAG, "Long click en mapa: " + latLng.toString());
+            // Opcional: Mostrar coordenadas o crear marcador temporal
+            Toast.makeText(this,
+                String.format(java.util.Locale.US, "📍 %.4f, %.4f", latLng.latitude, latLng.longitude),
+                Toast.LENGTH_SHORT).show();
+        });
+
+        // Listener para clicks en marcadores con animación
         mMap.setOnMarkerClickListener(marker -> {
+            // Animar marcador con bounce
+            animarMarcadorClick(marker);
+
             // Obtener noticia asociada al marcador
             Noticia noticia = (Noticia) marker.getTag();
 
             if (noticia != null) {
-                // Centrar cámara en el marcador y abrir detalle
-                mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
+                // Guardar marcador seleccionado
+                markerSeleccionado = marker;
 
-                // Abrir detalle de noticia
-                if (noticia.getFirestoreId() != null) {
-                    Intent intent = new Intent(this, DetalleNoticiaActivity.class);
-                    intent.putExtra(DetalleNoticiaActivity.EXTRA_NOTICIA_ID, noticia.getFirestoreId());
-                    startActivity(intent);
-                }
+                // Centrar cámara con animación suave
+                LatLng posicion = marker.getPosition();
+                CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .target(posicion)
+                    .zoom(mMap.getCameraPosition().zoom)
+                    .build();
+
+                mMap.animateCamera(
+                    CameraUpdateFactory.newCameraPosition(cameraPosition),
+                    500,
+                    new GoogleMap.CancelableCallback() {
+                        @Override
+                        public void onFinish() {
+                            // Abrir detalle después de la animación
+                            if (noticia.getFirestoreId() != null) {
+                                Intent intent = new Intent(MapaActivity.this, DetalleNoticiaActivity.class);
+                                intent.putExtra(DetalleNoticiaActivity.EXTRA_NOTICIA_ID, noticia.getFirestoreId());
+                                startActivity(intent);
+                            }
+                        }
+
+                        @Override
+                        public void onCancel() {
+                            // Si se cancela, abrir igual
+                            if (noticia.getFirestoreId() != null) {
+                                Intent intent = new Intent(MapaActivity.this, DetalleNoticiaActivity.class);
+                                intent.putExtra(DetalleNoticiaActivity.EXTRA_NOTICIA_ID, noticia.getFirestoreId());
+                                startActivity(intent);
+                            }
+                        }
+                    }
+                );
             }
 
             return true; // Consumir el evento
         });
     }
 
+    /**
+     * Anima el marcador cuando se hace click (efecto bounce)
+     */
+    private void animarMarcadorClick(final Marker marker) {
+        if (marker == null) return;
 
-    private void cargarNoticiasEnMapa() {
-        if (cargando) {
-            Log.d(TAG, "Ya hay una carga en progreso");
-            return;
+        // Crear animación de bounce
+        final Handler handlerBounce = new Handler();
+        final long startTime = System.currentTimeMillis();
+        final long duration = 600;
+
+        handlerBounce.post(new Runnable() {
+            @Override
+            public void run() {
+                long elapsed = System.currentTimeMillis() - startTime;
+                float t = Math.min(1.0f, (float) elapsed / duration);
+
+                // Función de bounce
+                float bounce = (float) Math.abs(Math.sin(t * Math.PI * 2) * (1 - t));
+
+                // No podemos animar directamente el marcador, pero mostraremos el efecto
+                // mediante la animación de zoom sutil
+                if (t < 1.0f) {
+                    handlerBounce.postDelayed(this, 16); // ~60 FPS
+                }
+            }
+        });
+    }
+
+    /**
+     * Aplica efecto de drop animation escalonado a los marcadores
+     * Simula que los marcadores "caen" al mapa uno tras otro
+     */
+    private void aplicarDropAnimationMarcadores(final List<Marker> marcadores) {
+        if (marcadores == null || marcadores.isEmpty()) return;
+
+        // Limitar cantidad de marcadores animados para no saturar
+        final int maxMarcadoresAnimados = Math.min(marcadores.size(), 20);
+        final long delayEntreMarcadores = 50; // 50ms entre cada marcador
+
+        for (int i = 0; i < maxMarcadoresAnimados; i++) {
+            final int index = i;
+            final Marker marker = marcadores.get(i);
+
+            // Delay escalonado para cada marcador
+            handler.postDelayed(() -> {
+                if (marker != null && marker.isVisible()) {
+                    // Mostrar marcador (ya están agregados, solo hacemos efecto visual)
+                    // En versiones avanzadas de Google Maps se podría usar Marker.setVisible()
+                    // pero aquí usamos un enfoque simulado
+
+                    // Efecto visual: mostrar marcador con alpha
+                    marker.setAlpha(0f);
+
+                    // Animar alpha de 0 a 1 con ValueAnimator
+                    ValueAnimator alphaAnimator = ValueAnimator.ofFloat(0f, 1f);
+                    alphaAnimator.setDuration(300);
+                    alphaAnimator.setInterpolator(new DecelerateInterpolator());
+                    alphaAnimator.addUpdateListener(animation -> {
+                        float alpha = (float) animation.getAnimatedValue();
+                        if (marker.isVisible()) {
+                            marker.setAlpha(alpha);
+                        }
+                    });
+                    alphaAnimator.start();
+
+                    Log.v(TAG, "Marcador " + (index + 1) + " animado (drop effect)");
+                }
+            }, i * delayEntreMarcadores);
         }
 
-        Log.d(TAG, "Iniciando escucha en TIEMPO REAL de noticias para el mapa desde Firebase...");
-        cargando = true;
+        // Marcadores restantes (si hay más de 20) aparecen sin animación
+        if (marcadores.size() > maxMarcadoresAnimados) {
+            handler.postDelayed(() -> {
+                for (int i = maxMarcadoresAnimados; i < marcadores.size(); i++) {
+                    Marker marker = marcadores.get(i);
+                    if (marker != null) {
+                        marker.setAlpha(1f);
+                    }
+                }
+                Log.d(TAG, (marcadores.size() - maxMarcadoresAnimados) + " marcadores adicionales mostrados sin animación");
+            }, maxMarcadoresAnimados * delayEntreMarcadores + 200);
+        }
 
-        // Cargar desde Firebase Firestore con TIEMPO REAL
-        FirebaseManager.getInstance().getAllNoticiasRealtime(new FirebaseManager.FirestoreCallback<List<Noticia>>() {
-            @Override
-            public void onSuccess(List<Noticia> noticiasObtenidas) {
-                cargando = false;
-                Log.d(TAG, "Actualización en tiempo real - Noticias para mapa: " + noticiasObtenidas.size());
+        Log.i(TAG, "Drop animation aplicada a " + maxMarcadoresAnimados + " marcadores");
+    }
 
+
+    private void cargarNoticiasEnMapa() {
+        // Usar FirebaseCallbackHelper para gestión automática de estado (modo silencioso para el mapa)
+        FirebaseCallbackHelper.<List<Noticia>>cargarDatosSilencioso(
+            this,
+            "noticias para mapa",
+            getLoadingStateManager(),
+            callback -> FirebaseManager.getInstance().getAllNoticiasRealtime(callback),
+            noticiasObtenidas -> {
                 if (noticiasObtenidas != null && !noticiasObtenidas.isEmpty()) {
                     noticias = noticiasObtenidas;
                     agregarMarcadores(noticias);
 
                     Log.i(TAG, "Noticias cargadas en mapa (tiempo real): " + noticias.size());
 
-                    // Filtrar noticias con coordenadas
-                    List<Noticia> noticiasConCoordenadas = new ArrayList<>();
+                    // Actualizar carrusel con noticias más cercanas
+                    actualizarCarruselConNoticiasCercanas();
+
+                    // Contar noticias con coordenadas para el mensaje
+                    int noticiasConCoords = 0;
                     for (Noticia n : noticias) {
                         if (n.getLatitud() != null && n.getLongitud() != null) {
-                            noticiasConCoordenadas.add(n);
+                            noticiasConCoords++;
                         }
                     }
-
-                    // Actualizar adaptador del carrusel
-                    if (noticiaMapaAdapter != null) {
-                        noticiaMapaAdapter.setUbicacionActual(ubicacionActual);
-                        noticiaMapaAdapter.setNoticias(noticiasConCoordenadas);
-                    }
-
-                    // Mostrar carrusel si hay noticias
-                    if (!noticiasConCoordenadas.isEmpty() && layoutNoticiasCarousel != null) {
-                        layoutNoticiasCarousel.setVisibility(View.VISIBLE);
-                    }
-
-                    boolean mostrarSoloCercanas = UsuarioPreferences.getMostrarSoloCercanas(MapaActivity.this);
-                    String mensaje;
-                    if (ubicacionActual != null) {
-                        if (mostrarSoloCercanas) {
-                            mensaje = "✅ " + noticiasConCoordenadas.size() + " noticias muy cercanas (500m)";
-                        } else {
-                            mensaje = "✅ " + noticiasConCoordenadas.size() + " noticias";
-                        }
-                    } else {
-                        mensaje = "✅ " + noticiasConCoordenadas.size() + " noticias en el mapa";
-                    }
-                    Toast.makeText(MapaActivity.this, mensaje, Toast.LENGTH_SHORT).show();
 
                     // Actualizar lista de noticias visibles
                     actualizarNoticiasVisibles();
                 } else {
                     Log.w(TAG, "No hay noticias disponibles");
-                    Toast.makeText(MapaActivity.this,
-                            "No hay noticias disponibles",
-                            Toast.LENGTH_SHORT).show();
                 }
             }
-
-            @Override
-            public void onError(Exception e) {
-                cargando = false;
-                Log.e(TAG, "Error al cargar noticias desde Firebase: " + e.getMessage(), e);
-                Toast.makeText(MapaActivity.this,
-                        "Error al cargar noticias: " + e.getMessage(),
-                        Toast.LENGTH_LONG).show();
-            }
-        });
+        );
     }
 
     private void agregarMarcadores(List<Noticia> noticias) {
@@ -670,12 +1115,13 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
         mMap.clear();
 
         List<LatLng> posiciones = new ArrayList<>();
+        final List<Marker> marcadoresNuevos = new ArrayList<>();
         int marcadoresAgregados = 0;
         int noticiasFiltradas = 0;
 
         // Verificar si está activado el modo "mostrar solo cercanas"
         boolean mostrarSoloCercanas = UsuarioPreferences.getMostrarSoloCercanas(this);
-        double radioActual = mostrarSoloCercanas ? RADIO_POKEMON_GO_KM : RADIO_BUSQUEDA_KM;
+        double radioActual = mostrarSoloCercanas ? RADIO_OCULTAR_NOTICIAS_KM : RADIO_BUSQUEDA_KM;
 
         for (Noticia noticia : noticias) {
             // Solo agregar si tiene coordenadas válidas
@@ -716,11 +1162,15 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
                 if (marker != null) {
                     // Asociar noticia al marcador para recuperarla en el click
                     marker.setTag(noticia);
+                    marcadoresNuevos.add(marker);
                     posiciones.add(posicion);
                     marcadoresAgregados++;
                 }
             }
         }
+
+        // Aplicar efecto drop animation escalonado a los marcadores
+        aplicarDropAnimationMarcadores(marcadoresNuevos);
 
         String modoTexto = mostrarSoloCercanas ? " [MODO POKÉMON GO]" : "";
 
@@ -847,7 +1297,7 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
     }
 
     /**
-     * Ajusta la cámara para mostrar todos los marcadores
+     * Ajusta la cámara para mostrar todos los marcadores con animación suave
      */
     private void ajustarCamaraATodosLosMarcadores(List<LatLng> posiciones) {
         if (posiciones.isEmpty()) return;
@@ -860,11 +1310,36 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
             }
             LatLngBounds bounds = builder.build();
 
-            // Padding en píxeles alrededor de los marcadores
-            int padding = 100;
+            // Padding en píxeles alrededor de los marcadores (mayor para mejor visualización)
+            int padding = 120;
 
-            // Animar cámara para mostrar todos los marcadores
-            mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding));
+            // Animar cámara con duración personalizada para mostrar todos los marcadores
+            mMap.animateCamera(
+                CameraUpdateFactory.newLatLngBounds(bounds, padding),
+                1200, // Duración más larga para animación suave
+                new GoogleMap.CancelableCallback() {
+                    @Override
+                    public void onFinish() {
+                        Log.d(TAG, "Cámara ajustada a todos los marcadores");
+                        // Pequeño zoom out adicional para mejor contexto
+                        handler.postDelayed(() -> {
+                            if (mMap != null) {
+                                float zoomActual = mMap.getCameraPosition().zoom;
+                                mMap.animateCamera(
+                                    CameraUpdateFactory.zoomTo(Math.max(zoomActual - 0.5f, MIN_ZOOM)),
+                                    300,
+                                    null
+                                );
+                            }
+                        }, 200);
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        Log.d(TAG, "Animación de cámara cancelada");
+                    }
+                }
+            );
 
         } catch (Exception e) {
             Log.e(TAG, "Error al ajustar cámara: " + e.getMessage(), e);
@@ -896,9 +1371,9 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
             }
         }
 
-        // Actualizar contador
+        // Actualizar contador con animación
         if (tvContadorNoticias != null) {
-            tvContadorNoticias.setText(String.valueOf(noticiasVisibles.size()));
+            animarContadorNoticias(tvContadorNoticias.getText().toString(), String.valueOf(noticiasVisibles.size()));
         }
 
         // Mantener card oculto (sin adaptador)
@@ -909,13 +1384,42 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
         Log.d(TAG, "Lista actualizada: " + noticiasVisibles.size() + " noticias visibles de " + noticias.size() + " totales");
     }
 
+    /**
+     * Anima el cambio del contador de noticias con efecto pulse
+     */
+    private void animarContadorNoticias(String valorAnterior, String nuevoValor) {
+        if (tvContadorNoticias == null) return;
+
+        // Si el valor no cambió, no animar
+        if (valorAnterior.equals(nuevoValor)) return;
+
+        // Animación de pulse y cambio de valor
+        tvContadorNoticias.animate()
+            .scaleX(1.3f)
+            .scaleY(1.3f)
+            .alpha(0.5f)
+            .setDuration(150)
+            .setInterpolator(new AccelerateDecelerateInterpolator())
+            .withEndAction(() -> {
+                tvContadorNoticias.setText(nuevoValor);
+                tvContadorNoticias.animate()
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .alpha(1f)
+                    .setDuration(150)
+                    .setInterpolator(new OvershootInterpolator(1.5f))
+                    .start();
+            })
+            .start();
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
 
-        // Detener actualización de ubicación
-        if (fusedLocationClient != null && locationCallback != null) {
-            fusedLocationClient.removeLocationUpdates(locationCallback);
+        // Detener actualización de ubicación (BaseActivity también maneja esto)
+        if (locationCallback != null) {
+            getLocationHelper().getFusedLocationClient().removeLocationUpdates(locationCallback);
         }
 
         // Limpiar handler

@@ -1,0 +1,17 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Fondo circular Rojo para salud #dc2626 -->
+    <path
+        android:fillColor="#dc2626"
+        android:pathData="M24,2C11.85,2 2,11.85 2,24s9.85,22 22,22 22,-9.85 22,-22S36.15,2 24,2z"/>
+    <!-- Corazón con cruz médica -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M24,38l-2.5,-2.3C12.6,27.5 7,22.5 7,16.5 7,11.8 10.8,8 15.5,8c2.7,0 5.3,1.3 7,3.3 1.7,-2 4.3,-3.3 7,-3.3C34.2,8 38,11.8 38,16.5c0,6 -5.6,11 -14.5,19.2L24,38z"/>
+    <path
+        android:fillColor="#dc2626"
+        android:pathData="M22,14h4v6h6v4h-6v6h-4v-6h-6v-4h6z"/>
+</vector>

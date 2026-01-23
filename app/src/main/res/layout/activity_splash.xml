@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Splash Screen GeoNews - Diseño moderno claro -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorPrimary"
+    android:background="@color/bg_primary"
     android:gravity="center">
 
     <LinearLayout
@@ -12,42 +14,135 @@
         android:orientation="vertical"
         android:gravity="center">
 
-        <!-- Logo o icono de la app -->
-        <ImageView
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:src="@mipmap/ic_launcher"
-            android:contentDescription="Logo de la app"/>
+        <!-- Logo con fondo redondeado -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            app:cardCornerRadius="40dp"
+            app:cardBackgroundColor="@color/cat_politica"
+            app:cardElevation="8dp"
+            app:strokeWidth="0dp">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="32dp">
+
+                <!-- Icono GeoNews (mundo + lupa) -->
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/chatgpt_image_31_dic_2025__00_09_40_removebg_preview"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="Logo GeoNews"/>
+
+            </FrameLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Nombre de la app -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="@string/app_name"
-            android:textColor="@android:color/white"
-            android:textSize="28sp"
-            android:textStyle="bold"/>
+            android:layout_marginTop="32dp"
+            android:text="@string/login_title"
+            android:textColor="@color/text_primary"
+            android:textSize="42sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-black"
+            android:letterSpacing="-0.02"/>
 
-        <!-- Subtítulo -->
-        <TextView
+        <!-- Badge de ciudad -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Tu fuente de noticias locales"
-            android:textColor="@android:color/white"
-            android:textSize="14sp"
-            android:alpha="0.9"/>
+            android:layout_marginTop="20dp"
+            app:cardBackgroundColor="@color/cat_salud"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_location"
+                    app:tint="@color/primary"
+                    android:contentDescription="Ubicación"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="@string/splash_location"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.15"/>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 
-    <!-- Loading indicator -->
-    <ProgressBar
-        android:layout_width="wrap_content"
+    <!-- Loading section en la parte inferior -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="48dp"
-        android:indeterminateTint="@android:color/white"/>
+        android:layout_marginBottom="60dp"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <!-- Texto "LOADING APPLICATION" -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/splash_loading"
+            android:textColor="@color/text_secondary"
+            android:textSize="11sp"
+            android:letterSpacing="0.2"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Barra de progreso -->
+        <FrameLayout
+            android:layout_width="200dp"
+            android:layout_height="4dp"
+            android:background="@color/bg_secondary">
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:indeterminate="false"
+                android:max="100"
+                android:progress="0"
+                android:progressTint="@color/primary"
+                android:progressBackgroundTint="#00000000"/>
+
+        </FrameLayout>
+
+        <!-- Versión -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/app_version"
+            android:textColor="@color/text_secondary"
+            android:textSize="11sp"
+            android:alpha="0.5"/>
+
+    </LinearLayout>
 
 </RelativeLayout>

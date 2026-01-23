@@ -1,8 +1,11 @@
 package com.tesistitulacion.noticiaslocales.modelo;
 
+import java.util.Locale;
+
 /**
  * Modelo de datos para Noticia
  * Coincide con la tabla 'noticias' de la base de datos
+ * Soporta campos multiidioma (español/inglés)
  */
 public class Noticia {
     private Integer id;
@@ -11,6 +14,16 @@ public class Noticia {
     private String descripcion;
     private String contenido;
     private String imagenUrl;
+
+    // Campos multiidioma - Español
+    private String titulo_es;
+    private String descripcion_es;
+    private String contenido_es;
+
+    // Campos multiidioma - Inglés
+    private String titulo_en;
+    private String descripcion_en;
+    private String contenido_en;
     private Integer autorId;
     private String autorNombre;
     private Integer categoriaId;
@@ -54,28 +67,107 @@ public class Noticia {
         this.id = id;
     }
 
+    /**
+     * Obtiene el título según el idioma del dispositivo
+     * Si no hay traducción, usa el campo por defecto
+     */
     public String getTitulo() {
-        return titulo;
+        String lang = Locale.getDefault().getLanguage();
+        if ("en".equals(lang) && titulo_en != null && !titulo_en.isEmpty()) {
+            return titulo_en;
+        } else if ("es".equals(lang) && titulo_es != null && !titulo_es.isEmpty()) {
+            return titulo_es;
+        }
+        // Fallback: campo por defecto o español
+        return titulo != null ? titulo : titulo_es;
     }
 
     public void setTitulo(String titulo) {
         this.titulo = titulo;
     }
 
+    /**
+     * Obtiene la descripción según el idioma del dispositivo
+     */
     public String getDescripcion() {
-        return descripcion;
+        String lang = Locale.getDefault().getLanguage();
+        if ("en".equals(lang) && descripcion_en != null && !descripcion_en.isEmpty()) {
+            return descripcion_en;
+        } else if ("es".equals(lang) && descripcion_es != null && !descripcion_es.isEmpty()) {
+            return descripcion_es;
+        }
+        return descripcion != null ? descripcion : descripcion_es;
     }
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
     }
 
+    /**
+     * Obtiene el contenido según el idioma del dispositivo
+     */
     public String getContenido() {
-        return contenido;
+        String lang = Locale.getDefault().getLanguage();
+        if ("en".equals(lang) && contenido_en != null && !contenido_en.isEmpty()) {
+            return contenido_en;
+        } else if ("es".equals(lang) && contenido_es != null && !contenido_es.isEmpty()) {
+            return contenido_es;
+        }
+        return contenido != null ? contenido : contenido_es;
     }
 
     public void setContenido(String contenido) {
         this.contenido = contenido;
+    }
+
+    // Setters para campos multiidioma
+    public void setTitulo_es(String titulo_es) {
+        this.titulo_es = titulo_es;
+    }
+
+    public void setTitulo_en(String titulo_en) {
+        this.titulo_en = titulo_en;
+    }
+
+    public void setDescripcion_es(String descripcion_es) {
+        this.descripcion_es = descripcion_es;
+    }
+
+    public void setDescripcion_en(String descripcion_en) {
+        this.descripcion_en = descripcion_en;
+    }
+
+    public void setContenido_es(String contenido_es) {
+        this.contenido_es = contenido_es;
+    }
+
+    public void setContenido_en(String contenido_en) {
+        this.contenido_en = contenido_en;
+    }
+
+    // Getters directos para campos multiidioma (útil para edición)
+    public String getTitulo_es() {
+        return titulo_es;
+    }
+
+    public String getTitulo_en() {
+        return titulo_en;
+    }
+
+    public String getDescripcion_es() {
+        return descripcion_es;
+    }
+
+    public String getDescripcion_en() {
+        return descripcion_en;
+    }
+
+    public String getContenido_es() {
+        return contenido_es;
+    }
+
+    public String getContenido_en() {
+        return contenido_en;
     }
 
     public Integer getCategoriaId() {
@@ -251,7 +343,7 @@ public class Noticia {
     public String getFechaPublicacion() {
         if (fechaCreacion != null) {
             // Convertir timestamp a formato ISO
-            return new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+            return new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.US)
                     .format(new java.util.Date(fechaCreacion));
         }
         return null;

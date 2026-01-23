@@ -11,11 +11,11 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.tesistitulacion.noticiaslocales.modelo.Categoria;
-import com.tesistitulacion.noticiaslocales.modelo.Evento;
 import com.tesistitulacion.noticiaslocales.modelo.Noticia;
 import com.tesistitulacion.noticiaslocales.modelo.Parroquia;
 import com.tesistitulacion.noticiaslocales.modelo.Usuario;
@@ -28,7 +28,7 @@ import java.util.Map;
 
 /**
  * Clase Helper para operaciones con Firebase Firestore
- * Maneja CRUD de: Noticias, Eventos, Parroquias, Categorías, Usuarios
+ * Maneja CRUD de: Noticias, Parroquias, Categorías, Usuarios
  */
 public class FirebaseManager {
 
@@ -38,7 +38,6 @@ public class FirebaseManager {
 
     // Nombres de colecciones
     public static final String COLLECTION_NOTICIAS = "noticias";
-    public static final String COLLECTION_EVENTOS = "eventos";
     public static final String COLLECTION_PARROQUIAS = "parroquias";
     public static final String COLLECTION_CATEGORIAS = "categorias";
     public static final String COLLECTION_USUARIOS = "usuarios";
@@ -47,6 +46,14 @@ public class FirebaseManager {
     // Constructor privado (Singleton)
     private FirebaseManager() {
         db = FirebaseFirestore.getInstance();
+
+        // Habilitar persistencia offline para carga más rápida
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setPersistenceEnabled(true)
+                .setCacheSizeBytes(50 * 1024 * 1024) // 50 MB de caché
+                .build();
+        db.setFirestoreSettings(settings);
+        Log.d(TAG, "Firestore configurado con persistencia offline (50MB caché)");
     }
 
     // Singleton getInstance
@@ -148,40 +155,55 @@ public class FirebaseManager {
 
     /**
      * Obtiene todas las noticias activas (ordenadas por fecha)
+     * NOTA: Esta es una consulta única. Para actualizaciones en tiempo real, usa getAllNoticiasRealtime()
      */
     public void getAllNoticias(final FirestoreCallback<List<Noticia>> callback) {
-        Log.d(TAG, "Iniciando consulta de noticias...");
-
         db.collection(COLLECTION_NOTICIAS)
-                .limit(50)
+                .orderBy("fechaPublicacion", Query.Direction.DESCENDING)
+                .limit(20) // Optimizado: solo 20 noticias iniciales
                 .get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        Log.d(TAG, "Consulta exitosa. Documentos recibidos: " + queryDocumentSnapshots.size());
-                        List<Noticia> noticias = new ArrayList<>();
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Noticia> noticias = new ArrayList<>();
+                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        Noticia n = documentToNoticia(doc);
+                        if (n != null) {
+                            noticias.add(n);
+                        }
+                    }
+                    callback.onSuccess(noticias);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error al obtener noticias", e);
+                    callback.onError(e);
+                });
+    }
 
-                        for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                            Log.d(TAG, "Procesando documento: " + doc.getId());
+    /**
+     * Obtiene todas las noticias activas con actualizaciones en TIEMPO REAL
+     * Se actualiza automáticamente cuando hay cambios en Firebase
+     */
+    public void getAllNoticiasRealtime(final FirestoreCallback<List<Noticia>> callback) {
+        db.collection(COLLECTION_NOTICIAS)
+                .orderBy("fechaPublicacion", Query.Direction.DESCENDING)
+                .limit(20) // Optimizado: solo 20 noticias
+                .addSnapshotListener((querySnapshot, error) -> {
+                    if (error != null) {
+                        Log.e(TAG, "Error en listener de noticias", error);
+                        callback.onError(error);
+                        return;
+                    }
+
+                    if (querySnapshot != null) {
+                        List<Noticia> noticias = new ArrayList<>();
+                        for (DocumentSnapshot doc : querySnapshot) {
                             Noticia n = documentToNoticia(doc);
                             if (n != null) {
                                 noticias.add(n);
-                                Log.d(TAG, "Noticia agregada: " + n.getTitulo());
-                            } else {
-                                Log.w(TAG, "Noticia null para documento: " + doc.getId());
                             }
                         }
-
-                        Log.d(TAG, "Total noticias procesadas: " + noticias.size());
                         callback.onSuccess(noticias);
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e(TAG, "Error al obtener noticias", e);
-                        e.printStackTrace();
-                        callback.onError(e);
+                    } else {
+                        callback.onSuccess(new ArrayList<>());
                     }
                 });
     }
@@ -244,6 +266,82 @@ public class FirebaseManager {
     }
 
     /**
+     * Incrementa el contador de visualizaciones de una noticia
+     */
+    public void incrementarVisualizaciones(String noticiaId) {
+        if (noticiaId == null || noticiaId.isEmpty()) {
+            Log.w(TAG, "noticiaId es null o vacío, no se puede incrementar visualizaciones");
+            return;
+        }
+
+        DocumentReference noticiaRef = db.collection(COLLECTION_NOTICIAS).document(noticiaId);
+
+        // Primero obtener el valor actual
+        noticiaRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                if (documentSnapshot.exists()) {
+                    Integer visualizacionesActuales = documentSnapshot.getLong("visualizaciones") != null ?
+                            documentSnapshot.getLong("visualizaciones").intValue() : 0;
+
+                    // Incrementar en 1
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("visualizaciones", visualizacionesActuales + 1);
+
+                    noticiaRef.update(updates)
+                            .addOnSuccessListener(aVoid -> Log.d(TAG, "Visualizaciones incrementadas a: " + (visualizacionesActuales + 1)))
+                            .addOnFailureListener(e -> Log.e(TAG, "Error al incrementar visualizaciones", e));
+                } else {
+                    Log.w(TAG, "Noticia no encontrada al incrementar visualizaciones: " + noticiaId);
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.e(TAG, "Error al obtener noticia para incrementar visualizaciones", e);
+            }
+        });
+    }
+
+    /**
+     * Incrementa el contador de noticias leídas del usuario
+     */
+    public void incrementarNoticiasLeidas(String userId) {
+        if (userId == null || userId.isEmpty()) {
+            Log.w(TAG, "userId es null o vacío, no se puede incrementar noticias leídas");
+            return;
+        }
+
+        DocumentReference usuarioRef = db.collection(COLLECTION_USUARIOS).document(userId);
+
+        // Primero obtener el valor actual
+        usuarioRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                if (documentSnapshot.exists()) {
+                    Integer noticiasLeidasActuales = documentSnapshot.getLong("noticiasLeidas") != null ?
+                            documentSnapshot.getLong("noticiasLeidas").intValue() : 0;
+
+                    // Incrementar en 1
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("noticiasLeidas", noticiasLeidasActuales + 1);
+
+                    usuarioRef.update(updates)
+                            .addOnSuccessListener(aVoid -> Log.d(TAG, "Noticias leídas incrementadas a: " + (noticiasLeidasActuales + 1)))
+                            .addOnFailureListener(e -> Log.e(TAG, "Error al incrementar noticias leídas", e));
+                } else {
+                    Log.w(TAG, "Usuario no encontrado al incrementar noticias leídas: " + userId);
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.e(TAG, "Error al obtener usuario para incrementar noticias leídas", e);
+            }
+        });
+    }
+
+    /**
      * Crea una nueva noticia
      */
     public void createNoticia(Noticia noticia, final FirestoreCallback<String> callback) {
@@ -269,98 +367,6 @@ public class FirebaseManager {
     }
 
     // ==================== EVENTOS ====================
-
-    /**
-     * Obtiene un evento por ID
-     */
-    public void getEventoById(String eventoId, final FirestoreCallback<Evento> callback) {
-        db.collection(COLLECTION_EVENTOS)
-                .document(eventoId)
-                .get()
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        if (documentSnapshot.exists()) {
-                            Evento evento = documentToEvento(documentSnapshot);
-                            callback.onSuccess(evento);
-                        } else {
-                            callback.onError(new Exception("Evento no encontrado"));
-                        }
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e(TAG, "Error al obtener evento", e);
-                        callback.onError(e);
-                    }
-                });
-    }
-
-    /**
-     * Obtiene todos los eventos futuros
-     */
-    public void getEventosFuturos(final FirestoreCallback<List<Evento>> callback) {
-        Log.d(TAG, "Iniciando consulta de eventos...");
-
-        db.collection(COLLECTION_EVENTOS)
-                .limit(50)
-                .get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        Log.d(TAG, "Consulta exitosa. Documentos de eventos recibidos: " + queryDocumentSnapshots.size());
-                        List<Evento> eventos = new ArrayList<>();
-
-                        for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                            Log.d(TAG, "Procesando evento: " + doc.getId());
-                            Evento e = documentToEvento(doc);
-                            if (e != null) {
-                                eventos.add(e);
-                                Log.d(TAG, "Evento agregado: " + e.getDescripcion());
-                            } else {
-                                Log.w(TAG, "Evento null para documento: " + doc.getId());
-                            }
-                        }
-
-                        Log.d(TAG, "Total eventos procesados: " + eventos.size());
-                        callback.onSuccess(eventos);
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e(TAG, "Error al obtener eventos", e);
-                        e.printStackTrace();
-                        callback.onError(e);
-                    }
-                });
-    }
-
-    /**
-     * Crea un nuevo evento
-     */
-    public void createEvento(Evento evento, final FirestoreCallback<String> callback) {
-        Map<String, Object> eventoMap = eventoToMap(evento);
-
-        db.collection(COLLECTION_EVENTOS)
-                .add(eventoMap)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                    @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        String eventoId = documentReference.getId();
-                        Log.d(TAG, "Evento creado con ID: " + eventoId);
-                        callback.onSuccess(eventoId);
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e(TAG, "Error al crear evento", e);
-                        callback.onError(e);
-                    }
-                });
-    }
 
     // ==================== CONVERSORES ====================
 
@@ -396,6 +402,7 @@ public class FirebaseManager {
 
     /**
      * Convierte DocumentSnapshot a Noticia
+     * Soporta campos multiidioma (titulo_es, titulo_en, etc.)
      */
     private Noticia documentToNoticia(DocumentSnapshot doc) {
         try {
@@ -405,11 +412,21 @@ public class FirebaseManager {
             // Guardar el ID de Firestore
             n.setFirestoreId(doc.getId());
 
-            // Campos de texto
+            // Campos de texto (por defecto/fallback)
             n.setTitulo(doc.getString("titulo"));
             n.setDescripcion(doc.getString("descripcion"));
             n.setContenido(doc.getString("contenido"));
             n.setImagenUrl(doc.getString("imagenUrl"));
+
+            // Campos multiidioma - Español
+            n.setTitulo_es(doc.getString("titulo_es"));
+            n.setDescripcion_es(doc.getString("descripcion_es"));
+            n.setContenido_es(doc.getString("contenido_es"));
+
+            // Campos multiidioma - Inglés
+            n.setTitulo_en(doc.getString("titulo_en"));
+            n.setDescripcion_en(doc.getString("descripcion_en"));
+            n.setContenido_en(doc.getString("contenido_en"));
 
             Log.d(TAG, "Título: " + doc.getString("titulo"));
 
@@ -455,17 +472,46 @@ public class FirebaseManager {
                 n.setVisualizaciones(visualizaciones.intValue());
             }
 
-            // Referencias de Firestore (DocumentReference) a IDs Integer
-            // CategoriaId
-            DocumentReference categoriaRef = doc.getDocumentReference("categoriaId");
-            if (categoriaRef != null) {
-                try {
-                    // Extraer el ID del path de la referencia
-                    String categoriaId = categoriaRef.getId();
-                    n.setCategoriaId(Integer.parseInt(categoriaId));
-                } catch (NumberFormatException e) {
-                    Log.w(TAG, "No se pudo convertir categoriaId a Integer: " + e.getMessage());
+            // CategoriaId - puede ser DocumentReference o String
+            try {
+                Object categoriaIdObj = doc.get("categoriaId");
+                if (categoriaIdObj != null) {
+                    if (categoriaIdObj instanceof DocumentReference) {
+                        // Es una referencia de Firestore
+                        DocumentReference categoriaRef = (DocumentReference) categoriaIdObj;
+                        String categoriaId = categoriaRef.getId();
+                        n.setCategoriaId(Integer.parseInt(categoriaId));
+                    } else if (categoriaIdObj instanceof String) {
+                        // Es un string directo
+                        n.setCategoriaId(Integer.parseInt((String) categoriaIdObj));
+                    } else if (categoriaIdObj instanceof Long) {
+                        // Es un número
+                        n.setCategoriaId(((Long) categoriaIdObj).intValue());
+                    } else if (categoriaIdObj instanceof Integer) {
+                        // Es un integer
+                        n.setCategoriaId((Integer) categoriaIdObj);
+                    }
                 }
+            } catch (Exception e) {
+                Log.w(TAG, "No se pudo convertir categoriaId: " + e.getMessage());
+            }
+
+            // ParroquiaId - puede ser DocumentReference o String
+            try {
+                Object parroquiaIdObj = doc.get("parroquiaId");
+                if (parroquiaIdObj != null) {
+                    if (parroquiaIdObj instanceof DocumentReference) {
+                        // Es una referencia de Firestore
+                        DocumentReference parroquiaRef = (DocumentReference) parroquiaIdObj;
+                        String parroquiaId = parroquiaRef.getId();
+                        n.setAutorId(Integer.parseInt(parroquiaId)); // Nota: usando autorId como placeholder
+                    } else if (parroquiaIdObj instanceof String) {
+                        // Es un string directo - solo lo logueamos, no lo guardamos
+                        Log.d(TAG, "ParroquiaId (string): " + parroquiaIdObj);
+                    }
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "No se pudo convertir parroquiaId: " + e.getMessage());
             }
 
             Log.d(TAG, "Noticia convertida exitosamente: " + n.getTitulo());
@@ -479,90 +525,8 @@ public class FirebaseManager {
     }
 
     /**
-     * Convierte DocumentSnapshot a Evento
-     */
-    private Evento documentToEvento(DocumentSnapshot doc) {
-        try {
-            Evento e = new Evento();
-
-            // Guardar el ID de Firestore
-            e.setFirestoreId(doc.getId());
-
-            // Campos de texto
-            e.setDescripcion(doc.getString("descripcion"));
-            e.setCategoriaEvento(doc.getString("categoriaEvento"));
-            e.setEstado(doc.getString("estado"));
-
-            // Ubicación de texto (Firestore usa "ubicacionTexto", modelo usa "ubicacion")
-            String ubicacionTexto = doc.getString("ubicacionTexto");
-            if (ubicacionTexto != null) {
-                e.setUbicacion(ubicacionTexto);
-            }
-
-            // GeoPoint para latitud/longitud
-            GeoPoint geoPoint = doc.getGeoPoint("ubicacion");
-            if (geoPoint != null) {
-                e.setLatitud(geoPoint.getLatitude());
-                e.setLongitud(geoPoint.getLongitude());
-            }
-
-            // Fechas (Firestore guarda como Date, convertir a Long timestamp)
-            Date fecha = doc.getDate("fecha");
-            if (fecha != null) {
-                e.setFecha(fecha.getTime());
-            }
-
-            Date fechaCreacion = doc.getDate("fechaCreacion");
-            if (fechaCreacion != null) {
-                e.setFechaCreacion(fechaCreacion.getTime());
-            }
-
-            // Números
-            Long cupoMaximo = doc.getLong("cupoMaximo");
-            if (cupoMaximo != null) {
-                e.setCupoMaximo(cupoMaximo.intValue());
-            }
-
-            Long cupoActual = doc.getLong("cupoActual");
-            if (cupoActual != null) {
-                e.setCupoActual(cupoActual.intValue());
-            }
-
-            Double costo = doc.getDouble("costo");
-            if (costo != null) {
-                e.setCosto(costo);
-            }
-
-            // Referencias de Firestore (DocumentReference) a IDs Integer
-            DocumentReference creadorRef = doc.getDocumentReference("creadorId");
-            if (creadorRef != null) {
-                try {
-                    String creadorId = creadorRef.getId();
-                    e.setCreadorId(Integer.parseInt(creadorId));
-                } catch (NumberFormatException ex) {
-                    Log.w(TAG, "No se pudo convertir creadorId a Integer: " + ex.getMessage());
-                }
-            }
-
-            DocumentReference parroquiaRef = doc.getDocumentReference("parroquiaId");
-            if (parroquiaRef != null) {
-                try {
-                    String parroquiaId = parroquiaRef.getId();
-                    e.setParroquiaId(Integer.parseInt(parroquiaId));
-                } catch (NumberFormatException ex) {
-                    Log.w(TAG, "No se pudo convertir parroquiaId a Integer: " + ex.getMessage());
-                }
-            }
-
-            return e;
-        } catch (Exception ex) {
-            Log.e(TAG, "Error convirtiendo documento a Evento", ex);
-            return null;
-        }
-    }
-
-    /**
      * Convierte Noticia a Map para Firestore
+     * Incluye campos multiidioma si están presentes
      */
     private Map<String, Object> noticiaToMap(Noticia noticia) {
         Map<String, Object> map = new HashMap<>();
@@ -571,6 +535,28 @@ public class FirebaseManager {
         map.put("contenido", noticia.getContenido());
         map.put("imagenUrl", noticia.getImagenUrl());
         map.put("ubicacionTexto", noticia.getUbicacion());
+
+        // Campos multiidioma - Español
+        if (noticia.getTitulo_es() != null) {
+            map.put("titulo_es", noticia.getTitulo_es());
+        }
+        if (noticia.getDescripcion_es() != null) {
+            map.put("descripcion_es", noticia.getDescripcion_es());
+        }
+        if (noticia.getContenido_es() != null) {
+            map.put("contenido_es", noticia.getContenido_es());
+        }
+
+        // Campos multiidioma - Inglés
+        if (noticia.getTitulo_en() != null) {
+            map.put("titulo_en", noticia.getTitulo_en());
+        }
+        if (noticia.getDescripcion_en() != null) {
+            map.put("descripcion_en", noticia.getDescripcion_en());
+        }
+        if (noticia.getContenido_en() != null) {
+            map.put("contenido_en", noticia.getContenido_en());
+        }
 
         // Convertir timestamp Long a Date para Firestore
         if (noticia.getFechaCreacion() != null) {
@@ -590,34 +576,173 @@ public class FirebaseManager {
         return map;
     }
 
+    // ==================== USUARIOS ====================
+
     /**
-     * Convierte Evento a Map para Firestore
+     * Obtiene un usuario por su ID
      */
-    private Map<String, Object> eventoToMap(Evento evento) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("descripcion", evento.getDescripcion());
-        map.put("fecha", evento.getFecha());
-        map.put("ubicacionTexto", evento.getUbicacion());
-        map.put("categoriaEvento", evento.getCategoriaEvento());
-        map.put("cupoMaximo", evento.getCupoMaximo());
-        map.put("cupoActual", evento.getCupoActual());
-        map.put("costo", evento.getCosto());
-        map.put("estado", evento.getEstado());
+    public void obtenerUsuarioPorId(String userId, final FirestoreCallback<Usuario> callback) {
+        db.collection(COLLECTION_USUARIOS)
+                .document(userId)
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            try {
+                                Usuario usuario = new Usuario();
 
-        if (evento.getLatitud() != null && evento.getLongitud() != null) {
-            map.put("ubicacion", new GeoPoint(evento.getLatitud(), evento.getLongitud()));
-        }
+                                // Convertir manualmente los campos para evitar problemas de tipo
+                                Map<String, Object> data = documentSnapshot.getData();
+                                if (data != null) {
+                                    // ID - convertir String a Integer
+                                    try {
+                                        usuario.setId(Integer.parseInt(documentSnapshot.getId()));
+                                    } catch (NumberFormatException e) {
+                                        Log.w(TAG, "No se pudo convertir ID a Integer: " + documentSnapshot.getId());
+                                    }
 
-        return map;
+                                    // Strings
+                                    usuario.setNombre((String) data.get("nombre"));
+                                    usuario.setApellido((String) data.get("apellido"));
+                                    usuario.setEmail((String) data.get("email"));
+                                    usuario.setFotoPerfil((String) data.get("fotoPerfil"));
+                                    usuario.setBio((String) data.get("bio"));
+                                    usuario.setTelefonocelular((String) data.get("telefonocelular"));
+                                    usuario.setUbicacion((String) data.get("ubicacion"));
+                                    usuario.setTipoUsuario((String) data.get("tipoUsuario"));
+                                    usuario.setCreatedAt((String) data.get("createdAt"));
+
+                                    // Números
+                                    Object fechaReg = data.get("fechaRegistro");
+                                    if (fechaReg instanceof Long) {
+                                        usuario.setFechaRegistro((Long) fechaReg);
+                                    }
+
+                                    Object ultimaCon = data.get("ultimaConexion");
+                                    if (ultimaCon instanceof Long) {
+                                        usuario.setUltimaConexion((Long) ultimaCon);
+                                    }
+
+                                    Object noticiasPub = data.get("noticiasPublicadas");
+                                    if (noticiasPub instanceof Long) {
+                                        usuario.setNoticiasPublicadas(((Long) noticiasPub).intValue());
+                                    } else if (noticiasPub instanceof Integer) {
+                                        usuario.setNoticiasPublicadas((Integer) noticiasPub);
+                                    }
+
+                                    Object noticiasLeid = data.get("noticiasLeidas");
+                                    if (noticiasLeid instanceof Long) {
+                                        usuario.setNoticiasLeidas(((Long) noticiasLeid).intValue());
+                                    } else if (noticiasLeid instanceof Integer) {
+                                        usuario.setNoticiasLeidas((Integer) noticiasLeid);
+                                    }
+
+                                    // Boolean
+                                    Object verificado = data.get("verificado");
+                                    if (verificado instanceof Boolean) {
+                                        usuario.setVerificado((Boolean) verificado);
+                                    }
+
+                                    callback.onSuccess(usuario);
+                                } else {
+                                    callback.onError(new Exception("Datos del usuario vacíos"));
+                                }
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error al parsear usuario", e);
+                                callback.onError(new Exception("Error al convertir documento a Usuario: " + e.getMessage()));
+                            }
+                        } else {
+                            callback.onError(new Exception("Usuario no encontrado"));
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(TAG, "Error al obtener usuario", e);
+                        callback.onError(e);
+                    }
+                });
+    }
+
+    /**
+     * Actualiza los datos de un usuario
+     */
+    public void actualizarUsuario(String userId, Map<String, Object> datos, final FirestoreCallback<Void> callback) {
+        db.collection(COLLECTION_USUARIOS)
+                .document(userId)
+                .update(datos)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.i(TAG, "Usuario actualizado correctamente");
+                        callback.onSuccess(null);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(TAG, "Error al actualizar usuario", e);
+                        callback.onError(e);
+                    }
+                });
+    }
+
+    /**
+     * Crea o actualiza un usuario completo
+     */
+    public void guardarUsuario(Usuario usuario, final FirestoreCallback<Void> callback) {
+        String userId = String.valueOf(usuario.getId());
+
+        Map<String, Object> usuarioMap = new HashMap<>();
+        usuarioMap.put("nombre", usuario.getNombre());
+        usuarioMap.put("apellido", usuario.getApellido());
+        usuarioMap.put("email", usuario.getEmail());
+        usuarioMap.put("fotoPerfil", usuario.getFotoPerfil());
+        usuarioMap.put("bio", usuario.getBio());
+        usuarioMap.put("telefonocelular", usuario.getTelefonocelular());
+        usuarioMap.put("ubicacion", usuario.getUbicacion());
+        usuarioMap.put("fechaRegistro", usuario.getFechaRegistro());
+        usuarioMap.put("ultimaConexion", usuario.getUltimaConexion());
+        usuarioMap.put("noticiasPublicadas", usuario.getNoticiasPublicadas());
+        usuarioMap.put("verificado", usuario.getVerificado());
+        usuarioMap.put("tipoUsuario", usuario.getTipoUsuario());
+
+        db.collection(COLLECTION_USUARIOS)
+                .document(userId)
+                .set(usuarioMap)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.i(TAG, "Usuario guardado correctamente");
+                        callback.onSuccess(null);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(TAG, "Error al guardar usuario", e);
+                        callback.onError(e);
+                    }
+                });
     }
 
     // ==================== CALLBACK INTERFACE ====================
 
     /**
      * Interface genérica para callbacks de Firestore
+     * Soporta tanto Exception como String para errores
      */
     public interface FirestoreCallback<T> {
         void onSuccess(T result);
+
+        // Método principal que las clases deben implementar
         void onError(Exception e);
+
+        // Método opcional para errores como String
+        default void onError(String error) {
+            onError(new Exception(error));
+        }
     }
 }

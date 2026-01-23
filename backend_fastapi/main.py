@@ -10,11 +10,17 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
+from cachetools import TTLCache
 import firebase_admin
 from firebase_admin import credentials, firestore, messaging
 import os
 from pathlib import Path
 import io
+
+# Caché en memoria para respuestas rápidas (5 minutos TTL)
+noticias_cache = TTLCache(maxsize=50, ttl=300)  # 5 minutos
+parroquias_cache = TTLCache(maxsize=20, ttl=600)  # 10 minutos
+categorias_cache = TTLCache(maxsize=20, ttl=600)  # 10 minutos
 
 # Inicializar FastAPI
 app = FastAPI(
@@ -771,6 +777,11 @@ async def obtener_noticias(
     * **500**: Error interno del servidor
     """
     try:
+        # Verificar caché primero
+        cache_key = f"noticias_{limit}_{activa}_{destacada}"
+        if cache_key in noticias_cache:
+            return noticias_cache[cache_key]
+
         query = db.collection("noticias")
 
         # Ordenar por fechaPublicacion sin filtros adicionales (evita índices compuestos)
@@ -836,11 +847,16 @@ async def obtener_noticias(
 
             noticias.append(noticia_limpia)
 
-        return {
+        response = {
             "success": True,
             "count": len(noticias),
             "noticias": noticias
         }
+
+        # Guardar en caché
+        noticias_cache[cache_key] = response
+
+        return response
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -1025,11 +1041,34 @@ async def crear_noticia(noticia: Noticia):
 
         # Crear documento
         doc_ref = db.collection("noticias").add(noticia_data)
+        noticia_id = doc_ref[1].id
+
+        # Limpiar caché para que se reflejen las nuevas noticias
+        noticias_cache.clear()
+
+        # Enviar notificación push automáticamente
+        try:
+            message = messaging.Message(
+                notification=messaging.Notification(
+                    title="📰 Nueva noticia en GeoNews",
+                    body=noticia.titulo[:100] if noticia.titulo else "Nueva noticia disponible",
+                ),
+                data={
+                    "type": "noticia_nueva",
+                    "noticia_id": noticia_id,
+                    "click_action": "OPEN_NOTICIA"
+                },
+                topic="all"
+            )
+            messaging.send(message)
+            print(f"✅ Notificación enviada para noticia: {noticia_id}")
+        except Exception as notif_error:
+            print(f"⚠️ Error al enviar notificación: {notif_error}")
 
         return {
             "success": True,
             "message": "Noticia creada exitosamente",
-            "id": doc_ref[1].id
+            "id": noticia_id
         }
 
     except Exception as e:

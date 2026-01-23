@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Detalle de noticia GeoNews - Modo oscuro con imagen hero grande -->
+<!-- Detalle de noticia GeoNews - Modo claro con imagen hero grande -->
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:background="#1a2632">
+    android:background="@color/bg_primary">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -27,7 +27,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
-                    android:background="#283039"
+                    android:background="@color/bg_secondary"
                     android:contentDescription="Imagen de portada"/>
 
                 <!-- Gradient overlay oscuro -->
@@ -50,7 +50,7 @@
                         android:layout_height="40dp"
                         android:padding="8dp"
                         android:src="@android:drawable/ic_menu_revert"
-                        android:tint="#FFFFFF"
+                        app:tint="@color/icon_primary"
                         android:background="@drawable/bg_circle"
                         android:contentDescription="Volver"/>
 
@@ -64,8 +64,8 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:padding="8dp"
-                        android:src="@android:drawable/star_big_off"
-                        android:tint="#FFFFFF"
+                        android:src="@drawable/ic_bookmark_outline"
+                        app:tint="@color/icon_primary"
                         android:background="@drawable/bg_circle"
                         android:layout_marginEnd="8dp"
                         android:contentDescription="Guardar"/>
@@ -76,7 +76,7 @@
                         android:layout_height="40dp"
                         android:padding="8dp"
                         android:src="@android:drawable/ic_menu_share"
-                        android:tint="#FFFFFF"
+                        app:tint="@color/icon_primary"
                         android:background="@drawable/bg_circle"
                         android:contentDescription="Compartir"/>
 
@@ -97,10 +97,10 @@
                     android:id="@+id/tv_categoria"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="POLÍTICA"
+                    android:text="@string/placeholder_category"
                     android:textSize="11sp"
                     android:textStyle="bold"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/text_primary"
                     android:textAllCaps="true"
                     android:letterSpacing="0.1"
                     android:background="@color/primary"
@@ -115,10 +115,10 @@
                     android:id="@+id/tv_titulo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Concejo Municipal Aprueba Nuevo Proyecto de Parque en el Centro"
+                    android:text="@string/placeholder_title"
                     android:textSize="28sp"
                     android:textStyle="bold"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/text_primary"
                     android:lineSpacingExtra="4dp"
                     android:layout_marginBottom="16dp"/>
 
@@ -134,7 +134,7 @@
                         android:layout_width="16dp"
                         android:layout_height="16dp"
                         android:src="@drawable/ic_location"
-                        android:tint="#9cabba"
+                        app:tint="@color/text_hint"
                         android:contentDescription="Ubicación"
                         android:layout_marginEnd="4dp"/>
 
@@ -145,7 +145,7 @@
                         android:layout_weight="1"
                         android:text="Distrito Centro"
                         android:textSize="13sp"
-                        android:textColor="#9cabba"
+                        android:textColor="@color/text_hint"
                         android:maxLines="1"
                         android:ellipsize="end"
                         android:layout_marginEnd="8dp"/>
@@ -153,7 +153,7 @@
                     <View
                         android:layout_width="3dp"
                         android:layout_height="3dp"
-                        android:background="#9cabba"
+                        android:background="@color/text_hint"
                         android:alpha="0.5"
                         android:layout_marginEnd="8dp"/>
 
@@ -163,7 +163,7 @@
                         android:layout_height="wrap_content"
                         android:text="24 Oct, 2023"
                         android:textSize="13sp"
-                        android:textColor="#9cabba"
+                        android:textColor="@color/text_hint"
                         android:maxLines="1"
                         android:layout_marginEnd="8dp"/>
 
@@ -171,7 +171,7 @@
                         android:id="@+id/view_separator_lectura"
                         android:layout_width="3dp"
                         android:layout_height="3dp"
-                        android:background="#9cabba"
+                        android:background="@color/text_hint"
                         android:alpha="0.5"
                         android:layout_marginEnd="8dp"/>
 
@@ -181,7 +181,7 @@
                         android:layout_height="wrap_content"
                         android:text="5 min"
                         android:textSize="13sp"
-                        android:textColor="#9cabba"
+                        android:textColor="@color/text_hint"
                         android:maxLines="1"/>
 
                 </LinearLayout>
@@ -205,18 +205,19 @@
                             android:layout_height="match_parent"
                             android:src="@drawable/ic_person"
                             android:scaleType="centerCrop"
-                            android:background="#495057"
+                            android:background="@color/bg_secondary"
                             android:contentDescription="Autor"/>
 
                     </com.google.android.material.card.MaterialCardView>
 
                     <TextView
+                        android:id="@+id/tv_autor"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="María González"
+                        android:text=""
                         android:textSize="14sp"
                         android:textStyle="bold"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/text_primary"
                         android:layout_marginStart="12dp"/>
 
                 </LinearLayout>
@@ -229,7 +230,7 @@
                     android:text="Después de meses de intenso debate y reuniones comunitarias, el Concejo Municipal ha votado unánimemente para avanzar con la ambiciosa iniciativa 'Corazón Verde'."
                     android:textSize="17sp"
                     android:lineSpacingExtra="6dp"
-                    android:textColor="#9cabba"
+                    android:textColor="@color/text_hint"
                     android:layout_marginBottom="24dp"/>
 
                 <!-- Contenido completo -->
@@ -240,7 +241,7 @@
                     android:text="Esta decisión histórica marca un punto de inflexión para el desarrollo del centro de la ciudad. El proyecto, que ha estado en etapas de planificación durante más de tres años, tiene como objetivo transformar el lote vacío de 15 acres en la esquina de la Cuarta y Main en un parque público de última generación.\n\nLa iniciativa abarca senderos para caminar, un anfiteatro y un sistema de agua sostenible que se espera cree un legado para las generaciones futuras."
                     android:textSize="16sp"
                     android:lineSpacingExtra="6dp"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/text_primary"
                     android:alpha="0.9"
                     android:layout_marginBottom="28dp"/>
 
@@ -252,7 +253,7 @@
                     android:orientation="horizontal"
                     android:layout_marginBottom="28dp"
                     android:padding="20dp"
-                    android:background="#283039"
+                    android:background="@color/bg_secondary"
                     android:visibility="gone">
 
                     <View
@@ -269,7 +270,7 @@
                         android:text=""
                         android:textSize="16sp"
                         android:lineSpacingExtra="4dp"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/text_primary"
                         android:textStyle="italic"
                         android:alpha="0.95"/>
 
@@ -286,10 +287,10 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Impacto en la Comunidad"
+                        android:text="@string/detail_community_impact"
                         android:textSize="20sp"
                         android:textStyle="bold"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/text_primary"
                         android:layout_marginBottom="12dp"/>
 
                     <TextView
@@ -299,27 +300,114 @@
                         android:text=""
                         android:textSize="16sp"
                         android:lineSpacingExtra="6dp"
-                        android:textColor="#9cabba"
+                        android:textColor="@color/text_hint"
                         android:layout_marginBottom="24dp"/>
 
                 </LinearLayout>
 
-                <!-- Botón Ver Mapa del Proyecto -->
+                <!-- Sección Ubicación con Mini-Mapa -->
+                <LinearLayout
+                    android:id="@+id/layout_ubicacion_mapa"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="24dp"
+                    android:visibility="gone">
+
+                    <!-- Título de sección -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/detail_location"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary"
+                        android:layout_marginBottom="12dp"/>
+
+                    <!-- Card con Mini-Mapa -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="2dp"
+                        app:strokeWidth="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <!-- Contenedor del mapa -->
+                            <FrameLayout
+                                android:id="@+id/map_container_detalle"
+                                android:layout_width="match_parent"
+                                android:layout_height="180dp"
+                                android:background="@color/bg_secondary"/>
+
+                            <!-- Info de ubicación debajo del mapa -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:padding="12dp"
+                                android:background="@color/bg_card">
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:src="@drawable/ic_location"
+                                    app:tint="@color/primary"
+                                    android:contentDescription="Ubicación"/>
+
+                                <TextView
+                                    android:id="@+id/tv_direccion_mapa"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Ibarra, Ecuador"
+                                    android:textSize="14sp"
+                                    android:textColor="@color/text_primary"
+                                    android:layout_marginStart="8dp"
+                                    android:maxLines="2"
+                                    android:ellipsize="end"/>
+
+                                <!-- Botón para abrir mapa completo -->
+                                <ImageView
+                                    android:id="@+id/btn_expandir_mapa"
+                                    android:layout_width="36dp"
+                                    android:layout_height="36dp"
+                                    android:padding="6dp"
+                                    android:src="@android:drawable/ic_menu_mapmode"
+                                    app:tint="@color/primary"
+                                    android:background="?attr/selectableItemBackgroundBorderless"
+                                    android:contentDescription="Abrir mapa completo"/>
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+
+                <!-- Botón Ver Mapa Completo (alternativo si no hay mapa embebido) -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_ver_mapa"
                     android:layout_width="match_parent"
                     android:layout_height="54dp"
-                    android:text="Ver Mapa del Proyecto"
+                    android:text="@string/detail_view_project_map"
                     android:textAllCaps="false"
                     android:textSize="16sp"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/text_primary"
                     app:backgroundTint="@color/primary"
                     app:cornerRadius="12dp"
                     app:icon="@drawable/ic_location"
                     app:iconGravity="start"
                     app:iconPadding="8dp"
                     app:iconTint="#FFFFFF"
-                    android:layout_marginBottom="32dp"/>
+                    android:layout_marginBottom="32dp"
+                    android:visibility="gone"/>
 
                 <!-- Hashtags -->
                 <TextView

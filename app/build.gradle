@@ -1,6 +1,23 @@
 plugins {
     id 'com.android.application'
     id 'com.google.gms.google-services'
+    id 'org.sonarqube' version '4.4.1.3373'
+}
+
+// Configuración de SonarQube
+sonar {
+    properties {
+        property 'sonar.projectKey', 'noticiaslocales'
+        property 'sonar.projectName', 'Noticias Locales'
+        property 'sonar.projectVersion', '0.1.0'
+        property 'sonar.host.url', 'http://localhost:9000'
+        property 'sonar.token', 'sqp_628a5eaf024e4328260928d20787b9bf28260bbb'
+        property 'sonar.sources', 'src/main/java,src/main/res'
+        property 'sonar.java.binaries', 'build/intermediates/javac/debug/classes'
+        property 'sonar.java.source', '8'
+        property 'sonar.sourceEncoding', 'UTF-8'
+        property 'sonar.exclusions', '**/*.log,**/build/**,**/.gradle/**,**/.git/**,**/.idea/**,**/gradle/**,**/*.apk,**/*.class,**/R.java,**/BuildConfig.java,**/gen/**,**/generated/**'
+    }
 }
 
 android {
@@ -46,9 +63,19 @@ dependencies {
     // Seguridad - EncryptedSharedPreferences
     implementation 'androidx.security:security-crypto:1.1.0-alpha06'
 
+    // WorkManager - Tareas en segundo plano programadas
+    implementation 'androidx.work:work-runtime:2.9.0'
+
     // Networking - OkHttp y Gson
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation 'com.google.code.gson:gson:2.10.1'
+
+    // Picasso - Carga de imágenes
+    implementation 'com.squareup.picasso:picasso:2.8'
+
+    // Glide - Carga de imágenes con transformaciones avanzadas
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
 
     // Firebase BoM (versión 32.x que no requiere DataStore/Kotlin)
     implementation platform('com.google.firebase:firebase-bom:32.7.0')
@@ -58,8 +85,45 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.firebase:firebase-storage'
 
-    // Testing
+    // ==================== TESTING ====================
+
+    // JUnit 4 - Framework de pruebas unitarias estándar
     testImplementation 'junit:junit:4.13.2'
+
+    // Mockito - Framework para crear mocks y simular dependencias
+    testImplementation 'org.mockito:mockito-core:5.7.0'
+    testImplementation 'org.mockito:mockito-inline:5.2.0'
+
+    // Mockito para Android
+    androidTestImplementation 'org.mockito:mockito-android:5.7.0'
+
+    // Robolectric - Tests unitarios de Android sin emulador
+    testImplementation 'org.robolectric:robolectric:4.11.1'
+
+    // Truth - Assertions más legibles de Google
+    testImplementation 'com.google.truth:truth:1.1.5'
+    androidTestImplementation 'com.google.truth:truth:1.1.5'
+
+    // AndroidX Test - Core testing utilities
+    testImplementation 'androidx.test:core:1.5.0'
+    testImplementation 'androidx.test:rules:1.5.0'
+    testImplementation 'androidx.test:runner:1.5.2'
+
+    // AndroidX Test - JUnit extensions
+    testImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+
+    // Espresso - UI Testing framework
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-intents:3.5.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.5.1'
+
+    // Coroutines Test (útil para pruebas asíncronas en el futuro)
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3'
+
+    // Fragment Testing
+    debugImplementation 'androidx.fragment:fragment-testing:1.6.2'
+
+    // Hamcrest - Matchers adicionales
+    testImplementation 'org.hamcrest:hamcrest:2.2'
 }

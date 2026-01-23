@@ -2,43 +2,47 @@ package com.tesistitulacion.noticiaslocales.db;
 
 /**
  * Configuración centralizada de URLs de la API
- * Cambiar BASE_URL según el entorno
+ *
+ * IMPORTANTE:
+ * - Para cambiar entre desarrollo y producción, editar Environment.CURRENT_ENV
+ * - No cambiar BASE_URL directamente, usar Environment.getBaseUrl()
+ *
+ * @see Environment
  */
 public class ApiConfig {
     // ==================== CONFIGURACIÓN ====================
 
     /**
-     * URL base de la API
+     * URL base de la API - Se obtiene dinámicamente según el entorno
      *
-     * OPCIONES:
-     * - Emulador: "http://10.0.2.2:8000/api/"
-     * - Dispositivo físico: "http://192.168.X.X:8000/api/" (IP de tu PC)
-     * - Producción: "https://tu-dominio.com/api/"
+     * Para cambiar de entorno:
+     * 1. Ir a Environment.java
+     * 2. Cambiar CURRENT_ENV a DEVELOPMENT o PRODUCTION
      */
-    public static final String BASE_URL = "http://10.0.2.2:8000/api/";
+    public static final String BASE_URL = Environment.getBaseUrl();
 
     // ==================== ENDPOINTS ====================
 
     // Noticias
-    public static final String NOTICIAS_URL = BASE_URL + "noticias/";
-    public static final String NOTICIAS_CERCANAS_URL = BASE_URL + "noticias/cercanas/";
-    public static final String NOTICIAS_DESTACADAS_URL = BASE_URL + "noticias/destacadas/";
+    public static final String NOTICIAS_URL = BASE_URL + "noticias";
+    public static final String NOTICIAS_CERCANAS_URL = BASE_URL + "noticias/cercanas";
+    public static final String NOTICIAS_DESTACADAS_URL = BASE_URL + "noticias/destacadas";
 
-    // Usuarios / Autenticación
-    public static final String AUTH_LOGIN_URL = BASE_URL + "auth/login/";
-    public static final String AUTH_REGISTER_URL = BASE_URL + "auth/register/";
-    public static final String AUTH_LOGOUT_URL = BASE_URL + "auth/logout/";
-    public static final String USUARIOS_URL = BASE_URL + "usuarios/";
-    public static final String USUARIOS_PERFIL_URL = BASE_URL + "usuarios/perfil/";
+    // Usuarios / Autenticación (TODO: Implementar en backend)
+    public static final String AUTH_LOGIN_URL = BASE_URL + "auth/login";
+    public static final String AUTH_REGISTER_URL = BASE_URL + "auth/register";
+    public static final String AUTH_LOGOUT_URL = BASE_URL + "auth/logout";
+    public static final String USUARIOS_URL = BASE_URL + "usuarios";
+    public static final String USUARIOS_PERFIL_URL = BASE_URL + "usuarios/perfil";
 
     // Categorías
-    public static final String CATEGORIAS_URL = BASE_URL + "categorias/";
+    public static final String CATEGORIAS_URL = BASE_URL + "categorias";
 
     // Eventos
-    public static final String EVENTOS_URL = BASE_URL + "eventos/";
+    public static final String EVENTOS_URL = BASE_URL + "eventos";
 
     // Parroquias
-    public static final String PARROQUIAS_URL = BASE_URL + "parroquias/";
+    public static final String PARROQUIAS_URL = BASE_URL + "parroquias";
 
     // ==================== CONFIGURACIÓN HTTP ====================
 
@@ -50,37 +54,63 @@ public class ApiConfig {
 
     /**
      * Obtiene URL de noticia específica
+     * @param id ID de Firestore (String) o ID numérico
      */
-    public static String getNoticiaUrl(int id) {
-        return NOTICIAS_URL + id + "/";
+    public static String getNoticiaUrl(String id) {
+        return NOTICIAS_URL + "/" + id;
     }
 
     /**
      * Obtiene URL de usuario específico
+     * @param id ID de Firestore (String) o ID numérico
      */
-    public static String getUsuarioUrl(int id) {
-        return USUARIOS_URL + id + "/";
+    public static String getUsuarioUrl(String id) {
+        return USUARIOS_URL + "/" + id;
     }
 
     /**
      * Obtiene URL de categoría específica
+     * @param id ID de Firestore (String) o ID numérico
      */
-    public static String getCategoriaUrl(int id) {
-        return CATEGORIAS_URL + id + "/";
+    public static String getCategoriaUrl(String id) {
+        return CATEGORIAS_URL + "/" + id;
     }
 
     /**
      * Obtiene URL de evento específico
+     * @param id ID de Firestore (String) o ID numérico
      */
-    public static String getEventoUrl(int id) {
-        return EVENTOS_URL + id + "/";
+    public static String getEventoUrl(String id) {
+        return EVENTOS_URL + "/" + id;
     }
 
     /**
      * Obtiene URL de parroquia específica
+     * @param id ID de Firestore (String) o ID numérico
      */
+    public static String getParroquiaUrl(String id) {
+        return PARROQUIAS_URL + "/" + id;
+    }
+
+    // Métodos sobrecargados para compatibilidad con código existente
+    public static String getNoticiaUrl(int id) {
+        return getNoticiaUrl(String.valueOf(id));
+    }
+
+    public static String getUsuarioUrl(int id) {
+        return getUsuarioUrl(String.valueOf(id));
+    }
+
+    public static String getCategoriaUrl(int id) {
+        return getCategoriaUrl(String.valueOf(id));
+    }
+
+    public static String getEventoUrl(int id) {
+        return getEventoUrl(String.valueOf(id));
+    }
+
     public static String getParroquiaUrl(int id) {
-        return PARROQUIAS_URL + id + "/";
+        return getParroquiaUrl(String.valueOf(id));
     }
 
     /**

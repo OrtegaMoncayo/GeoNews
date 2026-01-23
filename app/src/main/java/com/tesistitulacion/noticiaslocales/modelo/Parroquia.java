@@ -136,7 +136,7 @@ public class Parroquia {
      */
     public String getNombreCompleto() {
         String tipoCapitalizado = tipo != null ?
-            tipo.substring(0, 1).toUpperCase() + tipo.substring(1).toLowerCase() : "";
+            tipo.substring(0, 1).toUpperCase(java.util.Locale.ROOT) + tipo.substring(1).toLowerCase(java.util.Locale.ROOT) : "";
         return nombre + " (" + tipoCapitalizado + ")";
     }
 
@@ -147,11 +147,11 @@ public class Parroquia {
         StringBuilder sb = new StringBuilder(nombre);
 
         if (poblacion != null && poblacion > 0) {
-            sb.append(" - ").append(String.format("%,d", poblacion)).append(" hab.");
+            sb.append(" - ").append(String.format(java.util.Locale.US, "%,d", poblacion)).append(" hab.");
         }
 
         if (superficieKm2 != null && superficieKm2 > 0) {
-            sb.append(" - ").append(String.format("%.2f", superficieKm2)).append(" km²");
+            sb.append(" - ").append(String.format(java.util.Locale.US, "%.2f", superficieKm2)).append(" km²");
         }
 
         return sb.toString();
