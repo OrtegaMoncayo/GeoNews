@@ -82,8 +82,20 @@ Captura de pantalla*.png
 vista*.jpg
 vista*.jpeg
 
-# Documentation folder (keep in repo but ignore temp files)
-documentacion/*.tmp
+# Documentation folders (not needed for app to run)
+docs/
+documentacion/
+backend_flask/
+
+# Root level documentation files
+ARQUITECTURA.md
+DIAGNOSTICO_FIREBASE.md
+ESTADO_PROYECTO.md
+FIREBASE_SETUP.md
+GET_APP_LOGS.md
+KANBAN_PLAN.md
+firebase_schema.md
+migrate_mysql_to_firestore.py
 
 # Archive folder (old files and documentation)
 archive/

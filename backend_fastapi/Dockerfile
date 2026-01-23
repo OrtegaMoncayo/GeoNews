@@ -13,6 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiar código de la aplicación
 COPY main.py .
 COPY serviceAccountKey.json .
+COPY static/ ./static/
 
 # Exponer puerto 8080 (Cloud Run usa este puerto)
 EXPOSE 8080
