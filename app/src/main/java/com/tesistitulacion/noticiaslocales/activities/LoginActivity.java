@@ -57,7 +57,7 @@ import java.util.concurrent.Executors;
  */
 public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
-    private static final String API_BASE_URL = "https://noticiasibarra-api-185809308721.us-central1.run.app"; // Cambiar en producción
+    private static final String API_BASE_URL = "https://noticias-ibarra-fastapi-166115544761.us-central1.run.app";
 
     private ExecutorService executor = Executors.newSingleThreadExecutor();
     private String emailRecuperacion = ""; // Guardar email para el flujo de recuperación
