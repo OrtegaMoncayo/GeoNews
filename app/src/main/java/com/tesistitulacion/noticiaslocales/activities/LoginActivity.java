@@ -38,8 +38,18 @@ import com.tesistitulacion.noticiaslocales.utils.LocaleManager;
 import com.tesistitulacion.noticiaslocales.utils.TransitionHelper;
 import com.tesistitulacion.noticiaslocales.utils.UsuarioPreferences;
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Pantalla de Login con Firebase Authentication
@@ -47,6 +57,11 @@ import java.util.Map;
  */
 public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
+    private static final String API_BASE_URL = "https://noticiasibarra-api-185809308721.us-central1.run.app"; // Cambiar en producción
+
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
+    private String emailRecuperacion = ""; // Guardar email para el flujo de recuperación
+    private String codigoRecuperacion = ""; // Guardar código verificado
 
     private TextInputLayout tilEmail;
     private TextInputLayout tilPassword;
@@ -391,10 +406,10 @@ public class LoginActivity extends AppCompatActivity {
         TransitionHelper.startActivityFade(this, intent);
     }
 
-    // ==================== RECUPERAR PASSWORD ====================
+    // ==================== RECUPERAR PASSWORD CON CÓDIGO ====================
 
     private void mostrarDialogoRecuperarPassword() {
-        // Inflar layout del diálogo
+        // Paso 1: Solicitar email
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_recuperar_password, null);
         TextInputEditText etEmailRecuperar = dialogView.findViewById(R.id.et_email_recuperar);
 
@@ -406,12 +421,13 @@ public class LoginActivity extends AppCompatActivity {
 
         new MaterialAlertDialogBuilder(this)
                 .setTitle("Recuperar Contraseña")
-                .setMessage("Te enviaremos un enlace para restablecer tu contraseña")
+                .setMessage("Te enviaremos un código de 6 dígitos a tu correo")
                 .setView(dialogView)
-                .setPositiveButton("Enviar", (dialog, which) -> {
+                .setPositiveButton("Enviar Código", (dialog, which) -> {
                     String email = etEmailRecuperar.getText().toString().trim();
                     if (!email.isEmpty() && Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                        enviarEmailRecuperacion(email);
+                        emailRecuperacion = email;
+                        solicitarCodigoRecuperacion(email);
                     } else {
                         showToast("Ingresa un email válido");
                     }
@@ -420,33 +436,213 @@ public class LoginActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void enviarEmailRecuperacion(String email) {
+    private void solicitarCodigoRecuperacion(String email) {
         mostrarCargando(true);
 
-        firebaseManager.recuperarPassword(email, new FirebaseManager.FirestoreCallback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
+        executor.execute(() -> {
+            try {
+                JSONObject json = new JSONObject();
+                json.put("email", email);
+
+                String response = hacerPeticionPOST("/api/auth/solicitar-codigo", json.toString());
+                JSONObject responseJson = new JSONObject(response);
+
                 runOnUiThread(() -> {
                     mostrarCargando(false);
 
-                    new MaterialAlertDialogBuilder(LoginActivity.this)
-                            .setTitle("Email Enviado")
-                            .setMessage("Revisa tu bandeja de entrada en " + email + " y sigue las instrucciones para restablecer tu contraseña.")
-                            .setPositiveButton("Entendido", null)
-                            .setIcon(R.drawable.ic_email)
-                            .show();
+                    if (responseJson.optBoolean("success", false)) {
+                        // Mostrar diálogo para ingresar código
+                        mostrarDialogoIngresarCodigo();
+                    } else {
+                        showToast(responseJson.optString("detail", "Error al enviar código"));
+                    }
                 });
-            }
 
-            @Override
-            public void onError(Exception e) {
+            } catch (Exception e) {
                 runOnUiThread(() -> {
                     mostrarCargando(false);
-                    String mensaje = traducirErrorFirebase(e.getMessage());
-                    showToast(mensaje);
+                    Log.e(TAG, "Error solicitando código", e);
+                    showToast("Error: " + e.getMessage());
                 });
             }
         });
+    }
+
+    private void mostrarDialogoIngresarCodigo() {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_verificar_codigo, null);
+        TextInputEditText etCodigo = dialogView.findViewById(R.id.et_codigo);
+        TextView tvReenviar = dialogView.findViewById(R.id.tv_reenviar);
+
+        androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                .setTitle("Verificar Código")
+                .setView(dialogView)
+                .setPositiveButton("Verificar", null) // Se configura después
+                .setNegativeButton("Cancelar", null)
+                .create();
+
+        dialog.setOnShowListener(d -> {
+            // Configurar botón de verificar
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                String codigo = etCodigo.getText().toString().trim();
+                if (codigo.length() == 6) {
+                    codigoRecuperacion = codigo;
+                    dialog.dismiss();
+                    verificarCodigo(codigo);
+                } else {
+                    showToast("Ingresa el código de 6 dígitos");
+                    shakeView(etCodigo);
+                }
+            });
+
+            // Configurar reenviar código
+            if (tvReenviar != null) {
+                tvReenviar.setOnClickListener(v -> {
+                    dialog.dismiss();
+                    solicitarCodigoRecuperacion(emailRecuperacion);
+                });
+            }
+        });
+
+        dialog.show();
+    }
+
+    private void verificarCodigo(String codigo) {
+        mostrarCargando(true);
+
+        executor.execute(() -> {
+            try {
+                JSONObject json = new JSONObject();
+                json.put("email", emailRecuperacion);
+                json.put("codigo", codigo);
+
+                String response = hacerPeticionPOST("/api/auth/verificar-codigo", json.toString());
+                JSONObject responseJson = new JSONObject(response);
+
+                runOnUiThread(() -> {
+                    mostrarCargando(false);
+
+                    if (responseJson.optBoolean("success", false)) {
+                        // Código válido, mostrar diálogo para nueva contraseña
+                        mostrarDialogoNuevaPassword();
+                    } else {
+                        showToast(responseJson.optString("detail", "Código inválido"));
+                        mostrarDialogoIngresarCodigo(); // Volver a mostrar
+                    }
+                });
+
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    mostrarCargando(false);
+                    Log.e(TAG, "Error verificando código", e);
+                    showToast("Error: " + e.getMessage());
+                });
+            }
+        });
+    }
+
+    private void mostrarDialogoNuevaPassword() {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_nueva_password, null);
+        TextInputEditText etNuevaPassword = dialogView.findViewById(R.id.et_nueva_password);
+        TextInputEditText etConfirmarPassword = dialogView.findViewById(R.id.et_confirmar_password);
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Nueva Contraseña")
+                .setView(dialogView)
+                .setPositiveButton("Cambiar", (dialog, which) -> {
+                    String nuevaPassword = etNuevaPassword.getText().toString();
+                    String confirmarPassword = etConfirmarPassword.getText().toString();
+
+                    if (nuevaPassword.length() < 6) {
+                        showToast("La contraseña debe tener al menos 6 caracteres");
+                        mostrarDialogoNuevaPassword();
+                        return;
+                    }
+
+                    if (!nuevaPassword.equals(confirmarPassword)) {
+                        showToast("Las contraseñas no coinciden");
+                        mostrarDialogoNuevaPassword();
+                        return;
+                    }
+
+                    resetearPassword(nuevaPassword);
+                })
+                .setNegativeButton("Cancelar", null)
+                .setCancelable(false)
+                .show();
+    }
+
+    private void resetearPassword(String nuevaPassword) {
+        mostrarCargando(true);
+
+        executor.execute(() -> {
+            try {
+                JSONObject json = new JSONObject();
+                json.put("email", emailRecuperacion);
+                json.put("codigo", codigoRecuperacion);
+                json.put("password_nueva", nuevaPassword);
+
+                String response = hacerPeticionPOST("/api/auth/resetear-password", json.toString());
+                JSONObject responseJson = new JSONObject(response);
+
+                runOnUiThread(() -> {
+                    mostrarCargando(false);
+
+                    if (responseJson.optBoolean("success", false)) {
+                        new MaterialAlertDialogBuilder(LoginActivity.this)
+                                .setTitle("¡Contraseña Actualizada!")
+                                .setMessage("Tu contraseña ha sido cambiada exitosamente. Ya puedes iniciar sesión.")
+                                .setPositiveButton("Iniciar Sesión", (d, w) -> {
+                                    etEmail.setText(emailRecuperacion);
+                                    etPassword.requestFocus();
+                                })
+                                .setIcon(R.drawable.ic_lock)
+                                .show();
+                    } else {
+                        showToast(responseJson.optString("detail", "Error al cambiar contraseña"));
+                    }
+                });
+
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    mostrarCargando(false);
+                    Log.e(TAG, "Error reseteando password", e);
+                    showToast("Error: " + e.getMessage());
+                });
+            }
+        });
+    }
+
+    private String hacerPeticionPOST(String endpoint, String jsonBody) throws Exception {
+        URL url = new URL(API_BASE_URL + endpoint);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setDoOutput(true);
+        conn.setConnectTimeout(15000);
+        conn.setReadTimeout(15000);
+
+        try (OutputStream os = conn.getOutputStream()) {
+            byte[] input = jsonBody.getBytes(StandardCharsets.UTF_8);
+            os.write(input, 0, input.length);
+        }
+
+        int responseCode = conn.getResponseCode();
+        BufferedReader reader;
+
+        if (responseCode >= 200 && responseCode < 300) {
+            reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+        } else {
+            reader = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
+        }
+
+        StringBuilder response = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            response.append(line);
+        }
+        reader.close();
+
+        return response.toString();
     }
 
     // ==================== UTILIDADES ====================

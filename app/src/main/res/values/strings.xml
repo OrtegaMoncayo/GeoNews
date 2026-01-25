@@ -205,4 +205,14 @@
     <string name="tts_initializing">Inicializando lectura...</string>
     <string name="tts_not_available">Lectura en voz alta no disponible</string>
     <string name="tts_error">Error al reproducir audio</string>
+
+    <!-- Recuperar contraseña -->
+    <string name="recovery_title">Recuperar Contraseña</string>
+    <string name="recovery_send_code">Te enviaremos un código de 6 dígitos</string>
+    <string name="recovery_verify_title">Verificar Código</string>
+    <string name="recovery_verify_message">Ingresa el código de 6 dígitos que enviamos a tu correo</string>
+    <string name="recovery_new_password">Nueva Contraseña</string>
+    <string name="recovery_confirm_password">Confirmar Contraseña</string>
+    <string name="recovery_success">¡Contraseña actualizada exitosamente!</string>
+    <string name="recovery_resend">¿No recibiste el código? Reenviar</string>
 </resources>

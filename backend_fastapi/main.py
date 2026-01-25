@@ -190,6 +190,23 @@ class RegistrarPeriodistaRequest(BaseModel):
     apellido: Optional[str] = None
     telefono: Optional[str] = None
 
+class CambiarPasswordRequest(BaseModel):
+    email: str
+    password_actual: str
+    password_nueva: str
+
+class SolicitarCodigoRequest(BaseModel):
+    email: str
+
+class VerificarCodigoRequest(BaseModel):
+    email: str
+    codigo: str
+
+class ResetearPasswordRequest(BaseModel):
+    email: str
+    codigo: str
+    password_nueva: str
+
 # ==================== ENDPOINTS RAÍZ ====================
 
 @app.get("/", tags=["Sistema"])
@@ -413,7 +430,7 @@ async def listar_periodistas():
     """
     ## 📋 Listar Periodistas (Solo Admin)
 
-    Obtiene la lista de todos los periodistas registrados.
+    Obtiene la lista de todos los periodistas registrados con el conteo real de artículos publicados.
 
     ### Respuesta:
     ```json
@@ -435,17 +452,27 @@ async def listar_periodistas():
         periodistas = []
         seen_ids = set()
 
+        # Primero, contar noticias por autor desde la colección de noticias
+        noticias_por_autor = {}
+        for noticia_doc in db.collection("noticias").stream():
+            noticia_data = noticia_doc.to_dict()
+            autor_id = noticia_data.get("autorId")
+            if autor_id:
+                noticias_por_autor[autor_id] = noticias_por_autor.get(autor_id, 0) + 1
+
         # Buscar por 'rol' = 'reportero'
         for doc in db.collection("usuarios").where("rol", "==", "reportero").stream():
             if doc.id not in seen_ids:
                 seen_ids.add(doc.id)
                 data = doc.to_dict()
+                # Usar conteo real de noticias desde la colección
+                conteo_real = noticias_por_autor.get(doc.id, 0)
                 periodistas.append({
                     "id": doc.id,
                     "email": data.get("email"),
                     "nombre": f"{data.get('nombre', '')} {data.get('apellido', '')}".strip(),
                     "telefono": data.get("telefonocelular"),
-                    "noticiasPublicadas": data.get("noticiasPublicadas", 0),
+                    "noticiasPublicadas": conteo_real,
                     "verificado": data.get("verificado", False),
                     "fechaRegistro": data.get("fechaRegistro").isoformat() if data.get("fechaRegistro") else None
                 })
@@ -455,12 +482,14 @@ async def listar_periodistas():
             if doc.id not in seen_ids:
                 seen_ids.add(doc.id)
                 data = doc.to_dict()
+                # Usar conteo real de noticias desde la colección
+                conteo_real = noticias_por_autor.get(doc.id, 0)
                 periodistas.append({
                     "id": doc.id,
                     "email": data.get("email"),
                     "nombre": f"{data.get('nombre', '')} {data.get('apellido', '')}".strip(),
                     "telefono": data.get("telefonocelular"),
-                    "noticiasPublicadas": data.get("noticiasPublicadas", 0),
+                    "noticiasPublicadas": conteo_real,
                     "verificado": data.get("verificado", False),
                     "fechaRegistro": data.get("fechaRegistro").isoformat() if data.get("fechaRegistro") else None
                 })
@@ -640,17 +669,43 @@ async def crear_admin_provisional():
 
 
 @app.post("/api/auth/cambiar-password", tags=["Sistema"])
-async def cambiar_password(email: str, password_actual: str, password_nueva: str):
+async def cambiar_password(request: CambiarPasswordRequest):
     """
     ## 🔐 Cambiar Contraseña
 
     Permite cambiar la contraseña de un usuario.
+
+    ### Body (JSON):
+    * **email**: Email del usuario
+    * **password_actual**: Contraseña actual
+    * **password_nueva**: Nueva contraseña (mínimo 6 caracteres)
+
+    ### Respuesta exitosa:
+    ```json
+    {
+        "success": true,
+        "message": "Contraseña actualizada exitosamente"
+    }
+    ```
+
+    ### Códigos de respuesta:
+    * **200**: Contraseña cambiada exitosamente
+    * **400**: Nueva contraseña muy corta
+    * **401**: Contraseña actual incorrecta
+    * **404**: Usuario no encontrado
     """
     try:
         import hashlib
 
+        # Validar longitud de nueva contraseña
+        if len(request.password_nueva) < 6:
+            raise HTTPException(
+                status_code=400,
+                detail="La nueva contraseña debe tener al menos 6 caracteres"
+            )
+
         # Buscar usuario
-        usuarios = list(db.collection("usuarios").where("email", "==", email).limit(1).stream())
+        usuarios = list(db.collection("usuarios").where("email", "==", request.email).limit(1).stream())
         if not usuarios:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
@@ -658,16 +713,18 @@ async def cambiar_password(email: str, password_actual: str, password_nueva: str
         usuario_data = usuario_doc.to_dict()
 
         # Verificar contraseña actual
-        password_actual_hash = hashlib.sha256(password_actual.encode()).hexdigest()
+        password_actual_hash = hashlib.sha256(request.password_actual.encode()).hexdigest()
         password_guardada = usuario_data.get("password", "")
 
-        if password_guardada != password_actual_hash and password_guardada != password_actual:
+        if password_guardada != password_actual_hash and password_guardada != request.password_actual:
             raise HTTPException(status_code=401, detail="Contraseña actual incorrecta")
 
         # Actualizar contraseña
-        password_nueva_hash = hashlib.sha256(password_nueva.encode()).hexdigest()
+        password_nueva_hash = hashlib.sha256(request.password_nueva.encode()).hexdigest()
         db.collection("usuarios").document(usuario_doc.id).update({
-            "password": password_nueva_hash
+            "password": password_nueva_hash,
+            "passwordCambiada": True,
+            "ultimoCambioPassword": datetime.now()
         })
 
         return {
@@ -679,6 +736,282 @@ async def cambiar_password(email: str, password_actual: str, password_nueva: str
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al cambiar contraseña: {str(e)}")
+
+
+@app.post("/api/auth/solicitar-codigo", tags=["Sistema"])
+async def solicitar_codigo_recuperacion(request: SolicitarCodigoRequest):
+    """
+    ## 📧 Solicitar Código de Recuperación
+
+    Genera un código de 6 dígitos y lo envía al email del usuario.
+    El código expira en 10 minutos.
+
+    ### Body (JSON):
+    * **email**: Email del usuario registrado
+
+    ### Respuesta exitosa:
+    ```json
+    {
+        "success": true,
+        "message": "Código enviado al email",
+        "expira_en": "10 minutos"
+    }
+    ```
+    """
+    try:
+        import random
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+
+        # Verificar que el usuario existe
+        usuarios = list(db.collection("usuarios").where("email", "==", request.email).limit(1).stream())
+        if not usuarios:
+            raise HTTPException(status_code=404, detail="No existe una cuenta con este email")
+
+        # Generar código de 6 dígitos
+        codigo = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+
+        # Guardar código en Firestore con expiración
+        codigo_data = {
+            "email": request.email,
+            "codigo": codigo,
+            "creado": datetime.now(),
+            "expira": datetime.now().replace(minute=datetime.now().minute + 10),
+            "usado": False
+        }
+
+        # Eliminar códigos anteriores del mismo email
+        codigos_anteriores = db.collection("codigos_recuperacion").where("email", "==", request.email).stream()
+        for doc in codigos_anteriores:
+            doc.reference.delete()
+
+        # Guardar nuevo código
+        db.collection("codigos_recuperacion").add(codigo_data)
+
+        # Preparar email HTML
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }}
+                .container {{ max-width: 500px; margin: 0 auto; background: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+                .header {{ text-align: center; margin-bottom: 30px; }}
+                .header h1 {{ color: #1976D2; margin: 0; }}
+                .code-box {{ background: #f5f5f5; border-radius: 10px; padding: 20px; text-align: center; margin: 20px 0; }}
+                .code {{ font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #333; }}
+                .warning {{ color: #666; font-size: 14px; margin-top: 20px; }}
+                .footer {{ text-align: center; color: #999; font-size: 12px; margin-top: 30px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🔐 GeoNews</h1>
+                    <p>Código de Recuperación de Contraseña</p>
+                </div>
+                <p>Hola,</p>
+                <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta. Usa el siguiente código:</p>
+                <div class="code-box">
+                    <div class="code">{codigo}</div>
+                </div>
+                <p class="warning">
+                    ⏱️ Este código expira en <strong>10 minutos</strong>.<br>
+                    Si no solicitaste este código, ignora este mensaje.
+                </p>
+                <div class="footer">
+                    <p>© 2026 GeoNews - Noticias Locales de Ibarra</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        # Configurar SMTP
+        smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
+        smtp_port = int(os.getenv("SMTP_PORT", "587"))
+        smtp_user = os.getenv("SMTP_USER", "")
+        smtp_password = os.getenv("SMTP_PASSWORD", "")
+
+        if smtp_user and smtp_password:
+            # Crear mensaje
+            message = MIMEMultipart("alternative")
+            message["Subject"] = f"🔐 Tu código de verificación: {codigo}"
+            message["From"] = f"GeoNews <{smtp_user}>"
+            message["To"] = request.email
+            message.attach(MIMEText(html_content, "html"))
+
+            # Enviar email
+            with smtplib.SMTP(smtp_host, smtp_port) as server:
+                server.starttls()
+                server.login(smtp_user, smtp_password)
+                server.send_message(message)
+
+            return {
+                "success": True,
+                "message": "Código enviado al email",
+                "expira_en": "10 minutos"
+            }
+        else:
+            # En desarrollo, retornar el código directamente
+            return {
+                "success": True,
+                "message": "Código generado (SMTP no configurado)",
+                "codigo_debug": codigo,  # Solo en desarrollo
+                "expira_en": "10 minutos"
+            }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al enviar código: {str(e)}")
+
+
+@app.post("/api/auth/verificar-codigo", tags=["Sistema"])
+async def verificar_codigo(request: VerificarCodigoRequest):
+    """
+    ## ✅ Verificar Código de Recuperación
+
+    Verifica que el código ingresado sea válido y no haya expirado.
+
+    ### Body (JSON):
+    * **email**: Email del usuario
+    * **codigo**: Código de 6 dígitos recibido
+
+    ### Respuesta exitosa:
+    ```json
+    {
+        "success": true,
+        "message": "Código válido",
+        "token_temporal": "abc123..."
+    }
+    ```
+    """
+    try:
+        import secrets
+
+        # Buscar código válido
+        codigos = list(db.collection("codigos_recuperacion")
+            .where("email", "==", request.email)
+            .where("codigo", "==", request.codigo)
+            .where("usado", "==", False)
+            .limit(1)
+            .stream())
+
+        if not codigos:
+            raise HTTPException(status_code=400, detail="Código inválido o expirado")
+
+        codigo_doc = codigos[0]
+        codigo_data = codigo_doc.to_dict()
+
+        # Verificar expiración (10 minutos)
+        creado = codigo_data.get("creado")
+        if creado:
+            diferencia = (datetime.now() - creado).total_seconds()
+            if diferencia > 600:  # 10 minutos en segundos
+                codigo_doc.reference.delete()
+                raise HTTPException(status_code=400, detail="El código ha expirado. Solicita uno nuevo.")
+
+        # Generar token temporal para resetear password
+        token_temporal = secrets.token_hex(32)
+
+        # Actualizar documento con token
+        codigo_doc.reference.update({
+            "token_temporal": token_temporal,
+            "verificado": True
+        })
+
+        return {
+            "success": True,
+            "message": "Código válido",
+            "token_temporal": token_temporal
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al verificar código: {str(e)}")
+
+
+@app.post("/api/auth/resetear-password", tags=["Sistema"])
+async def resetear_password(request: ResetearPasswordRequest):
+    """
+    ## 🔑 Resetear Contraseña con Código
+
+    Permite cambiar la contraseña usando el código de verificación.
+
+    ### Body (JSON):
+    * **email**: Email del usuario
+    * **codigo**: Código de 6 dígitos
+    * **password_nueva**: Nueva contraseña (mínimo 6 caracteres)
+
+    ### Respuesta exitosa:
+    ```json
+    {
+        "success": true,
+        "message": "Contraseña actualizada exitosamente"
+    }
+    ```
+    """
+    try:
+        import hashlib
+
+        # Validar longitud de nueva contraseña
+        if len(request.password_nueva) < 6:
+            raise HTTPException(
+                status_code=400,
+                detail="La contraseña debe tener al menos 6 caracteres"
+            )
+
+        # Buscar código válido y verificado
+        codigos = list(db.collection("codigos_recuperacion")
+            .where("email", "==", request.email)
+            .where("codigo", "==", request.codigo)
+            .where("usado", "==", False)
+            .limit(1)
+            .stream())
+
+        if not codigos:
+            raise HTTPException(status_code=400, detail="Código inválido o ya utilizado")
+
+        codigo_doc = codigos[0]
+        codigo_data = codigo_doc.to_dict()
+
+        # Verificar expiración
+        creado = codigo_data.get("creado")
+        if creado:
+            diferencia = (datetime.now() - creado).total_seconds()
+            if diferencia > 600:
+                codigo_doc.reference.delete()
+                raise HTTPException(status_code=400, detail="El código ha expirado")
+
+        # Buscar usuario
+        usuarios = list(db.collection("usuarios").where("email", "==", request.email).limit(1).stream())
+        if not usuarios:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+        usuario_doc = usuarios[0]
+
+        # Actualizar contraseña
+        password_hash = hashlib.sha256(request.password_nueva.encode()).hexdigest()
+        db.collection("usuarios").document(usuario_doc.id).update({
+            "password": password_hash,
+            "ultimoCambioPassword": datetime.now()
+        })
+
+        # Marcar código como usado y eliminar
+        codigo_doc.reference.delete()
+
+        return {
+            "success": True,
+            "message": "Contraseña actualizada exitosamente"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al resetear contraseña: {str(e)}")
 
 
 @app.get("/api/upload/status", tags=["Sistema"])
@@ -725,7 +1058,15 @@ async def panel_periodista():
     try:
         with open(html_file, "r", encoding="utf-8") as f:
             html_content = f.read()
-        return HTMLResponse(content=html_content)
+        # Agregar headers para evitar caché del navegador
+        return HTMLResponse(
+            content=html_content,
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
+        )
     except Exception as e:
         raise HTTPException(
             status_code=500,

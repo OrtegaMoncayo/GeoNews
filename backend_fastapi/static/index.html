@@ -162,20 +162,255 @@
             font-weight: 500;
         }
 
-        .logout-btn {
-            background: none;
-            border: none;
-            color: #E53E3E;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            padding: 6px 12px;
-            border-radius: 6px;
-            transition: all 0.2s;
+        /* ========== MENÚ DE USUARIO ========== */
+        .user-menu {
+            position: relative;
+            display: inline-block;
         }
 
-        .logout-btn:hover {
+        .user-menu-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 2px solid #667eea;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 10px 18px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .user-menu-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .user-menu-btn .arrow {
+            transition: transform 0.3s;
+            font-size: 10px;
+        }
+
+        .user-menu.active .user-menu-btn .arrow {
+            transform: rotate(180deg);
+        }
+
+        .user-menu-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            border: 1px solid #E2E8F0;
+            min-width: 220px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .user-menu.active .user-menu-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .user-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            color: #2D3748;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            background: white;
+            width: 100%;
+            text-align: left;
+        }
+
+        .user-menu-item:hover {
+            background: #EDF2F7;
+        }
+
+        .user-menu-item .icon {
+            font-size: 18px;
+        }
+
+        .user-menu-item.danger {
+            color: #E53E3E;
+        }
+
+        .user-menu-item.danger:hover {
             background: #FED7D7;
+        }
+
+        .user-menu-divider {
+            height: 1px;
+            background: #E2E8F0;
+            margin: 4px 0;
+        }
+
+        /* ========== MODAL CAMBIAR CONTRASEÑA ========== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 420px;
+            width: 90%;
+            overflow: hidden;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 24px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .modal-header p {
+            margin: 6px 0 0 0;
+            opacity: 0.9;
+            font-size: 13px;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-body .form-group {
+            margin-bottom: 18px;
+        }
+
+        .modal-body label {
+            display: block;
+            margin-bottom: 6px;
+            color: #2D3748;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .modal-body input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #E2E8F0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .modal-body input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            background: #F7FAFC;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .modal-btn-secondary {
+            background: #E2E8F0;
+            color: #4A5568;
+        }
+
+        .modal-btn-secondary:hover {
+            background: #CBD5E0;
+        }
+
+        .modal-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .modal-btn-primary:disabled {
+            background: #CBD5E0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .modal-error {
+            background: #FED7D7;
+            color: #742A2A;
+            border: 2px solid #FC8181;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .modal-success {
+            background: #C6F6D5;
+            color: #22543D;
+            border: 2px solid #68D391;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            display: none;
         }
 
         /* ========== PANEL ADMIN ========== */
@@ -838,7 +1073,8 @@
                 <div class="user-badge-name" id="userName">Periodista</div>
                 <div class="user-badge-role" id="userRole">Reportero</div>
             </div>
-            <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
+            <button onclick="showChangePasswordModal()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white; cursor: pointer; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 8px; margin-right: 8px;">🔐 Cambiar clave</button>
+            <button onclick="logout()" style="background: #E53E3E; border: none; color: white; cursor: pointer; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 8px;">🚪 Salir</button>
         </div>
 
         <div class="header">
@@ -1171,6 +1407,38 @@
                     <p id="coordenadas">Haz clic en el mapa para seleccionar</p>
                     <p id="ubicacion" style="margin-top: 8px; font-style: italic;"></p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MODAL: CAMBIAR CONTRASEÑA ========== -->
+    <div class="modal-overlay" id="changePasswordModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>🔐 Cambiar Contraseña</h3>
+                <p>Ingresa tu contraseña actual y la nueva contraseña</p>
+            </div>
+            <div class="modal-body">
+                <div class="modal-error" id="passwordModalError"></div>
+                <div class="modal-success" id="passwordModalSuccess"></div>
+                <form id="changePasswordForm">
+                    <div class="form-group">
+                        <label for="currentPassword">Contraseña actual</label>
+                        <input type="password" id="currentPassword" name="currentPassword" placeholder="••••••••" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">Nueva contraseña</label>
+                        <input type="password" id="newPassword" name="newPassword" placeholder="Mínimo 6 caracteres" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirmar nueva contraseña</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Repetir nueva contraseña" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-btn modal-btn-secondary" onclick="hideChangePasswordModal()">Cancelar</button>
+                <button type="button" class="modal-btn modal-btn-primary" id="btnChangePassword" onclick="changePassword()">Cambiar contraseña</button>
             </div>
         </div>
     </div>
@@ -1940,6 +2208,146 @@
                         previewImage(document.getElementById('imagenFile'));
                     }
                 }, false);
+            }
+        });
+
+        // ========================================
+        // MENÚ DE USUARIO
+        // ========================================
+
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('userMenuDropdown');
+            if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+                dropdown.style.display = 'block';
+            } else {
+                dropdown.style.display = 'none';
+            }
+        }
+
+        // Cerrar menú al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('userMenu');
+            const dropdown = document.getElementById('userMenuDropdown');
+            if (menu && dropdown && !menu.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        // ========================================
+        // FUNCIONES DE CAMBIO DE CONTRASEÑA
+        // ========================================
+
+        function showChangePasswordModal() {
+            // Limpiar formulario
+            document.getElementById('changePasswordForm').reset();
+            document.getElementById('passwordModalError').style.display = 'none';
+            document.getElementById('passwordModalSuccess').style.display = 'none';
+
+            // Mostrar modal
+            document.getElementById('changePasswordModal').classList.add('active');
+        }
+
+        function hideChangePasswordModal() {
+            document.getElementById('changePasswordModal').classList.remove('active');
+        }
+
+        async function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Validaciones
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showPasswordError('Por favor completa todos los campos');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                showPasswordError('La nueva contraseña debe tener al menos 6 caracteres');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showPasswordError('Las contraseñas nuevas no coinciden');
+                return;
+            }
+
+            if (!currentUser || !currentUser.email) {
+                showPasswordError('Error: No hay usuario autenticado');
+                return;
+            }
+
+            // Deshabilitar botón
+            const btn = document.getElementById('btnChangePassword');
+            btn.disabled = true;
+            btn.textContent = 'Cambiando...';
+
+            try {
+                const response = await fetch(`${API_URL}/api/auth/cambiar-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: currentUser.email,
+                        password_actual: currentPassword,
+                        password_nueva: newPassword
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showPasswordSuccess('¡Contraseña actualizada exitosamente!');
+
+                    // Cerrar modal después de 2 segundos
+                    setTimeout(() => {
+                        hideChangePasswordModal();
+                    }, 2000);
+                } else {
+                    showPasswordError(result.detail || 'Error al cambiar contraseña');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showPasswordError('Error de conexión. Intenta de nuevo.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Cambiar contraseña';
+            }
+        }
+
+        function showPasswordError(message) {
+            const errorDiv = document.getElementById('passwordModalError');
+            const successDiv = document.getElementById('passwordModalSuccess');
+            successDiv.style.display = 'none';
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function showPasswordSuccess(message) {
+            const errorDiv = document.getElementById('passwordModalError');
+            const successDiv = document.getElementById('passwordModalSuccess');
+            errorDiv.style.display = 'none';
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+        }
+
+        // Cerrar modal con Escape o clic fuera
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideChangePasswordModal();
+            }
+        });
+
+        // Cerrar modal al hacer clic fuera (después de que cargue el DOM)
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('changePasswordModal');
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        hideChangePasswordModal();
+                    }
+                });
             }
         });
 
