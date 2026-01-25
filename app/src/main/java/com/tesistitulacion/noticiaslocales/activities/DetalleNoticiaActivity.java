@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -26,7 +27,12 @@ import com.tesistitulacion.noticiaslocales.firebase.FirebaseManager;
 import com.tesistitulacion.noticiaslocales.modelo.Noticia;
 import com.tesistitulacion.noticiaslocales.utils.AnimationHelper;
 import com.tesistitulacion.noticiaslocales.utils.LocaleManager;
+import com.tesistitulacion.noticiaslocales.utils.TextToSpeechHelper;
+import com.tesistitulacion.noticiaslocales.utils.TransitionHelper;
+import com.tesistitulacion.noticiaslocales.utils.TranslationHelper;
 import com.tesistitulacion.noticiaslocales.utils.UsuarioPreferences;
+
+import com.google.mlkit.nl.translate.TranslateLanguage;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -62,6 +68,18 @@ public class DetalleNoticiaActivity extends AppCompatActivity implements OnMapRe
     private ImageView btnBack;
     private ImageView btnBookmark;
     private ImageView btnShare;
+    private ImageView btnTranslate;
+
+    // Traducción
+    private TranslationHelper translationHelper;
+    private boolean isTranslated = false;
+    private String originalTitulo;
+    private String originalDescripcion;
+    private String originalContenido;
+
+    // Text-to-Speech
+    private TextToSpeechHelper ttsHelper;
+    private ImageView btnTTS;
 
     // Views para contenido enriquecido
     private LinearLayout layoutCitaDestacada;
@@ -140,6 +158,7 @@ public class DetalleNoticiaActivity extends AppCompatActivity implements OnMapRe
         btnBack = findViewById(R.id.btn_back);
         btnBookmark = findViewById(R.id.btn_bookmark);
         btnShare = findViewById(R.id.btn_share);
+        btnTranslate = findViewById(R.id.btn_translate);
 
         // Views para contenido enriquecido
         layoutCitaDestacada = findViewById(R.id.layout_cita_destacada);
@@ -155,10 +174,10 @@ public class DetalleNoticiaActivity extends AppCompatActivity implements OnMapRe
     }
 
     private void configurarBotones() {
-        // Botón volver
+        // Botón volver con animación
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> {
-                finish();
+                TransitionHelper.finishWithSlideDown(this);
             });
         }
 
@@ -174,6 +193,25 @@ public class DetalleNoticiaActivity extends AppCompatActivity implements OnMapRe
                     compartirNoticia();
                 }
             });
+        }
+
+        // Botón traducir
+        if (btnTranslate != null) {
+            btnTranslate.setOnClickListener(v -> mostrarDialogoTraduccion());
+        }
+
+        // Botón TTS (lectura en voz alta)
+        btnTTS = findViewById(R.id.btn_tts);
+        if (btnTTS != null) {
+            // Verificar si TTS está habilitado en preferencias
+            boolean ttsEnabled = UsuarioPreferences.getTTSEnabled(this);
+            if (ttsEnabled) {
+                btnTTS.setVisibility(android.view.View.VISIBLE);
+                btnTTS.setOnClickListener(v -> toggleTTS());
+                inicializarTTS();
+            } else {
+                btnTTS.setVisibility(android.view.View.GONE);
+            }
         }
 
         // Botón ver en mapa (oculto por defecto)
@@ -588,4 +626,332 @@ public class DetalleNoticiaActivity extends AppCompatActivity implements OnMapRe
         Toast.makeText(this, mensaje, duracion).show();
     }
 
+    // ==================== TRADUCCIÓN ====================
+
+    /**
+     * Muestra el diálogo para seleccionar idioma de traducción
+     */
+    private void mostrarDialogoTraduccion() {
+        if (noticia == null) {
+            showToast("Espera a que cargue la noticia");
+            return;
+        }
+
+        // Si ya está traducido, ofrecer restaurar original
+        if (isTranslated) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Traducción")
+                    .setMessage("¿Qué deseas hacer?")
+                    .setPositiveButton("Ver original", (d, w) -> restaurarOriginal())
+                    .setNegativeButton("Otro idioma", (d, w) -> mostrarSelectorIdioma())
+                    .setNeutralButton("Cancelar", null)
+                    .show();
+        } else {
+            mostrarSelectorIdioma();
+        }
+    }
+
+    /**
+     * Muestra el selector de idioma de destino
+     */
+    private void mostrarSelectorIdioma() {
+        final String[] idiomas = {"Inglés", "Francés", "Portugués", "Alemán", "Italiano"};
+        final String[] codigosIdioma = {
+                TranslateLanguage.ENGLISH,
+                TranslateLanguage.FRENCH,
+                TranslateLanguage.PORTUGUESE,
+                TranslateLanguage.GERMAN,
+                TranslateLanguage.ITALIAN
+        };
+
+        new AlertDialog.Builder(this)
+                .setTitle("🌐 Traducir a...")
+                .setItems(idiomas, (dialog, which) -> {
+                    iniciarTraduccion(codigosIdioma[which], idiomas[which]);
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    /**
+     * Inicia el proceso de traducción
+     */
+    private void iniciarTraduccion(String idiomaDestino, String nombreIdioma) {
+        // Guardar textos originales si no están guardados
+        if (originalTitulo == null) {
+            originalTitulo = noticia.getTitulo();
+            originalDescripcion = noticia.getDescripcion();
+            originalContenido = noticia.getContenido();
+        }
+
+        // Mostrar progreso
+        showToast("Traduciendo a " + nombreIdioma + "...");
+
+        // Crear o actualizar translator
+        if (translationHelper == null) {
+            translationHelper = new TranslationHelper(TranslateLanguage.SPANISH, idiomaDestino);
+        } else {
+            translationHelper.setTargetLanguage(idiomaDestino);
+        }
+
+        // Descargar modelo si es necesario
+        translationHelper.downloadModelIfNeeded(new TranslationHelper.ModelDownloadCallback() {
+            @Override
+            public void onSuccess() {
+                runOnUiThread(() -> traducirContenido(nombreIdioma));
+            }
+
+            @Override
+            public void onError(Exception e) {
+                runOnUiThread(() -> {
+                    showToast("Error al descargar modelo de idioma. Verifica tu conexión.");
+                    Log.e(TAG, "Error descargando modelo", e);
+                });
+            }
+
+            @Override
+            public void onProgress(String message) {
+                runOnUiThread(() -> showToast("Descargando idioma..."));
+            }
+        });
+    }
+
+    /**
+     * Traduce el contenido de la noticia
+     */
+    private void traducirContenido(String nombreIdioma) {
+        // Contador para saber cuándo terminaron todas las traducciones
+        final int[] pendientes = {3}; // título, descripción, contenido
+        final String[] resultados = new String[3];
+
+        // Traducir título
+        translationHelper.translate(originalTitulo, new TranslationHelper.TranslationCallback() {
+            @Override
+            public void onSuccess(String translatedText) {
+                resultados[0] = translatedText;
+                verificarTraduccionCompleta(pendientes, resultados, nombreIdioma);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                resultados[0] = originalTitulo;
+                verificarTraduccionCompleta(pendientes, resultados, nombreIdioma);
+            }
+        });
+
+        // Traducir descripción
+        translationHelper.translate(originalDescripcion, new TranslationHelper.TranslationCallback() {
+            @Override
+            public void onSuccess(String translatedText) {
+                resultados[1] = translatedText;
+                verificarTraduccionCompleta(pendientes, resultados, nombreIdioma);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                resultados[1] = originalDescripcion;
+                verificarTraduccionCompleta(pendientes, resultados, nombreIdioma);
+            }
+        });
+
+        // Traducir contenido
+        translationHelper.translate(originalContenido, new TranslationHelper.TranslationCallback() {
+            @Override
+            public void onSuccess(String translatedText) {
+                resultados[2] = translatedText;
+                verificarTraduccionCompleta(pendientes, resultados, nombreIdioma);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                resultados[2] = originalContenido;
+                verificarTraduccionCompleta(pendientes, resultados, nombreIdioma);
+            }
+        });
+    }
+
+    /**
+     * Verifica si todas las traducciones están completas y actualiza la UI
+     */
+    private void verificarTraduccionCompleta(int[] pendientes, String[] resultados, String nombreIdioma) {
+        pendientes[0]--;
+
+        if (pendientes[0] == 0) {
+            runOnUiThread(() -> {
+                // Actualizar UI con textos traducidos
+                tvTitulo.setText(resultados[0]);
+                tvDescripcion.setText(resultados[1]);
+                tvContenido.setText(resultados[2]);
+
+                isTranslated = true;
+
+                // Cambiar icono del botón para indicar que está traducido
+                if (btnTranslate != null) {
+                    btnTranslate.setColorFilter(getResources().getColor(R.color.primary, getTheme()));
+                }
+
+                showToast("Traducido a " + nombreIdioma);
+            });
+        }
+    }
+
+    /**
+     * Restaura el contenido original (sin traducir)
+     */
+    private void restaurarOriginal() {
+        if (originalTitulo != null) {
+            tvTitulo.setText(originalTitulo);
+            tvDescripcion.setText(originalDescripcion);
+            tvContenido.setText(originalContenido);
+
+            isTranslated = false;
+
+            // Restaurar icono del botón
+            if (btnTranslate != null) {
+                btnTranslate.clearColorFilter();
+            }
+
+            showToast("Contenido original restaurado");
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        TransitionHelper.applyBackTransitionSlideDown(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Liberar recursos del traductor
+        if (translationHelper != null) {
+            translationHelper.close();
+            translationHelper = null;
+        }
+        // Liberar recursos del TTS
+        if (ttsHelper != null) {
+            ttsHelper.shutdown();
+            ttsHelper = null;
+        }
+    }
+
+    // ==================== TEXT-TO-SPEECH ====================
+
+    /**
+     * Inicializa el helper de Text-to-Speech
+     */
+    private void inicializarTTS() {
+        ttsHelper = new TextToSpeechHelper(this, new TextToSpeechHelper.TTSCallback() {
+            @Override
+            public void onInitialized(boolean success) {
+                runOnUiThread(() -> {
+                    if (success) {
+                        Log.d(TAG, "TTS inicializado correctamente");
+                        // Configurar velocidad desde preferencias
+                        float speed = UsuarioPreferences.getTTSSpeed(DetalleNoticiaActivity.this);
+                        ttsHelper.setSpeechRate(speed);
+                    } else {
+                        Log.w(TAG, "TTS no pudo inicializarse");
+                        if (btnTTS != null) {
+                            btnTTS.setVisibility(android.view.View.GONE);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onSpeakStart() {
+                runOnUiThread(() -> {
+                    if (btnTTS != null) {
+                        btnTTS.setColorFilter(getResources().getColor(R.color.primary, getTheme()));
+                    }
+                });
+            }
+
+            @Override
+            public void onSpeakDone() {
+                runOnUiThread(() -> {
+                    if (btnTTS != null) {
+                        btnTTS.clearColorFilter();
+                    }
+                });
+            }
+
+            @Override
+            public void onSpeakError(String error) {
+                runOnUiThread(() -> {
+                    showToast(getString(R.string.tts_error));
+                    if (btnTTS != null) {
+                        btnTTS.clearColorFilter();
+                    }
+                });
+            }
+
+            @Override
+            public void onProgress(int position, int total) {
+                // Podríamos mostrar un indicador de progreso
+            }
+        });
+    }
+
+    /**
+     * Alterna entre reproducir/detener la lectura de la noticia
+     */
+    private void toggleTTS() {
+        if (noticia == null) {
+            showToast("Espera a que cargue la noticia");
+            return;
+        }
+
+        if (ttsHelper == null || !ttsHelper.isInitialized()) {
+            showToast(getString(R.string.tts_not_available));
+            return;
+        }
+
+        if (ttsHelper.isSpeaking()) {
+            // Detener lectura
+            ttsHelper.stop();
+            if (btnTTS != null) {
+                btnTTS.clearColorFilter();
+            }
+            showToast(getString(R.string.tts_stop));
+        } else {
+            // Iniciar lectura
+            String textoCompleto = construirTextoParaTTS();
+            if (textoCompleto != null && !textoCompleto.isEmpty()) {
+                ttsHelper.speak(textoCompleto);
+                showToast(getString(R.string.tts_read_article));
+            }
+        }
+    }
+
+    /**
+     * Construye el texto completo de la noticia para TTS
+     */
+    private String construirTextoParaTTS() {
+        StringBuilder sb = new StringBuilder();
+
+        // Título
+        if (noticia.getTitulo() != null) {
+            sb.append(noticia.getTitulo());
+            sb.append(". ");
+        }
+
+        // Descripción/Lead
+        if (noticia.getDescripcion() != null && !noticia.getDescripcion().isEmpty()) {
+            sb.append(noticia.getDescripcion());
+            sb.append(". ");
+        }
+
+        // Contenido principal
+        if (noticia.getContenido() != null && !noticia.getContenido().isEmpty()) {
+            sb.append(noticia.getContenido());
+        }
+
+        return sb.toString();
+    }
+
 }
+
+

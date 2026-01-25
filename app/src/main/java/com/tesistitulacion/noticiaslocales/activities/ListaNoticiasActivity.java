@@ -15,7 +15,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -32,13 +31,16 @@ import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import com.tesistitulacion.noticiaslocales.R;
 import com.tesistitulacion.noticiaslocales.adapters.NoticiaAdapter;
+import com.tesistitulacion.noticiaslocales.adapters.SkeletonAdapter;
 import com.tesistitulacion.noticiaslocales.firebase.FirebaseManager;
 import com.tesistitulacion.noticiaslocales.modelo.Noticia;
 import com.tesistitulacion.noticiaslocales.utils.AnimationHelper;
 import com.tesistitulacion.noticiaslocales.utils.FirebaseCallbackHelper;
 import com.tesistitulacion.noticiaslocales.utils.LocationHelper;
+import com.tesistitulacion.noticiaslocales.utils.NewsCache;
 import com.tesistitulacion.noticiaslocales.utils.NotificationHelper;
 import com.tesistitulacion.noticiaslocales.utils.RecyclerViewHelper;
+import com.tesistitulacion.noticiaslocales.utils.TransitionHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,7 +56,9 @@ public class ListaNoticiasActivity extends BaseActivity {
 
     // Views
     private RecyclerView rvNoticias;
-    private NoticiaAdapter adapter;
+    private
+    NoticiaAdapter adapter;
+    private SkeletonAdapter skeletonAdapter;
     private TextInputEditText etBusqueda;
     private TextInputLayout tilBusqueda;
     private LinearLayout layoutBusquedaContainer;
@@ -75,6 +79,9 @@ public class ListaNoticiasActivity extends BaseActivity {
 
     // Ubicación
     private Location ubicacionActual;
+
+    // Caché de noticias
+    private NewsCache newsCache;
 
     // Filtros activos
     private String textoBusquedaActual = "";
@@ -154,6 +161,9 @@ public class ListaNoticiasActivity extends BaseActivity {
         // Inicializar listas
         noticiasOriginales = new ArrayList<>();
         noticiasFiltradas = new ArrayList<>();
+
+        // Inicializar caché
+        newsCache = NewsCache.getInstance(this);
     }
 
     /**
@@ -247,11 +257,8 @@ public class ListaNoticiasActivity extends BaseActivity {
         if (requestCode == NotificationHelper.REQUEST_CODE_NOTIFICATIONS) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Log.d(TAG, "Permiso de notificaciones CONCEDIDO");
-                showToast("Notificaciones activadas");
             } else {
                 Log.w(TAG, "Permiso de notificaciones DENEGADO");
-                // Opcional: mostrar un mensaje explicando por qué son importantes las notificaciones
-                showToast("Las notificaciones te mantienen informado de noticias cercanas");
             }
         }
     }
@@ -260,18 +267,45 @@ public class ListaNoticiasActivity extends BaseActivity {
         // Usar RecyclerViewHelper para configuración con animación
         RecyclerViewHelper.setupWithAnimation(rvNoticias, this);
 
+        // Crear adapter de noticias
         adapter = new NoticiaAdapter((noticia, position) -> {
-            // Click en noticia → abrir detalle
+            // Click en noticia → abrir detalle con animación
             if (noticia.getFirestoreId() != null) {
                 Intent intent = new Intent(this, DetalleNoticiaActivity.class);
                 intent.putExtra(DetalleNoticiaActivity.EXTRA_NOTICIA_ID, noticia.getFirestoreId());
-                startActivity(intent);
+                TransitionHelper.startActivitySlideUp(this, intent);
             } else {
-                showToast("Error: ID de noticia no disponible");
+                Log.e(TAG, "Error: ID de noticia no disponible");
             }
         });
 
-        rvNoticias.setAdapter(adapter);
+        // Crear adapter skeleton para loading
+        skeletonAdapter = new SkeletonAdapter(5);
+
+        // Mostrar skeleton inicialmente mientras cargan los datos
+        rvNoticias.setAdapter(skeletonAdapter);
+    }
+
+    /**
+     * Muestra el skeleton loading
+     */
+    private void mostrarSkeleton() {
+        if (rvNoticias != null && skeletonAdapter != null) {
+            rvNoticias.setAdapter(skeletonAdapter);
+        }
+    }
+
+    /**
+     * Oculta el skeleton y muestra los datos reales
+     */
+    private void ocultarSkeleton() {
+        if (rvNoticias != null && adapter != null) {
+            // Cambiar al adapter real
+            if (rvNoticias.getAdapter() != adapter) {
+                rvNoticias.setAdapter(adapter);
+                Log.d(TAG, "Skeleton ocultado, mostrando adapter de noticias");
+            }
+        }
     }
 
     private void configurarBusqueda() {
@@ -341,27 +375,87 @@ public class ListaNoticiasActivity extends BaseActivity {
     }
 
     private void cargarNoticias() {
-        // Usar FirebaseCallbackHelper para gestión automática de estado
-        FirebaseCallbackHelper.<List<Noticia>>cargarDatosConFeedback(
-            this,
-            "noticias",
-            getLoadingStateManager(),
-            callback -> FirebaseManager.getInstance().getAllNoticiasRealtime(callback),
-            noticiasObtenidas -> {
-                if (!noticiasObtenidas.isEmpty()) {
+        // Mostrar skeleton mientras carga
+        mostrarSkeleton();
+
+        // Variable para saber si ya mostramos datos del caché
+        boolean mostradoDesdeCache = false;
+
+        // Intentar cargar desde caché primero (para mostrar datos inmediatamente)
+        if (newsCache != null && newsCache.hayCache() && !newsCache.cacheExpirado()) {
+            List<Noticia> noticiasCached = newsCache.obtenerNoticias();
+            if (!noticiasCached.isEmpty()) {
+                Log.i(TAG, "Mostrando " + noticiasCached.size() + " noticias desde caché (" +
+                      newsCache.getAntiguedadLegible() + ")");
+
+                noticiasOriginales.clear();
+                noticiasOriginales.addAll(noticiasCached);
+                ocultarSkeleton();
+                aplicarFiltros();
+                mostradoDesdeCache = true;
+            }
+        }
+
+        // Cargar desde Firebase directamente (sin usar LoadingStateManager para evitar bloqueo)
+        final boolean datosDelCache = mostradoDesdeCache;
+
+        FirebaseManager.getInstance().getAllNoticiasRealtime(new FirebaseManager.FirestoreCallback<List<Noticia>>() {
+            @Override
+            public void onSuccess(List<Noticia> noticiasObtenidas) {
+                if (noticiasObtenidas != null && !noticiasObtenidas.isEmpty()) {
                     // Guardar noticias originales
                     noticiasOriginales.clear();
                     noticiasOriginales.addAll(noticiasObtenidas);
 
-                    Log.i(TAG, "Noticias actualizadas en tiempo real: " + noticiasObtenidas.size());
+                    Log.i(TAG, "Noticias actualizadas desde Firebase: " + noticiasObtenidas.size());
+
+                    // Guardar en caché para uso offline
+                    if (newsCache != null) {
+                        newsCache.guardarNoticias(noticiasObtenidas);
+                    }
+
+                    // Ocultar skeleton y mostrar datos
+                    ocultarSkeleton();
 
                     // Aplicar filtros
                     aplicarFiltros();
                 } else {
-                    Log.w(TAG, "No se encontraron noticias");
+                    Log.w(TAG, "No se encontraron noticias en Firebase");
+
+                    // Si no hay datos de Firebase, intentar usar caché aunque esté expirado
+                    if (noticiasOriginales.isEmpty() && newsCache != null && newsCache.hayCache()) {
+                        List<Noticia> noticiasCached = newsCache.obtenerNoticias();
+                        if (!noticiasCached.isEmpty()) {
+                            Log.i(TAG, "Usando caché expirado: " + noticiasCached.size() + " noticias");
+                            noticiasOriginales.addAll(noticiasCached);
+                            aplicarFiltros();
+                        }
+                    }
+
+                    // Ocultar skeleton
+                    ocultarSkeleton();
                 }
             }
-        );
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error al cargar noticias: " + e.getMessage());
+
+                // Si hay error y no tenemos datos del caché, intentar usar caché
+                if (!datosDelCache && newsCache != null && newsCache.hayCache()) {
+                    List<Noticia> noticiasCached = newsCache.obtenerNoticias();
+                    if (!noticiasCached.isEmpty()) {
+                        Log.i(TAG, "Error de red, usando caché: " + noticiasCached.size() + " noticias");
+                        noticiasOriginales.clear();
+                        noticiasOriginales.addAll(noticiasCached);
+                        aplicarFiltros();
+                    }
+                }
+
+                // Ocultar skeleton
+                ocultarSkeleton();
+            }
+        });
     }
 
     /**
@@ -433,24 +527,9 @@ public class ListaNoticiasActivity extends BaseActivity {
             });
         }
 
-        // Actualizar adaptador con animación
-        if (rvNoticias != null) {
-            rvNoticias.animate()
-                .alpha(0.3f)
-                .setDuration(100)
-                .withEndAction(() -> {
-                    adapter.actualizarLista(noticiasFiltradas);
-                    if (rvNoticias != null) {
-                        rvNoticias.animate()
-                            .alpha(1f)
-                            .setDuration(200)
-                            .start();
-                    }
-                })
-                .start();
-        } else {
-            adapter.actualizarLista(noticiasFiltradas);
-        }
+        // Actualizar adaptador
+        adapter.actualizarLista(noticiasFiltradas);
+        Log.d(TAG, "Lista actualizada con " + noticiasFiltradas.size() + " noticias");
 
         // Actualizar contador de resultados
         actualizarContadorResultados();

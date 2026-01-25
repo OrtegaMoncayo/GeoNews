@@ -23,6 +23,7 @@ import com.tesistitulacion.noticiaslocales.modelo.Usuario;
 import com.tesistitulacion.noticiaslocales.utils.DialogHelper;
 import com.tesistitulacion.noticiaslocales.utils.LocaleManager;
 import com.tesistitulacion.noticiaslocales.utils.ThemeManager;
+import com.tesistitulacion.noticiaslocales.utils.TransitionHelper;
 import com.tesistitulacion.noticiaslocales.utils.UsuarioPreferences;
 
 /**
@@ -63,6 +64,9 @@ public class AjustesActivity extends AppCompatActivity {
     // Views - Notifications Section
     private SwitchMaterial switchPushNotifications;
     private SwitchMaterial switchEmailDigest;
+
+    // Views - TTS Section
+    private SwitchMaterial switchTTS;
 
     // Views - Support Section
     private LinearLayout btnHelpCenter;
@@ -117,6 +121,9 @@ public class AjustesActivity extends AppCompatActivity {
         switchPushNotifications = findViewById(R.id.switch_push_notifications);
         switchEmailDigest = findViewById(R.id.switch_email_digest);
 
+        // TTS Section
+        switchTTS = findViewById(R.id.switch_tts);
+
         // Support Section
         btnHelpCenter = findViewById(R.id.btn_help_center);
         btnAbout = findViewById(R.id.btn_about);
@@ -168,11 +175,17 @@ public class AjustesActivity extends AppCompatActivity {
             String currentTheme = ThemeManager.getCurrentThemeName(this);
             tvThemeSelected.setText(currentTheme);
         }
+
+        // Cargar estado de TTS
+        if (switchTTS != null) {
+            boolean ttsEnabled = UsuarioPreferences.getTTSEnabled(this);
+            switchTTS.setChecked(ttsEnabled);
+        }
     }
 
     private void configurarListeners() {
-        // Botón Done - cerrar actividad
-        btnDone.setOnClickListener(v -> finish());
+        // Botón Done - cerrar actividad con animación
+        btnDone.setOnClickListener(v -> TransitionHelper.finishWithSlideRight(this));
 
         // FAB editar avatar - ir a editar perfil
         fabEditAvatar.setOnClickListener(v -> abrirEditarPerfil());
@@ -230,6 +243,18 @@ public class AjustesActivity extends AppCompatActivity {
                 showToast("Resumen por email desactivado");
             }
         });
+
+        // TTS SECTION
+        if (switchTTS != null) {
+            switchTTS.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                UsuarioPreferences.guardarTTSEnabled(this, isChecked);
+                if (isChecked) {
+                    showToast(getString(R.string.settings_tts) + " activado");
+                } else {
+                    showToast(getString(R.string.settings_tts) + " desactivado");
+                }
+            });
+        }
 
         // SUPPORT SECTION
         btnHelpCenter.setOnClickListener(v -> {
@@ -512,6 +537,12 @@ public class AjustesActivity extends AppCompatActivity {
         super.onResume();
         // Recargar datos cuando vuelve de editar perfil
         cargarDatosUsuario();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        TransitionHelper.applyBackTransition(this);
     }
 
     // ==================== HELPER METHODS ====================

@@ -35,6 +35,9 @@ public class UsuarioPreferences {
     private static final String KEY_NOTIFICACIONES_ACTIVAS = "notificaciones_activas";
     private static final String KEY_MODO_OSCURO = "modo_oscuro";
     private static final String KEY_MOSTRAR_SOLO_CERCANAS = "mostrar_solo_cercanas";
+    private static final String KEY_TTS_ENABLED = "tts_enabled";
+    private static final String KEY_TTS_SPEED = "tts_speed";
+    private static final String KEY_FIREBASE_UID = "firebase_uid";
 
     private static SharedPreferences sharedPreferences;
 
@@ -352,8 +355,25 @@ public class UsuarioPreferences {
      */
     public static String getUserId(Context context) {
         initializePreferences(context);
+        // Primero intentar obtener el UID de Firebase (String)
+        String firebaseUid = sharedPreferences.getString(KEY_FIREBASE_UID, null);
+        if (firebaseUid != null) {
+            return firebaseUid;
+        }
+        // Fallback al ID numérico
         int userId = sharedPreferences.getInt(KEY_USUARIO_ID, -1);
         return userId > 0 ? String.valueOf(userId) : null;
+    }
+
+    /**
+     * Guarda el UID de Firebase (String)
+     */
+    public static void guardarUserId(Context context, String userId) {
+        initializePreferences(context);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(KEY_FIREBASE_UID, userId);
+        editor.apply();
+        Log.i(TAG, "Firebase UID guardado");
     }
 
     /**
@@ -672,6 +692,46 @@ public class UsuarioPreferences {
     public static long getEmailDigestLastSent(Context context) {
         initializePreferences(context);
         return sharedPreferences.getLong(KEY_EMAIL_DIGEST_LAST_SENT, 0);
+    }
+
+    // ==================== TEXT-TO-SPEECH ====================
+
+    /**
+     * Verifica si TTS está activado
+     */
+    public static boolean getTTSEnabled(Context context) {
+        initializePreferences(context);
+        return sharedPreferences.getBoolean(KEY_TTS_ENABLED, true); // Por defecto activado
+    }
+
+    /**
+     * Guarda el estado de TTS
+     */
+    public static void guardarTTSEnabled(Context context, boolean enabled) {
+        initializePreferences(context);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(KEY_TTS_ENABLED, enabled);
+        editor.apply();
+        Log.i(TAG, "TTS " + (enabled ? "activado" : "desactivado"));
+    }
+
+    /**
+     * Obtiene la velocidad de lectura TTS (0.5 - 2.0)
+     */
+    public static float getTTSSpeed(Context context) {
+        initializePreferences(context);
+        return sharedPreferences.getFloat(KEY_TTS_SPEED, 1.0f); // Velocidad normal por defecto
+    }
+
+    /**
+     * Guarda la velocidad de lectura TTS
+     */
+    public static void guardarTTSSpeed(Context context, float speed) {
+        initializePreferences(context);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putFloat(KEY_TTS_SPEED, speed);
+        editor.apply();
+        Log.i(TAG, "Velocidad TTS: " + speed);
     }
 }
 

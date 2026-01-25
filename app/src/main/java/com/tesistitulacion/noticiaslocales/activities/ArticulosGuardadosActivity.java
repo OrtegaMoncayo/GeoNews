@@ -15,6 +15,7 @@ import com.tesistitulacion.noticiaslocales.R;
 import com.tesistitulacion.noticiaslocales.adapters.NoticiaAdapter;
 import com.tesistitulacion.noticiaslocales.firebase.FirebaseManager;
 import com.tesistitulacion.noticiaslocales.modelo.Noticia;
+import com.tesistitulacion.noticiaslocales.utils.TransitionHelper;
 import com.tesistitulacion.noticiaslocales.utils.UsuarioPreferences;
 
 import java.util.ArrayList;
@@ -69,11 +70,11 @@ public class ArticulosGuardadosActivity extends BaseActivity {
 
     private void configurarRecyclerView() {
         adapter = new NoticiaAdapter((noticia, position) -> {
-            // Abrir detalle de la noticia
+            // Abrir detalle de la noticia con animación
             if (noticia.getFirestoreId() != null) {
                 Intent intent = new Intent(this, DetalleNoticiaActivity.class);
                 intent.putExtra(DetalleNoticiaActivity.EXTRA_NOTICIA_ID, noticia.getFirestoreId());
-                startActivity(intent);
+                TransitionHelper.startActivitySlideUp(this, intent);
             }
         });
 
@@ -83,7 +84,7 @@ public class ArticulosGuardadosActivity extends BaseActivity {
 
     private void configurarListeners() {
         if (btnVolver != null) {
-            btnVolver.setOnClickListener(v -> finish());
+            btnVolver.setOnClickListener(v -> TransitionHelper.finishWithSlideRight(this));
         }
 
         if (btnExplorar != null) {
@@ -95,6 +96,12 @@ public class ArticulosGuardadosActivity extends BaseActivity {
                 finish();
             });
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        TransitionHelper.applyBackTransition(this);
     }
 
     private void cargarArticulosGuardados() {

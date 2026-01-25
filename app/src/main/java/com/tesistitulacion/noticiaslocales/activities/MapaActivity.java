@@ -10,7 +10,6 @@ import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -30,6 +29,7 @@ import com.tesistitulacion.noticiaslocales.firebase.FirebaseManager;
 import com.tesistitulacion.noticiaslocales.modelo.Noticia;
 import com.tesistitulacion.noticiaslocales.utils.FirebaseCallbackHelper;
 import com.tesistitulacion.noticiaslocales.utils.LocationHelper;
+import com.tesistitulacion.noticiaslocales.utils.TransitionHelper;
 import com.tesistitulacion.noticiaslocales.utils.UsuarioPreferences;
 
 import java.util.ArrayList;
@@ -225,11 +225,11 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
 
         // Crear adaptador
         noticiaMapaAdapter = new com.tesistitulacion.noticiaslocales.adapters.NoticiaMapaAdapter((noticia, position) -> {
-            // Abrir detalle de noticia
+            // Abrir detalle de noticia con animación
             if (noticia.getFirestoreId() != null) {
                 Intent intent = new Intent(this, DetalleNoticiaActivity.class);
                 intent.putExtra(DetalleNoticiaActivity.EXTRA_NOTICIA_ID, noticia.getFirestoreId());
-                startActivity(intent);
+                TransitionHelper.startActivitySlideUp(this, intent);
             }
         });
         rvNoticiasMapa.setAdapter(noticiaMapaAdapter);
@@ -470,8 +470,8 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
                     centrarEnMiUbicacion();
                 }
             } else {
-                showToast("Permiso de ubicación denegado. No se puede mostrar tu posición.",
-                        Toast.LENGTH_LONG);
+                // Mensaje oculto - permiso denegado
+                Log.w(TAG, "Permiso de ubicación denegado");
             }
         }
     }
@@ -485,9 +485,6 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
             mapFragment.getMapAsync(this);
         } else {
             Log.e(TAG, "MapFragment no encontrado en layout");
-            Toast.makeText(this,
-                    "Error al cargar el mapa",
-                    Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -503,40 +500,9 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
             Log.i(TAG, "✅ Callback onMapLoaded: Mapa completamente cargado");
         });
 
-        // Verificar después de 5 segundos si las tiles cargaron
+        // Diagnóstico silencioso - solo logs
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            // Logs de diagnóstico
-            Log.w(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-            Log.w(TAG, "⚠️ DIAGNÓSTICO AUTOMÁTICO DE GOOGLE MAPS");
-            Log.w(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-            Log.w(TAG, "");
-            Log.w(TAG, "Si ves el mapa GRIS sin calles:");
-            Log.w(TAG, "");
-            Log.w(TAG, "CAUSAS POSIBLES:");
-            Log.w(TAG, "  1. Restricciones de API Key incorrectas");
-            Log.w(TAG, "  2. SHA-1 no coincide con Google Cloud Console");
-            Log.w(TAG, "  3. Paquete incorrecto en restricciones");
-            Log.w(TAG, "");
-            Log.w(TAG, "📋 TU CONFIGURACIÓN ACTUAL:");
-            Log.w(TAG, "  Paquete: com.tesistitulacion.noticiaslocales");
-            Log.w(TAG, "  SHA-1: 51:49:02:BE:1D:1B:41:5B:C7:3E:34:A6:29:52:6A:F8:A7:F7:ED:DF");
-            Log.w(TAG, "");
-            Log.w(TAG, "✅ SOLUCIÓN:");
-            Log.w(TAG, "  1. Abre: ACCION_INMEDIATA_GOOGLE_CLOUD.txt");
-            Log.w(TAG, "  2. O ejecuta: verificar-configuracion-maps.bat");
-            Log.w(TAG, "  3. Sigue los 3 pasos para configurar restricciones");
-            Log.w(TAG, "");
-            Log.w(TAG, "🔗 Enlace directo:");
-            Log.w(TAG, "  https://console.cloud.google.com/apis/credentials");
-            Log.w(TAG, "");
-            Log.w(TAG, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-
-            // Mostrar Toast al usuario
-            Toast.makeText(this,
-                    "⚠️ Si el mapa no muestra calles:\n" +
-                    "Verifica restricciones de API Key en Google Cloud Console\n" +
-                    "(Ver logs con 'adb logcat | grep MapaActivity')",
-                    Toast.LENGTH_LONG).show();
+            Log.d(TAG, "Diagnóstico de mapa: verificar API Key si hay problemas");
         }, 5000);
 
         // Configurar mapa con estilo mejorado
@@ -558,12 +524,6 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
             Log.i(TAG, "Centrando mapa en ubicación de la noticia: " + latitudIntent + ", " + longitudIntent);
             LatLng ubicacionNoticia = new LatLng(latitudIntent, longitudIntent);
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(ubicacionNoticia, ZOOM_LEVEL), 1500, null);
-
-            // Mostrar mensaje
-            String mensaje = tituloIntent != null ?
-                "📍 Ubicación de: " + tituloIntent :
-                "📍 Ubicación de la noticia";
-            Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
         } else {
             // Comportamiento normal: centrar en ubicación del usuario
             // Verificar si tenemos permisos de ubicación
@@ -606,17 +566,10 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
 
             if (!gpsEnabled && !networkEnabled) {
                 Log.e(TAG, "❌ GPS y Red desactivados - No se puede obtener ubicación");
-                Toast.makeText(this,
-                        "⚠️ GPS desactivado. Por favor activa la ubicación en Configuración.",
-                        Toast.LENGTH_LONG).show();
-
-                // Opcional: Mostrar diálogo para ir a configuración
+                // Diálogo silencioso para activar GPS
                 mostrarDialogoActivarGPS();
             } else if (!gpsEnabled) {
                 Log.w(TAG, "⚠️ GPS desactivado, solo usando ubicación por red (menos precisa)");
-                Toast.makeText(this,
-                        "⚠️ Para mejor precisión, activa el GPS en tu dispositivo",
-                        Toast.LENGTH_LONG).show();
             }
 
             try {
@@ -702,7 +655,6 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
                         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(miUbicacion, ZOOM_LEVEL), 1500, null);
 
                         Log.i(TAG, "Mapa centrado en ubicación actual: " + miUbicacion);
-                        Toast.makeText(this, "📍 Mapa centrado en tu ubicación", Toast.LENGTH_SHORT).show();
 
                         if (noticias != null && !noticias.isEmpty()) {
                             agregarMarcadores(noticias);
@@ -710,7 +662,6 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
                     } else {
                         Log.w(TAG, "No se pudo obtener ubicación actual");
                         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(IBARRA_CENTRO, 14f), 1000, null);
-                        Toast.makeText(this, "No se pudo obtener tu ubicación. Mostrando Ibarra.", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -743,7 +694,6 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
                         animarCamaraConBounce(miUbicacion, ZOOM_LEVEL);
 
                         Log.i(TAG, "Mapa centrado con animación en: " + miUbicacion);
-                        Toast.makeText(this, "📍 Mapa centrado en tu ubicación", Toast.LENGTH_SHORT).show();
 
                         // Actualizar marcadores cercanos después de la animación
                         handler.postDelayed(() -> {
@@ -754,7 +704,6 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
                     } else {
                         Log.w(TAG, "No se pudo obtener ubicación actual");
                         animarCamaraConBounce(IBARRA_CENTRO, 14f);
-                        Toast.makeText(this, "No se pudo obtener tu ubicación. Mostrando Ibarra.", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -927,10 +876,7 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
         // Listener para long clicks en el mapa
         mMap.setOnMapLongClickListener(latLng -> {
             Log.d(TAG, "Long click en mapa: " + latLng.toString());
-            // Opcional: Mostrar coordenadas o crear marcador temporal
-            Toast.makeText(this,
-                String.format(java.util.Locale.US, "📍 %.4f, %.4f", latLng.latitude, latLng.longitude),
-                Toast.LENGTH_SHORT).show();
+            // Coordenadas registradas en log (sin Toast)
         });
 
         // Listener para clicks en marcadores con animación
@@ -962,7 +908,7 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
                             if (noticia.getFirestoreId() != null) {
                                 Intent intent = new Intent(MapaActivity.this, DetalleNoticiaActivity.class);
                                 intent.putExtra(DetalleNoticiaActivity.EXTRA_NOTICIA_ID, noticia.getFirestoreId());
-                                startActivity(intent);
+                                TransitionHelper.startActivitySlideUp(MapaActivity.this, intent);
                             }
                         }
 
@@ -972,7 +918,7 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
                             if (noticia.getFirestoreId() != null) {
                                 Intent intent = new Intent(MapaActivity.this, DetalleNoticiaActivity.class);
                                 intent.putExtra(DetalleNoticiaActivity.EXTRA_NOTICIA_ID, noticia.getFirestoreId());
-                                startActivity(intent);
+                                TransitionHelper.startActivitySlideUp(MapaActivity.this, intent);
                             }
                         }
                     }
@@ -1444,9 +1390,7 @@ public class MapaActivity extends BaseActivity implements OnMapReadyCallback {
                 })
                 .setNegativeButton("Cancelar", (dialog, which) -> {
                     dialog.dismiss();
-                    Toast.makeText(this,
-                            "Sin GPS, las notificaciones de proximidad no funcionarán",
-                            Toast.LENGTH_SHORT).show();
+                    Log.w(TAG, "Usuario canceló activación de GPS");
                 })
                 .setCancelable(false)
                 .show();

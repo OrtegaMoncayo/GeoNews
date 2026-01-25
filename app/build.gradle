@@ -85,6 +85,12 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.firebase:firebase-storage'
 
+    // Google Sign-In
+    implementation 'com.google.android.gms:play-services-auth:20.7.0'
+
+    // ML Kit Translation - Traducción offline
+    implementation 'com.google.mlkit:translate:17.0.2'
+
     // ==================== TESTING ====================
 
     // JUnit 4 - Framework de pruebas unitarias estándar

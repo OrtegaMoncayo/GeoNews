@@ -79,8 +79,10 @@
     <!-- ==================== COLORES BASE GEONEWS ==================== -->
 
     <color name="primary">#0d7ff2</color>
+    <color name="primary_dark">#0a5fb8</color>
     <color name="success">#4CAF50</color>
     <color name="warning">#FF9800</color>
+    <color name="error">#D90429</color>
     <color name="white">#FFFFFF</color>
     <color name="background_light">#FFFFFF</color>
     <color name="background_dark">#FFFFFF</color>
@@ -128,6 +130,10 @@
     <color name="chip_text">#666666</color>
     <color name="chip_selected_bg">#0d7ff2</color>
     <color name="chip_selected_text">#FFFFFF</color>
+
+    <!-- Skeleton loading -->
+    <color name="skeleton_base">#E0E0E0</color>
+    <color name="skeleton_highlight">#F5F5F5</color>
 
     <!-- Carrusel del mapa (siempre oscuro para contrastar con el mapa) -->
     <color name="bg_card_mapa">#1a2530</color>

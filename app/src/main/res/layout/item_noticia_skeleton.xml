@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Skeleton placeholder para item de noticia - Efecto shimmer -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="12dp"
+    android:layout_marginEnd="12dp"
+    android:layout_marginTop="6dp"
+    android:layout_marginBottom="6dp"
+    app:cardBackgroundColor="@color/bg_card"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Placeholder imagen -->
+        <View
+            android:id="@+id/skeleton_imagen"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:background="@color/skeleton_base"/>
+
+        <!-- Contenido skeleton -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+            <!-- Placeholder categoría -->
+            <View
+                android:id="@+id/skeleton_categoria"
+                android:layout_width="60dp"
+                android:layout_height="14dp"
+                android:background="@drawable/bg_skeleton_rounded"
+                android:layout_marginBottom="10dp"/>
+
+            <!-- Placeholder título línea 1 -->
+            <View
+                android:id="@+id/skeleton_titulo_1"
+                android:layout_width="match_parent"
+                android:layout_height="18dp"
+                android:background="@drawable/bg_skeleton_rounded"
+                android:layout_marginBottom="6dp"/>
+
+            <!-- Placeholder título línea 2 -->
+            <View
+                android:id="@+id/skeleton_titulo_2"
+                android:layout_width="200dp"
+                android:layout_height="18dp"
+                android:background="@drawable/bg_skeleton_rounded"
+                android:layout_marginBottom="12dp"/>
+
+            <!-- Placeholder descripción línea 1 -->
+            <View
+                android:id="@+id/skeleton_desc_1"
+                android:layout_width="match_parent"
+                android:layout_height="12dp"
+                android:background="@drawable/bg_skeleton_rounded"
+                android:layout_marginBottom="4dp"/>
+
+            <!-- Placeholder descripción línea 2 -->
+            <View
+                android:id="@+id/skeleton_desc_2"
+                android:layout_width="240dp"
+                android:layout_height="12dp"
+                android:background="@drawable/bg_skeleton_rounded"
+                android:layout_marginBottom="14dp"/>
+
+            <!-- Footer skeleton -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- Placeholder ubicación -->
+                <View
+                    android:id="@+id/skeleton_ubicacion"
+                    android:layout_width="80dp"
+                    android:layout_height="12dp"
+                    android:background="@drawable/bg_skeleton_rounded"/>
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"/>
+
+                <!-- Placeholder fecha -->
+                <View
+                    android:id="@+id/skeleton_fecha"
+                    android:layout_width="50dp"
+                    android:layout_height="12dp"
+                    android:background="@drawable/bg_skeleton_rounded"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

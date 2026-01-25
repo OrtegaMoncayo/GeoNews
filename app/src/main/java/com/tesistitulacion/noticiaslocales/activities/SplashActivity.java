@@ -13,6 +13,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.tesistitulacion.noticiaslocales.R;
 import com.tesistitulacion.noticiaslocales.utils.LocaleManager;
 import com.tesistitulacion.noticiaslocales.utils.NotificationHelper;
+import com.tesistitulacion.noticiaslocales.utils.TransitionHelper;
 import com.tesistitulacion.noticiaslocales.utils.UsuarioPreferences;
 import com.tesistitulacion.noticiaslocales.utils.ThemeManager;
 
@@ -124,6 +125,7 @@ public class SplashActivity extends AppCompatActivity {
         }
 
         startActivity(intent);
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         finish(); // No permitir volver al splash con botón atrás
     }
 }

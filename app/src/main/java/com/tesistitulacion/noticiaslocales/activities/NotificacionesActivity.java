@@ -14,6 +14,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.tesistitulacion.noticiaslocales.R;
 import com.tesistitulacion.noticiaslocales.utils.NotificationHelper;
+import com.tesistitulacion.noticiaslocales.utils.TransitionHelper;
 import com.tesistitulacion.noticiaslocales.utils.UsuarioPreferences;
 
 /**
@@ -146,9 +147,9 @@ public class NotificacionesActivity extends BaseActivity {
     }
 
     private void configurarListeners() {
-        // Botón volver
+        // Botón volver con animación
         if (btnVolver != null) {
-            btnVolver.setOnClickListener(v -> finish());
+            btnVolver.setOnClickListener(v -> TransitionHelper.finishWithSlideRight(this));
         }
 
         // Botón solicitar permiso
@@ -237,5 +238,11 @@ public class NotificacionesActivity extends BaseActivity {
                 verificarPermisoNotificaciones();
             }
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        TransitionHelper.applyBackTransition(this);
     }
 }

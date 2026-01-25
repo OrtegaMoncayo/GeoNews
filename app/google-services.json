@@ -12,7 +12,20 @@
           "package_name": "com.tesistitulacion.noticiaslocales"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "166115544761-p3ro1uj0rreb4q27c49dk6qr6ked0ise.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tesistitulacion.noticiaslocales",
+            "certificate_hash": "514902be1d1b415bc73e34a629526af8a7f7eddf"
+          }
+        },
+        {
+          "client_id": "166115544761-5b8gfkabhvvto667jq72g7e249afu98h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyA_JQPd_t9jwb9Kw39muih7P4Ux55u_U30"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "166115544761-5b8gfkabhvvto667jq72g7e249afu98h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

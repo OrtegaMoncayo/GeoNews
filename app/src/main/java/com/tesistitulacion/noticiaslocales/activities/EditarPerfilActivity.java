@@ -38,6 +38,7 @@ import com.tesistitulacion.noticiaslocales.modelo.Usuario;
 import com.tesistitulacion.noticiaslocales.utils.DialogHelper;
 import com.tesistitulacion.noticiaslocales.utils.LocaleManager;
 import com.tesistitulacion.noticiaslocales.utils.ThemeManager;
+import com.tesistitulacion.noticiaslocales.utils.TransitionHelper;
 import com.tesistitulacion.noticiaslocales.utils.UsuarioPreferences;
 
 import java.io.ByteArrayOutputStream;
@@ -178,8 +179,8 @@ public class EditarPerfilActivity extends AppCompatActivity {
     }
 
     private void configurarListeners() {
-        // Botón cancelar
-        btnCancelar.setOnClickListener(v -> finish());
+        // Botón cancelar con animación
+        btnCancelar.setOnClickListener(v -> TransitionHelper.finishWithSlideRight(this));
 
         // Botones de cambiar foto
         fabCambiarFoto.setOnClickListener(v -> mostrarOpcionesFoto());
@@ -527,7 +528,7 @@ public class EditarPerfilActivity extends AppCompatActivity {
                 public void onSuccess(Void unused) {
                     showToast("Perfil actualizado correctamente");
                     setResult(RESULT_OK);
-                    finish();
+                    TransitionHelper.finishWithSlideRight(EditarPerfilActivity.this);
                 }
 
                 @Override
@@ -553,5 +554,11 @@ public class EditarPerfilActivity extends AppCompatActivity {
      */
     private void showToast(String mensaje, int duracion) {
         Toast.makeText(this, mensaje, duracion).show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        TransitionHelper.applyBackTransition(this);
     }
 }

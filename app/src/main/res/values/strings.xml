@@ -64,6 +64,8 @@
     <string name="settings_about">Acerca de GeoNews</string>
     <string name="settings_logout">Cerrar Sesión</string>
     <string name="settings_version">Versión 0.1.0 (Build 2024)</string>
+    <string name="settings_tts">Lectura en voz alta</string>
+    <string name="settings_tts_desc">Escuchar noticias con TTS</string>
 
     <!-- Perfil -->
     <string name="profile_title">Perfil</string>
@@ -115,6 +117,10 @@
     <string name="login_forgot_password">¿Olvidaste tu contraseña?</string>
     <string name="login_sign_in">Iniciar Sesión</string>
     <string name="login_sign_up">Registrarse</string>
+    <string name="login_with_google">Continuar con Google</string>
+
+    <!-- Google Sign-In Web Client ID -->
+    <string name="default_web_client_id">166115544761-5b8gfkabhvvto667jq72g7e249afu98h.apps.googleusercontent.com</string>
 
     <!-- Registro -->
     <string name="register_title">Crear Cuenta</string>
@@ -192,4 +198,11 @@
 
     <!-- Contador de caracteres -->
     <string name="char_counter" formatted="false">%d/%d</string>
+
+    <!-- Text-to-Speech -->
+    <string name="tts_read_article">Escuchar artículo</string>
+    <string name="tts_stop">Detener lectura</string>
+    <string name="tts_initializing">Inicializando lectura...</string>
+    <string name="tts_not_available">Lectura en voz alta no disponible</string>
+    <string name="tts_error">Error al reproducir audio</string>
 </resources>

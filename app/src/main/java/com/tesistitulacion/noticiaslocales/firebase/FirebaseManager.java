@@ -10,6 +10,9 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.GeoPoint;
@@ -726,6 +729,102 @@ public class FirebaseManager {
                         callback.onError(e);
                     }
                 });
+    }
+
+    // ==================== AUTENTICACIÓN ====================
+
+    /**
+     * Inicia sesión con email y contraseña
+     */
+    public void login(String email, String password, final FirestoreCallback<FirebaseUser> callback) {
+        FirebaseAuth.getInstance()
+                .signInWithEmailAndPassword(email, password)
+                .addOnSuccessListener(authResult -> {
+                    FirebaseUser user = authResult.getUser();
+                    if (user != null) {
+                        Log.i(TAG, "Login exitoso: " + user.getEmail());
+                        callback.onSuccess(user);
+                    } else {
+                        callback.onError(new Exception("Usuario no encontrado"));
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error en login", e);
+                    callback.onError(e);
+                });
+    }
+
+    /**
+     * Registra un nuevo usuario con email y contraseña
+     */
+    public void registrar(String email, String password, String nombre, final FirestoreCallback<FirebaseUser> callback) {
+        FirebaseAuth.getInstance()
+                .createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener(authResult -> {
+                    FirebaseUser user = authResult.getUser();
+                    if (user != null) {
+                        Log.i(TAG, "Registro exitoso: " + user.getEmail());
+
+                        // Crear documento de usuario en Firestore
+                        Map<String, Object> usuarioData = new HashMap<>();
+                        usuarioData.put("nombre", nombre);
+                        usuarioData.put("email", email);
+                        usuarioData.put("fechaRegistro", System.currentTimeMillis());
+                        usuarioData.put("noticiasLeidas", 0);
+                        usuarioData.put("verificado", false);
+                        usuarioData.put("tipoUsuario", "usuario");
+
+                        db.collection(COLLECTION_USUARIOS)
+                                .document(user.getUid())
+                                .set(usuarioData)
+                                .addOnSuccessListener(aVoid -> {
+                                    Log.i(TAG, "Documento de usuario creado");
+                                    callback.onSuccess(user);
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Error al crear documento de usuario", e);
+                                    // Aún así retornamos éxito porque el usuario fue creado
+                                    callback.onSuccess(user);
+                                });
+                    } else {
+                        callback.onError(new Exception("Error al crear usuario"));
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error en registro", e);
+                    callback.onError(e);
+                });
+    }
+
+    /**
+     * Envía email para recuperar contraseña
+     */
+    public void recuperarPassword(String email, final FirestoreCallback<Void> callback) {
+        FirebaseAuth.getInstance()
+                .sendPasswordResetEmail(email)
+                .addOnSuccessListener(aVoid -> {
+                    Log.i(TAG, "Email de recuperación enviado a: " + email);
+                    callback.onSuccess(null);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error al enviar email de recuperación", e);
+                    callback.onError(e);
+                });
+    }
+
+    /**
+     * Cierra la sesión actual
+     */
+    public void logout() {
+        FirebaseAuth.getInstance().signOut();
+        Log.i(TAG, "Sesión cerrada");
+    }
+
+    /**
+     * Obtiene el usuario actual (o null si no hay sesión)
+     */
+    public FirebaseUser getCurrentUser() {
+        return FirebaseAuth.getInstance().getCurrentUser();
     }
 
     // ==================== CALLBACK INTERFACE ====================

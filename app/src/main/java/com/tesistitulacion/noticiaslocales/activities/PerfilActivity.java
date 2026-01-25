@@ -36,6 +36,7 @@ import com.tesistitulacion.noticiaslocales.R;
 import com.tesistitulacion.noticiaslocales.firebase.FirebaseManager;
 import com.tesistitulacion.noticiaslocales.modelo.Usuario;
 import com.tesistitulacion.noticiaslocales.utils.DialogHelper;
+import com.tesistitulacion.noticiaslocales.utils.TransitionHelper;
 import com.tesistitulacion.noticiaslocales.utils.UsuarioPreferences;
 import com.tesistitulacion.noticiaslocales.utils.ThemeManager;
 
@@ -156,6 +157,8 @@ public class PerfilActivity extends BaseActivity {
             btnSettings = findViewById(R.id.btn_settings);
             btnArticulosGuardados = findViewById(R.id.btn_editar_bio);
             btnNotificaciones = findViewById(R.id.btn_notificaciones);
+
+            Log.d(TAG, "btnNotificaciones inicializado: " + (btnNotificaciones != null));
 
             // Intereses
             chipGroupIntereses = findViewById(R.id.chip_group_intereses);
@@ -430,9 +433,10 @@ public class PerfilActivity extends BaseActivity {
             if (btnEditarNombre != null) {
                 btnEditarNombre.setOnClickListener(v -> {
                     Log.d(TAG, "Click en botón Editar Perfil - Abriendo EditarPerfilActivity");
-                    // Abrir pantalla de Editar Perfil
+                    // Abrir pantalla de Editar Perfil con animación
                     Intent intent = new Intent(PerfilActivity.this, EditarPerfilActivity.class);
                     startActivityForResult(intent, REQUEST_CODE_EDITAR_PERFIL);
+                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 });
                 Log.d(TAG, "Listener configurado para btnEditarNombre");
             } else {
@@ -469,28 +473,37 @@ public class PerfilActivity extends BaseActivity {
                 btnCambiarPassword.setOnClickListener(v -> mostrarDialogoCambiarPassword());
             }
 
-            // Botón settings (Ajustes)
+            // Botón settings (Ajustes) con animación
             if (btnSettings != null) {
                 btnSettings.setOnClickListener(v -> {
                     Intent intent = new Intent(PerfilActivity.this, AjustesActivity.class);
-                    startActivity(intent);
+                    TransitionHelper.startActivitySlideRight(PerfilActivity.this, intent);
                 });
             }
 
-            // Botón Artículos Guardados
+            // Botón Artículos Guardados con animación
             if (btnArticulosGuardados != null) {
                 btnArticulosGuardados.setOnClickListener(v -> {
                     Intent intent = new Intent(PerfilActivity.this, ArticulosGuardadosActivity.class);
-                    startActivity(intent);
+                    TransitionHelper.startActivitySlideRight(PerfilActivity.this, intent);
                 });
             }
 
-            // Botón Notificaciones
+            // Botón Notificaciones con animación
             if (btnNotificaciones != null) {
                 btnNotificaciones.setOnClickListener(v -> {
-                    Intent intent = new Intent(PerfilActivity.this, NotificacionesActivity.class);
-                    startActivity(intent);
+                    Log.d(TAG, "Click en botón Notificaciones - Abriendo NotificacionesActivity");
+                    try {
+                        Intent intent = new Intent(PerfilActivity.this, NotificacionesActivity.class);
+                        TransitionHelper.startActivitySlideRight(PerfilActivity.this, intent);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error al abrir NotificacionesActivity: " + e.getMessage(), e);
+                        showToast("Error al abrir notificaciones: " + e.getMessage());
+                    }
                 });
+                Log.d(TAG, "Listener configurado para btnNotificaciones");
+            } else {
+                Log.e(TAG, "ERROR: btnNotificaciones es NULL");
             }
 
             // Cerrar sesión

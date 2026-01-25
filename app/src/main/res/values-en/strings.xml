@@ -64,6 +64,8 @@
     <string name="settings_about">About GeoNews</string>
     <string name="settings_logout">Log Out</string>
     <string name="settings_version">Version 0.1.0 (Build 2024)</string>
+    <string name="settings_tts">Read aloud</string>
+    <string name="settings_tts_desc">Listen to news with TTS</string>
 
     <!-- Profile -->
     <string name="profile_title">Profile</string>
@@ -115,6 +117,7 @@
     <string name="login_forgot_password">Forgot your password?</string>
     <string name="login_sign_in">Sign In</string>
     <string name="login_sign_up">Sign Up</string>
+    <string name="login_with_google">Continue with Google</string>
 
     <!-- Register -->
     <string name="register_title">Create Account</string>
@@ -192,4 +195,11 @@
 
     <!-- Character counter -->
     <string name="char_counter" formatted="false">%d/%d</string>
+
+    <!-- Text-to-Speech -->
+    <string name="tts_read_article">Listen to article</string>
+    <string name="tts_stop">Stop reading</string>
+    <string name="tts_initializing">Initializing reader...</string>
+    <string name="tts_not_available">Text-to-speech not available</string>
+    <string name="tts_error">Error playing audio</string>
 </resources>
