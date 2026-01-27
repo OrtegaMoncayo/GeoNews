@@ -1,8 +1,11 @@
 package com.tesistitulacion.noticiaslocales.activities;
 
 import android.Manifest;
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.location.Location;
 import android.os.Bundle;
 import android.text.Editable;
@@ -325,8 +328,11 @@ public class ListaNoticiasActivity extends BaseActivity {
     }
 
     private void configurarFiltros() {
-        // Configurar ChipGroup de radio
+        // Configurar ChipGroup de radio con animación
         chipGroupRadio.setOnCheckedChangeListener((group, checkedId) -> {
+            // Animar todos los chips
+            animarSeleccionChips(checkedId);
+
             if (checkedId == R.id.chip_todas) {
                 radioKmActual = null;
             } else if (checkedId == R.id.chip_2km) {
@@ -372,6 +378,69 @@ public class ListaNoticiasActivity extends BaseActivity {
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}
         });
+    }
+
+    /**
+     * Anima el cambio de color de los chips al seleccionar uno
+     */
+    private void animarSeleccionChips(int checkedId) {
+        int[] chipIds = {R.id.chip_todas, R.id.chip_2km, R.id.chip_5km, R.id.chip_10km, R.id.chip_20km};
+
+        int colorPrimary = ContextCompat.getColor(this, R.color.primary);
+        int colorUnselected = ContextCompat.getColor(this, R.color.bg_card);
+        int colorTextSelected = ContextCompat.getColor(this, R.color.white);
+        int colorTextUnselected = ContextCompat.getColor(this, R.color.text_secondary);
+
+        for (int chipId : chipIds) {
+            Chip chip = findViewById(chipId);
+            if (chip == null) continue;
+
+            boolean isSelected = (chipId == checkedId);
+
+            // Colores de inicio y fin
+            int startBgColor = isSelected ? colorUnselected : colorPrimary;
+            int endBgColor = isSelected ? colorPrimary : colorUnselected;
+            int startTextColor = isSelected ? colorTextUnselected : colorTextSelected;
+            int endTextColor = isSelected ? colorTextSelected : colorTextUnselected;
+
+            // Solo animar si el chip cambió de estado
+            if ((isSelected && chip.isChecked()) || (!isSelected && !chip.isChecked())) {
+                // Animación de color de fondo
+                ValueAnimator bgAnimator = ValueAnimator.ofObject(new ArgbEvaluator(), startBgColor, endBgColor);
+                bgAnimator.setDuration(250);
+                bgAnimator.addUpdateListener(animator -> {
+                    int color = (int) animator.getAnimatedValue();
+                    chip.setChipBackgroundColor(ColorStateList.valueOf(color));
+                });
+
+                // Animación de color de texto
+                ValueAnimator textAnimator = ValueAnimator.ofObject(new ArgbEvaluator(), startTextColor, endTextColor);
+                textAnimator.setDuration(250);
+                textAnimator.addUpdateListener(animator -> {
+                    int color = (int) animator.getAnimatedValue();
+                    chip.setTextColor(color);
+                });
+
+                // Animación de escala para el chip seleccionado
+                if (isSelected) {
+                    chip.animate()
+                            .scaleX(1.1f)
+                            .scaleY(1.1f)
+                            .setDuration(150)
+                            .withEndAction(() -> {
+                                chip.animate()
+                                        .scaleX(1.0f)
+                                        .scaleY(1.0f)
+                                        .setDuration(100)
+                                        .start();
+                            })
+                            .start();
+                }
+
+                bgAnimator.start();
+                textAnimator.start();
+            }
+        }
     }
 
     private void cargarNoticias() {

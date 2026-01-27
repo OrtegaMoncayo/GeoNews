@@ -908,7 +908,13 @@ async def verificar_codigo(request: VerificarCodigoRequest):
         # Verificar expiración (10 minutos)
         creado = codigo_data.get("creado")
         if creado:
-            diferencia = (datetime.now() - creado).total_seconds()
+            # Convertir a timestamp naive para comparar
+            if hasattr(creado, 'timestamp'):
+                creado_timestamp = creado.timestamp()
+            else:
+                creado_timestamp = creado.replace(tzinfo=None).timestamp() if hasattr(creado, 'replace') else 0
+
+            diferencia = datetime.now().timestamp() - creado_timestamp
             if diferencia > 600:  # 10 minutos en segundos
                 codigo_doc.reference.delete()
                 raise HTTPException(status_code=400, detail="El código ha expirado. Solicita uno nuevo.")
@@ -981,7 +987,13 @@ async def resetear_password(request: ResetearPasswordRequest):
         # Verificar expiración
         creado = codigo_data.get("creado")
         if creado:
-            diferencia = (datetime.now() - creado).total_seconds()
+            # Convertir a timestamp para comparar
+            if hasattr(creado, 'timestamp'):
+                creado_timestamp = creado.timestamp()
+            else:
+                creado_timestamp = creado.replace(tzinfo=None).timestamp() if hasattr(creado, 'replace') else 0
+
+            diferencia = datetime.now().timestamp() - creado_timestamp
             if diferencia > 600:
                 codigo_doc.reference.delete()
                 raise HTTPException(status_code=400, detail="El código ha expirado")
