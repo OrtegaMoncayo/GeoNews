@@ -32,7 +32,7 @@
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:src="@drawable/chatgpt_image_31_dic_2025__00_09_40_removebg_preview"
+                    android:src="@drawable/ic_app_logo_transparent"
                     android:scaleType="fitCenter"
                     android:contentDescription="Logo GeoNews"/>
 
