@@ -317,7 +317,7 @@ public class LoginActivity extends AppCompatActivity {
                     mensaje = "Error de conexión. Verifica tu internet";
                     break;
                 default:
-                    mensaje = "Error al iniciar sesión con Google";
+                    mensaje = "Error al iniciar sesión con Google (código: " + e.getStatusCode() + ")";
             }
             showToast(mensaje);
         }
